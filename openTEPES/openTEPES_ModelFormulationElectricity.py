@@ -1492,6 +1492,9 @@ PWL_SEGMENTS = 10
 
 # Tangent lines used to approximate the converter capability disc. Twelve leaves the bound loose by 1/cos(pi/12), i.e. 3.5%.
 CONV_CUTS = 12
+# Sides of the inscribed polygon that stands for the apparent power disc of IndACApparentPowerLimit in the Gurobi solve. 24 sides give up at most
+# 1 - cos(pi/24) = 0.9% of the rating between the vertices.
+APPARENT_CUTS = 24
 
 def _smax_pu(mTEPES, la):
     """Largest apparent power the model permits on a branch, in per unit.
@@ -1525,6 +1528,16 @@ def _vlo_from(mTEPES, la):
 def _vhi_from(mTEPES, la):
     """Highest voltage the series impedance sees at the sending end, tap included."""
     return mTEPES.pVMaxBus[la[0]] * mTEPES.pLineTapFactor[la]
+
+
+def _eApparentDisc(mTEPES, pP, pQ, p, sc, live):
+    """Rule for the apparent power disc of IndACApparentPowerLimit, (P/Smax)^2 + (Q/Smax)^2 <= 1, at the end whose flows are pP and pQ."""
+    def rule(OptModel, n, ni, nf, cc):
+        if not live((ni,nf,cc)):
+            return Constraint.Skip
+        pSmax = mTEPES.pLineSmax[ni,nf,cc]
+        return (pP[p,sc,n,ni,nf,cc] / pSmax) ** 2 + (pQ[p,sc,n,ni,nf,cc] / pSmax) ** 2 <= 1.0
+    return rule
 
 
 def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -1799,28 +1812,33 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
         # --- (7b) the apparent power limit at both ends, optional ------------------------------------------------------------------------------------
         # The current limit admits an apparent power of Smax * V / Vmin, so above the lowest voltage of the sending bus a branch may carry more than its
-        # rating: 5% at 1.0 p.u. on a 0.95 lower limit. IndACApparentPowerLimit = 1 also holds P^2 + Q^2 <= Smax^2 at each end. The disc is convex, so
-        # the SOCP remains a cone program. Under the piecewise-linear current the disc is replaced by an inscribed polygon of CONV_CUTS sides, so the
-        # model stays linear and never admits more than Smax; it gives up at most 1 - cos(pi/CONV_CUTS), 3.4% at 12 sides, between the vertices.
+        # rating: 5% at 1.0 p.u. on a 0.95 lower limit. IndACApparentPowerLimit = 1 also holds P^2 + Q^2 <= Smax^2 at each end.
+        # For the SOCP and the piecewise-linear current, the disc is an inscribed polygon of APPARENT_CUTS sides: linear, so it never admits more than
+        # Smax and never costs the model its linearity. The disc itself, added to the SOCP as a quadratic constraint, left Gurobi's barrier with
+        # "numerical trouble" on a 695-bus case with fixed generation, with or without scaling by Smax and presolve aggregation. The exact NLP takes the
+        # disc, written on P/Smax and Q/Smax so that every branch has a unit right-hand side, and the AC recovery step swaps the polygon for it.
         if mTEPES.pIndACApparentPowerLimit():
-            pInscribed = math.cos(math.pi / CONV_CUTS)
+            if mTEPES.pIndACModelType() == 2:
+                for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                    setattr(OptModel, f'eApparentLimit{pTag}_{p}_{sc}_{st}',
+                            Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentDisc(mTEPES, pP, pQ, p, sc, _live),
+                                       doc='apparent power within the branch rating [p.u. of the rating]'))
+            else:
+                pInscribed = math.cos(math.pi / APPARENT_CUTS)
 
-            def _eApparentLimit(pP, pQ, k=None):
-                def rule(OptModel, n, ni, nf, cc):
-                    if not _live((ni,nf,cc)):
-                        return Constraint.Skip
-                    pSmax = mTEPES.pLineSmax[ni,nf,cc]
-                    if k is None:
-                        return pP[p,sc,n,ni,nf,cc] ** 2 + pQ[p,sc,n,ni,nf,cc] ** 2 <= pSmax ** 2
-                    pAng = 2.0 * math.pi * k / CONV_CUTS
-                    return math.cos(pAng) * pP[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ[p,sc,n,ni,nf,cc] <= pSmax * pInscribed
-                return rule
+                def _eApparentCut(pP, pQ, k):
+                    def rule(OptModel, n, ni, nf, cc):
+                        if not _live((ni,nf,cc)):
+                            return Constraint.Skip
+                        pAng = 2.0 * math.pi * k / APPARENT_CUTS
+                        return (math.cos(pAng) * pP[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ[p,sc,n,ni,nf,cc]
+                                <= mTEPES.pLineSmax[ni,nf,cc] * pInscribed)
+                    return rule
 
-            pCuts = range(CONV_CUTS) if mTEPES.pIndACModelType() == 1 else (None,)
-            for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
-                for k in pCuts:
-                    setattr(OptModel, f'eApparentLimit{pTag}{"" if k is None else k}_{p}_{sc}_{st}',
-                            Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentLimit(pP, pQ, k), doc='apparent power within the branch rating [GVA]'))
+                for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                    for k in range(APPARENT_CUTS):
+                        setattr(OptModel, f'eApparentLimit{pTag}{k}_{p}_{sc}_{st}',
+                                Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentCut(pP, pQ, k), doc='apparent power within the branch rating [GVA]'))
 
         # --- (9) voltage drop ------------------------------------------------------------------------------------------------------------------------
         # The big-M is derived from the three terms of the expression rather than guessed. The flow term dominates and was omitted once, leaving an
@@ -2329,6 +2347,15 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
         setattr(OptModel, f'eCurrentRestored_{p}_{sc}_{st}',
                 Constraint(pKeys, rule=eCurrentRestored, doc='exact branch current, restoration pass'))
         nRows += len(pKeys)
+
+        # The polygon that stood for the apparent power disc in the relaxed solve gives way to the disc itself.
+        if mTEPES.pIndACApparentPowerLimit() and getattr(OptModel, f'eApparentLimitFrw0_{p}_{sc}_{st}', None) is not None:
+            for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                for k in range(APPARENT_CUTS):
+                    getattr(OptModel, f'eApparentLimit{pTag}{k}_{p}_{sc}_{st}').deactivate()
+                setattr(OptModel, f'eApparentRestored{pTag}_{p}_{sc}_{st}',
+                        Constraint(pKeys, rule=_eApparentDisc(mTEPES, pP, pQ, p, sc, lambda la: True),
+                                   doc='apparent power within the branch rating, restoration pass'))
 
     if not nRows:
         print('### WARNING: AC restoration found no relaxed current constraints to replace; nothing was done.')

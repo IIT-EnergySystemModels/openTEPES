@@ -903,10 +903,15 @@ Under the branch flow model (`IndACPowerFlow = 1`), the rating `TTC` limits the 
 rating itself.
 
 `IndACApparentPowerLimit = 1` also limits the apparent power at both ends of each branch to the rating,
-`P^2 + Q^2 <= TTC^2`. The constraint is convex, so the second-order cone relaxation remains a cone program. With the
-piecewise-linear current (`IndACModelType = 1`), the circle is replaced by an inscribed polygon of 12 sides, so the model
-stays linear and never admits more than the rating; between the vertices it admits up to 3.4% less. The current limit is
-kept in both settings, because it also removes the flows of a branch that is out of service.
+`P^2 + Q^2 <= TTC^2`. With the second-order cone and the piecewise-linear current (`IndACModelType` 0 and 1), the circle is
+an inscribed polygon of 24 sides: the constraints are linear, and the model never admits more than the rating and admits up
+to 0.9% less between the vertices. The exact non-linear model (`IndACModelType = 2`) and the AC recovery step
+(`IndACRestore = 1`) use the circle itself. The current limit is kept in all settings, because it also removes the flows of
+a branch that is out of service.
+
+The circle was first added to the cone program as a quadratic constraint. On a 695-bus case with fixed generation, Gurobi's
+barrier then stopped with numerical trouble on some variants of the case, and scaling the constraint by the rating or
+turning off presolve aggregation moved the failure to other variants. The polygon solved all of them.
 
 ### The penalty on the voltage setpoint deviation
 
