@@ -1797,6 +1797,31 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
             return OptModel.vCurr[p,sc,n,ni,nf,cc] <= pIMax * OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         setattr(OptModel, f'eCurrentLimit_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eCurrentLimit, doc='thermal limit, released out of service [p.u.]'))
 
+        # --- (7b) the apparent power limit at both ends, optional ------------------------------------------------------------------------------------
+        # The current limit admits an apparent power of Smax * V / Vmin, so above the lowest voltage of the sending bus a branch may carry more than its
+        # rating: 5% at 1.0 p.u. on a 0.95 lower limit. IndACApparentPowerLimit = 1 also holds P^2 + Q^2 <= Smax^2 at each end. The disc is convex, so
+        # the SOCP remains a cone program. Under the piecewise-linear current the disc is replaced by an inscribed polygon of CONV_CUTS sides, so the
+        # model stays linear and never admits more than Smax; it gives up at most 1 - cos(pi/CONV_CUTS), 3.4% at 12 sides, between the vertices.
+        if mTEPES.pIndACApparentPowerLimit():
+            pInscribed = math.cos(math.pi / CONV_CUTS)
+
+            def _eApparentLimit(pP, pQ, k=None):
+                def rule(OptModel, n, ni, nf, cc):
+                    if not _live((ni,nf,cc)):
+                        return Constraint.Skip
+                    pSmax = mTEPES.pLineSmax[ni,nf,cc]
+                    if k is None:
+                        return pP[p,sc,n,ni,nf,cc] ** 2 + pQ[p,sc,n,ni,nf,cc] ** 2 <= pSmax ** 2
+                    pAng = 2.0 * math.pi * k / CONV_CUTS
+                    return math.cos(pAng) * pP[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ[p,sc,n,ni,nf,cc] <= pSmax * pInscribed
+                return rule
+
+            pCuts = range(CONV_CUTS) if mTEPES.pIndACModelType() == 1 else (None,)
+            for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                for k in pCuts:
+                    setattr(OptModel, f'eApparentLimit{pTag}{"" if k is None else k}_{p}_{sc}_{st}',
+                            Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentLimit(pP, pQ, k), doc='apparent power within the branch rating [GVA]'))
+
         # --- (9) voltage drop ------------------------------------------------------------------------------------------------------------------------
         # The big-M is derived from the three terms of the expression rather than guessed. The flow term dominates and was omitted once, leaving an
         # arbitrary constant as the only thing keeping the relaxation valid.

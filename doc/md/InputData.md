@@ -187,6 +187,7 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndACRestore        | Indicator of the restoration pass that makes the reported operating point physical                    | {0 off, 1 on}                                       |
 | IndACCycle          | Indicator of the loop condition around each independent cycle (only used when IndACPowerFlow is 2)    | {0 off, 1 on}                                       |
 | IndACConverter      | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
+| IndACApparentPowerLimit | Indicator of the apparent power limit at both ends of an AC branch (only used when IndACPowerFlow is 1). See "The thermal limit of an AC branch" below | {0 current limit only, 1 current and apparent power} |
 | IndBinShuntSwitch   | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
 | IndPTDF             | Indicator of the flow-based market coupling method and where its factors come from                    | {0 off, 1 read from the case, 2 computed from the reactances} |
 | IndCycleFlow            | Indicator of the cycle flow formulation of Kirchhoff's second law (DC only)                       | {0 per branch, 1 per cycle}                         |
@@ -892,6 +893,27 @@ branch-hours, which `IndACRestore` resolves. Closing the cone there instead woul
 nothing keeps the previous default.
 
 The price steers the solve and is not part of the reported system cost; it is reported beside it.
+
+### The thermal limit of an AC branch
+
+Under the branch flow model (`IndACPowerFlow = 1`), the rating `TTC` limits the squared branch current to
+`(TTC / Vmin)^2`, where `Vmin` is the lowest voltage allowed at the sending bus. The apparent power that this limit admits is
+`TTC * V / Vmin`, so above `Vmin` a branch may carry more than its rating: about 2% at 1.0 p.u. with a lower limit of
+0.98 p.u., 5% with 0.95 p.u., and 16% at 1.10 p.u. with 0.95 p.u. The DC model, in contrast, limits the active power to the
+rating itself.
+
+`IndACApparentPowerLimit = 1` also limits the apparent power at both ends of each branch to the rating,
+`P^2 + Q^2 <= TTC^2`. The constraint is convex, so the second-order cone relaxation remains a cone program. With the
+piecewise-linear current (`IndACModelType = 1`), the circle is replaced by an inscribed polygon of 12 sides, so the model
+stays linear and never admits more than the rating; between the vertices it admits up to 3.4% less. The current limit is
+kept in both settings, because it also removes the flows of a branch that is out of service.
+
+On `9n_AC`, 618 of 52416 branch-hours are above their rating with the current limit only, the largest at 105.8%. With the
+apparent power limit none is, and the generation cost increases by 0.14%.
+
+With fixed generation, a branch that the known solution loads above its rating makes the problem infeasible under the
+apparent power limit, because the flows can move only slightly. Gurobi may report such a model as numerical trouble, not
+as infeasible.
 
 ### The penalty on the voltage setpoint deviation
 

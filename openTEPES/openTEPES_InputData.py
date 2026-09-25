@@ -291,9 +291,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     #                        more compensation, not less.
     #                    2 = voltage-source converters: each station is a controllable reactive source or sink within its rating, so
     #                        it behaves like a STATCOM and RELIEVES the AC system instead of burdening it.
+    #   pIndACApparentPowerLimit  0 = the thermal limit is on the branch current only, at the rating over the lowest voltage of the sending
+    #                                 bus (default). It admits an apparent power of the rating times V/Vmin.
+    #                             1 = also limit the apparent power at both ends of each branch to the rating. Only used when IndACPowerFlow is 1.
     #   pIndBinShuntSwitch  1 = a switchable shunt is discrete, on or off (default, and what a mechanically switched bank actually does)
     #                       0 = the same state relaxed to [0,1], which keeps an AC run continuous at the cost of letting a bank sit half in
-    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle']:
+    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle', 'pIndACApparentPowerLimit']:
         par.setdefault(key, 0)
     # Command-line overrides land here: after both tables have been read, so they win, and before the validation below,
     # so a bad value is refused with the same message a bad cell in the case would get.
@@ -381,6 +384,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         raise NotImplementedError(f"IndACRestore = {par['pIndACRestore']} is not implemented; use 0 (off) or 1 (exact restoration pass)")
     if par['pIndACConverter'] not in (0, 1, 2):
         raise NotImplementedError(f"IndACConverter = {par['pIndACConverter']} is not implemented; use 0 (none), 1 (LCC) or 2 (VSC)")
+    if par['pIndACApparentPowerLimit'] not in (0, 1):
+        raise NotImplementedError(f"IndACApparentPowerLimit = {par['pIndACApparentPowerLimit']} is not implemented; "
+                                  f"use 0 (current limit only) or 1 (also apparent power at both ends)")
 
     # load parameters from dfParameter — single-row mixed scalars.
     for col in dfs['dfParameter'].columns:
