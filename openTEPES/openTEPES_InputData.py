@@ -282,8 +282,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     #   pIndACConverter           0 HVDC links carry active power only, as in the DC model (default); 1 line-commutated: each station
     #                             draws tan(acos(pf)) times the active power it transfers; 2 voltage-source: each station supplies or
     #                             absorbs reactive power within its rating, like a STATCOM.
-    #   pIndACApparentPowerLimit  0 current limit only, at the rating over the lowest voltage of the sending bus, which admits the rating
-    #                             times V/Vmin (default); 1 also P^2 + Q^2 <= rating^2 at both ends. Only used when IndACPowerFlow is 1.
+    #   pIndACApparentPowerLimit  0 current limit only (default); 1 also P^2 + Q^2 <= rating^2 at both ends. Branch flow only.
     #   pIndBinShuntSwitch        1 a switchable shunt is on or off (default); 0 its state is relaxed to [0,1], which keeps an AC run
     #                             continuous at the cost of a bank partly in service.
     for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle', 'pIndACApparentPowerLimit']:

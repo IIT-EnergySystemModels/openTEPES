@@ -1492,8 +1492,7 @@ PWL_SEGMENTS = 10
 
 # Tangent lines used to approximate the converter capability disc. Twelve leaves the bound loose by 1/cos(pi/12), i.e. 3.5%.
 CONV_CUTS = 12
-# Sides of the inscribed polygon that stands for the apparent power disc of IndACApparentPowerLimit in the Gurobi solve. 24 sides give up at most
-# 1 - cos(pi/24) = 0.9% of the rating between the vertices.
+# Sides of the polygon inside the apparent power circle; at most 0.9% below the rating.
 APPARENT_CUTS = 24
 
 def _smax_pu(mTEPES, la):
@@ -1531,7 +1530,7 @@ def _vhi_from(mTEPES, la):
 
 
 def _eApparentDisc(mTEPES, pP, pQ, p, sc, live):
-    """Rule for the apparent power disc of IndACApparentPowerLimit, (P/Smax)^2 + (Q/Smax)^2 <= 1, at the end whose flows are pP and pQ."""
+    """(P/Smax)^2 + (Q/Smax)^2 <= 1 at one branch end."""
     def rule(OptModel, n, ni, nf, cc):
         if not live((ni,nf,cc)):
             return Constraint.Skip
@@ -1811,12 +1810,8 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         setattr(OptModel, f'eCurrentLimit_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eCurrentLimit, doc='thermal limit, released out of service [p.u.]'))
 
         # --- (7b) the apparent power limit at both ends, optional ------------------------------------------------------------------------------------
-        # The current limit admits an apparent power of Smax * V / Vmin, so above the lowest voltage of the sending bus a branch may carry more than its
-        # rating: 5% at 1.0 p.u. on a 0.95 lower limit. IndACApparentPowerLimit = 1 also holds P^2 + Q^2 <= Smax^2 at each end.
-        # For the SOCP and the piecewise-linear current, the disc is an inscribed polygon of APPARENT_CUTS sides: linear, so it never admits more than
-        # Smax and never costs the model its linearity. The disc itself, added to the SOCP as a quadratic constraint, left Gurobi's barrier with
-        # "numerical trouble" on a 695-bus case with fixed generation, with or without scaling by Smax and presolve aggregation. The exact NLP takes the
-        # disc, written on P/Smax and Q/Smax so that every branch has a unit right-hand side, and the AC recovery step swaps the polygon for it.
+        # The current limit admits Smax * V / Vmin. SOCP and piecewise linear use a polygon inside the circle, because the circle as a quadratic
+        # constraint gave Gurobi numerical trouble on a 695-bus case. The NLP uses the circle, and the AC recovery step swaps it in.
         if mTEPES.pIndACApparentPowerLimit():
             if mTEPES.pIndACModelType() == 2:
                 for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
@@ -2348,7 +2343,7 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
                 Constraint(pKeys, rule=eCurrentRestored, doc='exact branch current, restoration pass'))
         nRows += len(pKeys)
 
-        # The polygon that stood for the apparent power disc in the relaxed solve gives way to the disc itself.
+        # The circle replaces the polygon.
         if mTEPES.pIndACApparentPowerLimit() and getattr(OptModel, f'eApparentLimitFrw0_{p}_{sc}_{st}', None) is not None:
             for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
                 for k in range(APPARENT_CUTS):

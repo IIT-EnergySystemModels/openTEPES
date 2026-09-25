@@ -244,7 +244,7 @@ def _with_apparent_limit(tmp_path, name, value):
 
 
 def test_apparent_power_limit_is_off_by_default_and_validated(tmp_path):
-    """Off unless a case asks for it, and a value other than 0 or 1 is refused."""
+    """Off by default; values other than 0 and 1 are refused."""
     mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
     assert mTEPES.pIndACApparentPowerLimit() == 0
     d, n = _with_apparent_limit(tmp_path, "9n_AC_apl_bad", 2)
@@ -254,11 +254,7 @@ def test_apparent_power_limit_is_off_by_default_and_validated(tmp_path):
 
 @pytest.mark.solve
 def test_apparent_power_limit_holds_every_branch_within_its_rating(tmp_path):
-    """With the current limit only, 9n_AC loads branches above their rating; with the apparent power limit, none.
-
-    The current limit admits TTC * V / Vmin. Without the option the largest loading is about 106%, so the first
-    assertion shows the test can fail.
-    """
+    """Without the option a branch exceeds its rating; with it, none does."""
     from openTEPES.openTEPES import openTEPES_run
     if not SolverFactory("gurobi").available(exception_flag=False):
         pytest.skip("gurobi is not available")
@@ -274,17 +270,13 @@ def test_apparent_power_limit_holds_every_branch_within_its_rating(tmp_path):
         u = pd.read_csv(os.path.join(d, n, f"oT_Result_NetworkElecUtilizationAC_{n}.csv"), header=[0, 1, 2], index_col=[0, 1, 2])
         return float(u.max().max())
 
-    assert largest_loading(0) > 101.0, "without the option some branch should exceed its rating, or the test says nothing"
+    assert largest_loading(0) > 101.0, "without the option a branch should exceed its rating"
     assert largest_loading(1) <= 100.0 + 1e-4
 
 
 @pytest.mark.solve
 def test_apparent_power_limit_survives_the_ac_recovery_step(tmp_path):
-    """The recovery step replaces the polygon with the circle, and the restored flows stay within the rating.
-
-    The first 12 hours of 9n_AC, where a branch reaches 105% of its rating with the current limit only. The AC recovery step
-    does not converge on the full year of 9n_AC, with or without this option.
-    """
+    """The recovery step swaps in the circle and keeps every branch within its rating. 12 hours: ipopt does not converge on the full year."""
     from openTEPES.openTEPES import openTEPES_run
     if not SolverFactory("gurobi").available(exception_flag=False) or not SolverFactory("ipopt").available(exception_flag=False):
         pytest.skip("gurobi and ipopt are needed")
@@ -313,7 +305,7 @@ def test_apparent_power_limit_survives_the_ac_recovery_step(tmp_path):
         u = pd.read_csv(os.path.join(d, n, f"oT_Result_NetworkElecUtilizationAC_{n}.csv"), header=[0, 1, 2], index_col=[0, 1, 2])
         return float(u.max().max())
 
-    assert largest_loading(0) > 101.0, "without the option some branch should exceed its rating, or the test says nothing"
+    assert largest_loading(0) > 101.0, "without the option a branch should exceed its rating"
     assert largest_loading(1) <= 100.0 + 1e-3
 
 
