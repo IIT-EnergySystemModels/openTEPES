@@ -3,13 +3,10 @@
 ## [4.19.0rc] - 2026-09-25 Unreleased in PyPI
 
 - [FIXED] considering the period availability of the generating units in the objective function
-- [ADDED] `IndACApparentPowerLimit` in `oT_Data_Option` limits the apparent power at both ends of each AC branch to its rating,
-  `P^2 + Q^2 <= TTC^2`. The current limit, at the rating over the lowest voltage of the sending bus, admits `TTC * V / Vmin`:
-  5% above the rating at 1.0 p.u. on a 0.95 p.u. lower limit, where the DC model admits the rating itself. The SOCP and the
-  piecewise-linear model use an inscribed 24-sided polygon, at most 0.9% below the rating; the exact NLP and the AC recovery
-  step use the circle. As a quadratic constraint in the SOCP, the circle left Gurobi's barrier with numerical trouble on a
-  695-bus case. Zero, the default, leaves the model unchanged. On `9n_AC`, branch-hours above the rating fall from 618 of
-  52416 (largest 105.8%) to none, at 0.15% higher generation cost.
+- [ADDED] `IndACApparentPowerLimit` in `oT_Data_Option` limits the apparent power at both ends of each AC branch to its rating.
+  The current limit alone admits `TTC * V / Vmin`, 5% above the rating at 1.0 p.u. The SOCP and piecewise-linear models use
+  an inscribed 24-sided polygon, the NLP and the AC recovery step the circle. Off by default. On `9n_AC`, branch-hours above
+  the rating fall from 618 to none, at 0.15% higher generation cost.
 - [FIXED] a stage whose optimum is found without its duals continues without marginal prices instead of stopping. When the
   barrier solution of a quadratically constrained model is too inaccurate for Gurobi to compute the QCP duals, gurobipy raises
   "Unable to retrieve attribute 'Pi'" as Pyomo reads them, and on a 695-busbar AC case the run stopped with the relaxation
