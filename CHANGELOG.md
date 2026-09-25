@@ -2,6 +2,15 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
+- [ADDED] a penalty on the deviation of a bus voltage from its setpoint. `VSet` in `oT_Data_BusVoltage` gives the setpoint of
+  a bus and `VoltageDeviationCost` in `oT_Data_Parameter` the penalty, in EUR per p.u. per hour; zero, the default, leaves the
+  model unchanged. The voltage limits state where a voltage may lie but not where it should lie, so with fixed generation all
+  voltage profiles within the limits had the same cost, and the current penalty drove every voltage to its upper limit. The
+  deviation is taken on the squared voltage and scaled to equal |V - VSet| near the setpoint; the terms are linear, so the
+  relaxation remains a second-order cone program. The penalty enters the objective but not the system cost, and is reported
+  as `AC Voltage Penalty (not in total)`. On a 695-bus case with fixed generation and `EpsilonCurrent` at zero, setpoints at 427
+  regulated buses with a penalty of 1000 EUR/p.u./h reduced the median voltage difference from the reference power flow
+  solution from 2.45 kV to 0.01 kV, with no reactive power slack. `oT_Data_BusVoltage` is documented for the first time.
 - [FIXED] the AC restoration pass raises ipopt's iteration limit from its default of 3000 to 10000. The pass is an interior-point solve of the whole
   network at the exact equality, and a 695-busbar AC case needed 3137 iterations: it gave up 137 short, and the relaxation then standing, the
   reported point carried an AC power flow residual of 809.68 MW in place of 0.0375 and 3834.965 Mvar of reactive power not served in place of
