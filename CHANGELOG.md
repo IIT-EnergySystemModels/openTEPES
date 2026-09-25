@@ -4,6 +4,10 @@
 
 - [FIXED] computation of dual variable in OutputResultsStorage
 - [FIXED] considering the period availability of the generating units in the objective function
+- [ADDED] `IndACApparentPowerLimit` in `oT_Data_Option` limits the apparent power at both ends of each AC branch to its rating.
+  The current limit alone admits `TTC * V / Vmin`, 5% above the rating at 1.0 p.u. The SOCP and piecewise-linear models use
+  an inscribed 24-sided polygon, the NLP and the AC recovery step the circle. Off by default. On `9n_AC`, branch-hours above
+  the rating fall from 618 to none, at 0.15% higher generation cost.
 - [FIXED] a stage whose optimum is found without its duals continues without marginal prices instead of stopping. When the
   barrier solution of a quadratically constrained model is too inaccurate for Gurobi to compute the QCP duals, gurobipy raises
   "Unable to retrieve attribute 'Pi'" as Pyomo reads them, and on a 695-busbar AC case the run stopped with the relaxation

@@ -1492,6 +1492,8 @@ PWL_SEGMENTS = 10
 
 # Tangent lines used to approximate the converter capability disc. Twelve leaves the bound loose by 1/cos(pi/12), i.e. 3.5%.
 CONV_CUTS = 12
+# Sides of the polygon inside the apparent power circle; at most 0.9% below the rating.
+APPARENT_CUTS = 24
 
 def _smax_pu(mTEPES, la):
     """Largest apparent power the model permits on a branch, in per unit.
@@ -1525,6 +1527,16 @@ def _vlo_from(mTEPES, la):
 def _vhi_from(mTEPES, la):
     """Highest voltage the series impedance sees at the sending end, tap included."""
     return mTEPES.pVMaxBus[la[0]] * mTEPES.pLineTapFactor[la]
+
+
+def _eApparentDisc(mTEPES, pP, pQ, p, sc, live):
+    """(P/Smax)^2 + (Q/Smax)^2 <= 1 at one branch end."""
+    def rule(OptModel, n, ni, nf, cc):
+        if not live((ni,nf,cc)):
+            return Constraint.Skip
+        pSmax = mTEPES.pLineSmax[ni,nf,cc]
+        return (pP[p,sc,n,ni,nf,cc] / pSmax) ** 2 + (pQ[p,sc,n,ni,nf,cc] / pSmax) ** 2 <= 1.0
+    return rule
 
 
 def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -1796,6 +1808,32 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
             pIMax = (mTEPES.pLineSmax[ni,nf,cc] / pSBase / _vlo_from(mTEPES, (ni,nf,cc))) ** 2
             return OptModel.vCurr[p,sc,n,ni,nf,cc] <= pIMax * OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         setattr(OptModel, f'eCurrentLimit_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eCurrentLimit, doc='thermal limit, released out of service [p.u.]'))
+
+        # --- (7b) the apparent power limit at both ends, optional ------------------------------------------------------------------------------------
+        # The current limit admits Smax * V / Vmin. SOCP and piecewise linear use a polygon inside the circle, because the circle as a quadratic
+        # constraint gave Gurobi numerical trouble on a 695-bus case. The NLP uses the circle, and the AC recovery step swaps it in.
+        if mTEPES.pIndACApparentPowerLimit():
+            if mTEPES.pIndACModelType() == 2:
+                for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                    setattr(OptModel, f'eApparentLimit{pTag}_{p}_{sc}_{st}',
+                            Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentDisc(mTEPES, pP, pQ, p, sc, _live),
+                                       doc='apparent power within the branch rating [p.u. of the rating]'))
+            else:
+                pInscribed = math.cos(math.pi / APPARENT_CUTS)
+
+                def _eApparentCut(pP, pQ, k):
+                    def rule(OptModel, n, ni, nf, cc):
+                        if not _live((ni,nf,cc)):
+                            return Constraint.Skip
+                        pAng = 2.0 * math.pi * k / APPARENT_CUTS
+                        return (math.cos(pAng) * pP[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ[p,sc,n,ni,nf,cc]
+                                <= mTEPES.pLineSmax[ni,nf,cc] * pInscribed)
+                    return rule
+
+                for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                    for k in range(APPARENT_CUTS):
+                        setattr(OptModel, f'eApparentLimit{pTag}{k}_{p}_{sc}_{st}',
+                                Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentCut(pP, pQ, k), doc='apparent power within the branch rating [GVA]'))
 
         # --- (9) voltage drop ------------------------------------------------------------------------------------------------------------------------
         # The big-M is derived from the three terms of the expression rather than guessed. The flow term dominates and was omitted once, leaving an
@@ -2304,6 +2342,15 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
         setattr(OptModel, f'eCurrentRestored_{p}_{sc}_{st}',
                 Constraint(pKeys, rule=eCurrentRestored, doc='exact branch current, restoration pass'))
         nRows += len(pKeys)
+
+        # The circle replaces the polygon.
+        if mTEPES.pIndACApparentPowerLimit() and getattr(OptModel, f'eApparentLimitFrw0_{p}_{sc}_{st}', None) is not None:
+            for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                for k in range(APPARENT_CUTS):
+                    getattr(OptModel, f'eApparentLimit{pTag}{k}_{p}_{sc}_{st}').deactivate()
+                setattr(OptModel, f'eApparentRestored{pTag}_{p}_{sc}_{st}',
+                        Constraint(pKeys, rule=_eApparentDisc(mTEPES, pP, pQ, p, sc, lambda la: True),
+                                   doc='apparent power within the branch rating, restoration pass'))
 
     if not nRows:
         print('### WARNING: AC restoration found no relaxed current constraints to replace; nothing was done.')
