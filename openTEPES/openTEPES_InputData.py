@@ -268,34 +268,24 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     for col in dfs['dfOption'].columns:
         par[f'p{col}'] = int(dfs['dfOption'][col].iloc[0])
 
-    # Option flags a case may leave out of oT_Data_Option entirely. Absent means the historical behaviour: DC network, no AC model.
-    #   pIndACPowerFlow  0 = DC (default)
-    #                    1 = branch flow: |V|^2, |I|^2 and P, Q per branch, with the angle carried as a node potential
-    #                    2 = bus injection in W space: W_ii = |V_i|^2 and W_ij = V_i conj(V_j) per branch, relaxed by a second-order cone
-    #                    3 = bus injection in rectangular coordinates: V = e + jf, the exact non-convex equations, for a non-linear solver
-    #                    Bose & Low prove 1 and 2 give the SAME bound. That is a statement about the optimal value, not about conditioning, solve
-    #                    time or behaviour inside branch and bound, which is why both are offered and measured rather than one assumed better.
-    #   pIndACCycle      0 = off (default), 1 = add the loop condition sum(arg W_ij) = 0 around each independent cycle.
-    #                    Meaningful only for 2: in W space the angle lives in arg(W_ij) and nothing ties it around a loop. For 1 the angle is an
-    #                    explicit node potential so the sum is identically zero and the constraint says nothing; for 3 the voltages are explicit.
-    #   pIndACModelType  0 = SOCP relaxation (default, the only option that returns a valid bound)
-    #                    1 = piecewise-linear branch flow, a MILP and therefore the only variant that scales to a full year
-    #                    2 = exact NLP, for the Phase 7 validation pass with the binaries fixed
-    # See doc/design/AC_OPF_Formulation_Choices.md for why these three and not the rest.
-    #   pIndACRestore    0 = report the relaxed solution as it stands (default)
-    #                    1 = after solving, hold the plan and re-solve the network at the exact current equality on a non-linear
-    #                        solver, so the reported operating point satisfies the AC equations. See ACRestorationPass.
-    #   pIndACConverter  0 = HVDC links carry active power only, with no converter (default, and what the DC model has always done)
-    #                    1 = line-commutated converters: each station DRAWS reactive power, tan(acos(pf)) times the active power it
-    #                        transfers, at both ends. This is the realistic default for classic HVDC and it makes the AC system need
-    #                        more compensation, not less.
-    #                    2 = voltage-source converters: each station is a controllable reactive source or sink within its rating, so
-    #                        it behaves like a STATCOM and RELIEVES the AC system instead of burdening it.
-    #   pIndACApparentPowerLimit  0 = the thermal limit is on the branch current only, at the rating over the lowest voltage of the sending
-    #                                 bus (default). It admits an apparent power of the rating times V/Vmin.
-    #                             1 = also limit the apparent power at both ends of each branch to the rating. Only used when IndACPowerFlow is 1.
-    #   pIndBinShuntSwitch  1 = a switchable shunt is discrete, on or off (default, and what a mechanically switched bank actually does)
-    #                       0 = the same state relaxed to [0,1], which keeps an AC run continuous at the cost of letting a bank sit half in
+    # Option flags a case may omit from oT_Data_Option; absent means a DC network and no AC model.
+    #   pIndACPowerFlow           0 DC (default); 1 branch flow: |V|^2, |I|^2, P and Q per branch, angle as a node potential;
+    #                             2 bus injection in W space, W_ii = |V_i|^2 and W_ij = V_i conj(V_j), SOC relaxation;
+    #                             3 bus injection in rectangular coordinates, V = e + jf, exact and non-convex, for a non-linear solver.
+    #                             1 and 2 give the same bound (Bose & Low) but differ in conditioning, solve time and branch and bound.
+    #   pIndACCycle               0 off (default); 1 loop condition sum(arg W_ij) = 0 around each independent cycle. Only for 2; under 1
+    #                             and 3 the angles or voltages are explicit, so the sum is already zero.
+    #   pIndACModelType           0 SOCP relaxation (default, the only valid bound); 1 piecewise linear, a MILP that scales to a full
+    #                             year; 2 exact NLP, for validation with the binaries fixed. See doc/design/AC_OPF_Formulation_Choices.md.
+    #   pIndACRestore             0 report the relaxed solution (default); 1 hold the plan and re-solve the network at the exact current
+    #                             equality with a non-linear solver, so the reported point satisfies the AC equations (ACRestorationPass).
+    #   pIndACConverter           0 HVDC links carry active power only, as in the DC model (default); 1 line-commutated: each station
+    #                             draws tan(acos(pf)) times the active power it transfers; 2 voltage-source: each station supplies or
+    #                             absorbs reactive power within its rating, like a STATCOM.
+    #   pIndACApparentPowerLimit  0 current limit only, at the rating over the lowest voltage of the sending bus, which admits the rating
+    #                             times V/Vmin (default); 1 also P^2 + Q^2 <= rating^2 at both ends. Only used when IndACPowerFlow is 1.
+    #   pIndBinShuntSwitch        1 a switchable shunt is on or off (default); 0 its state is relaxed to [0,1], which keeps an AC run
+    #                             continuous at the cost of a bank partly in service.
     for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle', 'pIndACApparentPowerLimit']:
         par.setdefault(key, 0)
     # Command-line overrides land here: after both tables have been read, so they win, and before the validation below,
