@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
+## [4.19.0rc] - 2026-09-25 Unreleased in PyPI
 
+- [FIXED] considering the period availability of the generating units in the objective function
 - [FIXED] the AC restoration pass raises ipopt's iteration limit from its default of 3000 to 10000. The pass is an interior-point solve of the whole
   network at the exact equality, and a 695-busbar AC case needed 3137 iterations: it gave up 137 short, and the relaxation then standing, the
   reported point carried an AC power flow residual of 809.68 MW in place of 0.0375 and 3834.965 Mvar of reactive power not served in place of

@@ -12,8 +12,8 @@ from   pyomo.environ import Set, Param, NonNegativeReals, Reals
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
 try:
-    from .openTEPES_InputSource             import df_to_set_values, InputSource
-    from .openTEPES_InputCSVSource          import CSVSource
+    from          .openTEPES_InputSource    import df_to_set_values, InputSource
+    from          .openTEPES_InputCSVSource import CSVSource
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
