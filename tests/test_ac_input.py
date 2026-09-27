@@ -872,6 +872,34 @@ def test_restoration_reports_the_prices_of_the_restored_point(tmp_path):
     assert srmc.notna().all().all() and (srmc.abs() < 1e4).all().all()
 
 
+def test_restoration_warm_start_is_off_by_default_and_validated(tmp_path):
+    """IndACRestoreWarmStart is 0 unless a case sets it, and a value other than 0 or 1 is refused."""
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+    assert mTEPES.pIndACRestoreWarmStart() == 0
+    dir_name, case = _clone(tmp_path, "9n_AC", "9n_warm_bad")
+    opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
+    df = pd.read_csv(opt)
+    df["IndACRestoreWarmStart"] = 2
+    df.to_csv(opt, index=False)
+    with pytest.raises(NotImplementedError, match="IndACRestoreWarmStart"):
+        _build(dir_name, case)
+
+
+@pytest.mark.solve
+def test_restoration_warm_start_reaches_the_same_cost(tmp_path):
+    """With IndACRestoreWarmStart = 1, the AC recovery step reaches the cost of the default start."""
+    costs = []
+    for warm in (0, 1):
+        dir_name, case = _tiny_ac_case(tmp_path / f"w{warm}", "9n_warm")
+        opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
+        df = pd.read_csv(opt)
+        df["IndACRestoreWarmStart"] = warm
+        df.to_csv(opt, index=False)
+        mTEPES = _run_or_skip(str(dir_name), case, "ipopt", 0, 0)
+        costs.append(mTEPES.vTotalSCost())
+    assert costs[1] == pytest.approx(costs[0], rel=1e-4)
+
+
 def test_the_b_matrix_leaves_out_the_dc_links():
     """The susceptance matrix is a Kirchhoff object. A point-to-point DC link carries what its converters are told to
     carry, so putting it in the matrix would make the model believe power splits across it by impedance."""

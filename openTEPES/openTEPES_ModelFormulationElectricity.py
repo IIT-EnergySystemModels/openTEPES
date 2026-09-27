@@ -2374,6 +2374,12 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     # 0.0375. A limit of 10000 leaves room for a case three times harder while still bounding a case that never converges: 3137 iterations took 66 s
     # on that one, so the ceiling costs about three and a half minutes.
     Solver.options['max_iter'] = 10000
+    # IndACRestoreWarmStart = 1: start close to the relaxed solution. 14 times faster on one hour of a 695-bus case, but one day of the same case
+    # did not converge within max_iter, so it is not the default. An ipopt.opt file can override these settings.
+    if getattr(mTEPES, 'pIndACRestoreWarmStart', None) is not None and mTEPES.pIndACRestoreWarmStart():
+        Solver.options['bound_push'] = 1e-8
+        Solver.options['bound_frac'] = 1e-8
+        Solver.options['mu_init']    = 1e-6
     # Pyomo loads a solver's solution into the model as it returns, so an iterate from a solve that is about to be rejected would replace the relaxed
     # values before the termination condition below is read, and every result written afterwards would describe a point that did not converge. Holding
     # the solution back until the condition has been read is what makes the warning below true.

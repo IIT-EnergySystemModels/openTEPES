@@ -283,9 +283,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     #                             draws tan(acos(pf)) times the active power it transfers; 2 voltage-source: each station supplies or
     #                             absorbs reactive power within its rating, like a STATCOM.
     #   pIndACApparentPowerLimit  0 current limit only (default); 1 also P^2 + Q^2 <= rating^2 at both ends. Branch flow only.
+    #   pIndACRestoreWarmStart    0 ipopt defaults (default); 1 start the AC recovery step close to the relaxed solution.
     #   pIndBinShuntSwitch        1 a switchable shunt is on or off (default); 0 its state is relaxed to [0,1], which keeps an AC run
     #                             continuous at the cost of a bank partly in service.
-    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle', 'pIndACApparentPowerLimit']:
+    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle', 'pIndACApparentPowerLimit',
+                'pIndACRestoreWarmStart']:
         par.setdefault(key, 0)
     # Command-line overrides land here: after both tables have been read, so they win, and before the validation below,
     # so a bad value is refused with the same message a bad cell in the case would get.
@@ -373,6 +375,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         raise NotImplementedError(f"IndACRestore = {par['pIndACRestore']} is not implemented; use 0 (off) or 1 (exact restoration pass)")
     if par['pIndACConverter'] not in (0, 1, 2):
         raise NotImplementedError(f"IndACConverter = {par['pIndACConverter']} is not implemented; use 0 (none), 1 (LCC) or 2 (VSC)")
+    if par['pIndACRestoreWarmStart'] not in (0, 1):
+        raise NotImplementedError(f"IndACRestoreWarmStart = {par['pIndACRestoreWarmStart']} is not implemented; use 0 (ipopt defaults) or 1 (warm start)")
     if par['pIndACApparentPowerLimit'] not in (0, 1):
         raise NotImplementedError(f"IndACApparentPowerLimit = {par['pIndACApparentPowerLimit']} is not implemented; "
                                   f"use 0 (current limit only) or 1 (also apparent power at both ends)")

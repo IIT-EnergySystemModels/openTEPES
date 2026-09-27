@@ -188,6 +188,7 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndACCycle          | Indicator of the loop condition around each independent cycle (only used when IndACPowerFlow is 2)    | {0 off, 1 on}                                       |
 | IndACConverter      | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
 | IndACApparentPowerLimit | Indicator of the apparent power limit at both ends of an AC branch (only used when IndACPowerFlow is 1). See "The thermal limit of an AC branch" below | {0 current limit only, 1 current and apparent power} |
+| IndACRestoreWarmStart | Indicator of the starting point of the AC recovery step (only used when IndACRestore is 1) | {0 ipopt defaults, 1 close to the relaxed solution} |
 | IndBinShuntSwitch   | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
 | IndPTDF             | Indicator of the flow-based market coupling method and where its factors come from                    | {0 off, 1 read from the case, 2 computed from the reactances} |
 | IndCycleFlow            | Indicator of the cycle flow formulation of Kirchhoff's second law (DC only)                       | {0 per branch, 1 per cycle}                         |
