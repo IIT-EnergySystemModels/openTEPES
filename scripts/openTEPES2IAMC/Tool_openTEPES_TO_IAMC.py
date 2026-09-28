@@ -8,7 +8,7 @@ StartTime = time.time()
 ModelName = 'openTEPES 4.18.17'
 # DirName   = Path('C:/Users/Erik/Documents/GitHub/openTEPES_PRO/openTEPES')
 DirName   = Path('C:/Users/aramos/OneDrive - Universidad Pontificia Comillas/Andres/openTEPES')
-CaseName  = 'KE2030'                              # To select the case
+CaseName  = 'UG'                              # To select the case
 Folder = '_IAMC'
 _path = os.path.join(DirName, CaseName)
 
@@ -87,6 +87,47 @@ def Converter_Type1(X0,X1,X2,X4,X5,X6):
     a.index.names = ['Period', 'Scenario', 'LoadLevel', 'Node']
     # To save csv for changing indexes
     a = a.reset_index()
+    if X6 == 0:
+        a = a.rename(columns={0: 'value'})
+        a['Period'] = a['Period'].astype(str)
+        a['Scenario'] = a['Scenario'].astype(str)
+        period_names = pd.Index(pd.unique(a['Period']))
+
+        a = a.assign(model    = str(X4))
+        a = a.assign(scenario = X5 + '|' + a['Scenario'])
+        a = a.assign(region   = a['Node'].map(dfNodeToZone['Zone']).fillna(a['Node']))
+        a = a.assign(variable = VariableType)
+        a = a.assign(unit     = UnitType)
+        a['value'] = pd.to_numeric(a['value']) * 1e-3
+
+        a['subannual'] = a['LoadLevel'].astype(str).str[:11]
+        a['subannual'] = a['Period'] + '-' + a['subannual'] + '+01:00'
+        a['subannual'] = pd.to_datetime(a['subannual'])
+        a['subannual'] = a['subannual'].dt.strftime("%m-%d %H:%M+01:00")
+
+        requires_zone_sum = (a['Node'] != a['region']).any()
+        if requires_zone_sum:
+            a = a.groupby(
+                by=['model', 'scenario', 'region', 'variable', 'unit', 'subannual', 'Period'],
+                as_index=False,
+                sort=False
+            )['value'].sum()
+        else:
+            a = a[['model', 'scenario', 'region', 'variable', 'unit', 'subannual', 'Period', 'value']]
+
+        a = a.pivot_table(
+            index=['model', 'scenario', 'region', 'variable', 'unit', 'subannual'],
+            columns='Period',
+            values='value',
+            aggfunc='sum',
+            sort=False
+        ).reset_index()
+
+        a = a.rename_axis(None, axis=1)
+        period_columns = [p for p in period_names if p in a.columns]
+        a = a[['model', 'scenario', 'region', 'variable', 'unit', 'subannual'] + period_columns]
+        return a
+
     # Getting scenario and period names
     ScenarioName = a['Scenario'][0]
     # ScenarioName = "TF"
@@ -189,12 +230,11 @@ def Converter_Type3(X1):
     return a
 #%% Power Demand - Dataframe
 
-InputDemand                                                         = Converter_Type1('PowerDemand', var_PowerSystem, dfDemand, ModelName, CaseName,0)
-
 PowerDemandDataTime = time.time() - StartTime
 StartTime           = time.time()
 print('PowerDemand       input data                ... ', round(PowerDemandDataTime), 's')
-InputDemand.to_csv(f'{Folder}/oT_IAMC_PowerDemand_'f'{ModelName}_{CaseName}.csv', index=False, sep=',')
+InputDemand                                                         = Converter_Type1('PowerDemand', var_PowerSystem, dfDemand, ModelName, CaseName,0)
+# InputDemand.to_csv(f'{Folder}/oT_IAMC_PowerDemand_'f'{ModelName}_{CaseName}.csv', index=False, sep=',')
 print('Transforming PowerDemand data     status: OK')
 
 PowerSystemDataTime = time.time() - StartTime
@@ -333,7 +373,7 @@ InputGen = pd.concat(gen_frames)
 #%% Saving final CSV
 InputGen = InputGen.replace({'variable': {'_': '|'}}, regex=True)
 InputGen = InputGen.groupby(by=["model", "scenario", "region", "variable", "unit"]).sum().reset_index().sort_values(by = ["variable", "region"])
-InputGen.to_csv(f'{Folder}/oT_IAMC_PowerGeneration_'f'{ModelName}_{CaseName}.csv', index=False, sep=',')
+# InputGen.to_csv(f'{Folder}/oT_IAMC_PowerGeneration_'f'{ModelName}_{CaseName}.csv', index=False, sep=',')
 # result.to_excel(pd.ExcelWriter('oT_IAMC_'f'{ModelName}_'f'{CaseName}.xlsx'), index=False)
 PowerTransmissionDataTime = time.time() - StartTime
 StartTime                 = time.time()
@@ -353,15 +393,19 @@ trans_frames = [
 InputTran = pd.concat(trans_frames)
 InputTran = InputTran.replace({'variable': {'_': '|'}}, regex=True)
 InputTran = InputTran.groupby(by=["model", "scenario", "region", "variable", "unit"]).sum().reset_index().sort_values(by = ["variable", "region"])
-InputTran.to_csv(f'{Folder}/oT_IAMC_PowerTransmission_'f'{ModelName}_{CaseName}.csv', index=False, sep=',')
+# InputTran.to_csv(f'{Folder}/oT_IAMC_PowerTransmission_'f'{ModelName}_{CaseName}.csv', index=False, sep=',')
 # result.to_excel(pd.ExcelWriter('oT_IAMC_'f'{ModelName}_{CaseName}'.xlsx'), index=False)
 PowerTransmissionDataTime = time.time() - StartTime
 StartTime                 = time.time()
 print('PowerTransmission input data                ... ', round(PowerTransmissionDataTime), 's')
 
 #%% Saving merged XLSX (Demand + Generation + Transmission)
-InputAll = pd.concat([InputDemand, InputGen, InputTran], ignore_index=True, sort=False)
-output_path = os.path.join(DirName, Folder, 'oT_IAMC_'f'{ModelName}_{CaseName}.xlsx')
+InputAll = pd.concat([InputGen, InputTran], ignore_index=True, sort=False)
+output_path = os.path.join(DirName, Folder, 'oT_IAMC_GenerationTransmission_'f'{ModelName}_{CaseName}.xlsx')
+with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+    InputAll.to_excel(writer, sheet_name='All', index=False)
+InputAll = pd.concat([InputDemand], ignore_index=True, sort=False)
+output_path = os.path.join(DirName, Folder, 'oT_IAMC_Demand_'f'{ModelName}_{CaseName}.xlsx')
 with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
     InputAll.to_excel(writer, sheet_name='All', index=False)
 
