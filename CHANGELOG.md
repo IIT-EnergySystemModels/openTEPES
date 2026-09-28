@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.19.0rc] - 2026-09-25 Unreleased in PyPI
+## [4.19.0rc] - 2026-09-28 Unreleased in PyPI
 
+- [FIXED] protect against values 0 of TTCFwd and TTCBck fo H2 and heat pipelines
 - [FIXED] computation of dual variable in OutputResultsStorage
 - [FIXED] considering the period availability of the generating units in the objective function
 - [FIXED] a stage whose optimum is found without its duals continues without marginal prices instead of stopping. When the

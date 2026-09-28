@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 28, 2026
 
 openTEPES.openTEPES_ModelFormulationHeat — heat network operation: power-to-heat conversion, heat balance and heat-not-served cost.
 """
@@ -53,7 +53,7 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
     # a candidate pipe carries flow only once it is bought, as on the hydrogen side. vHeatPipeInvest appeared nowhere in this module at all, so the capacity of a
     # candidate heat pipe was free. Existing pipes are not in hc and keep the bounds set in openTEPES_SettingUpVariables
     def eHeatPipeCapacity1(OptModel,n,ni,nf,cc):
-        if (p,ni,nf,cc) not in mTEPES.phc:
+        if (p,ni,nf,cc) not in mTEPES.phc or mTEPES.pHeatPipeNTCBck[ni,nf,cc] == 0:
             return Constraint.Skip
         return OptModel.vFlowHeat[p,sc,n,ni,nf,cc] / mTEPES.pHeatPipeNTCBck[ni,nf,cc] >= - OptModel.vHeatPipeInvest[p,ni,nf,cc]
     setattr(OptModel, f'eHeatPipeCapacity1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.hc, rule=eHeatPipeCapacity1, doc='maximum heat flow by candidate pipe capacity [p.u.]'))
@@ -62,7 +62,7 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
         print('eHeatPipeCapacity1        ... ', len(getattr(OptModel, f'eHeatPipeCapacity1_{p}_{sc}_{st}')), ' rows')
 
     def eHeatPipeCapacity2(OptModel,n,ni,nf,cc):
-        if (p,ni,nf,cc) not in mTEPES.phc:
+        if (p,ni,nf,cc) not in mTEPES.phc or mTEPES.pHeatPipeNTCFrw[ni,nf,cc] == 0:
             return Constraint.Skip
         return OptModel.vFlowHeat[p,sc,n,ni,nf,cc] / mTEPES.pHeatPipeNTCFrw[ni,nf,cc] <=   OptModel.vHeatPipeInvest[p,ni,nf,cc]
     setattr(OptModel, f'eHeatPipeCapacity2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.hc, rule=eHeatPipeCapacity2, doc='maximum heat flow by candidate pipe capacity [p.u.]'))

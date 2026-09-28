@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 28, 2026
 
 openTEPES.openTEPES_ModelFormulationHydrogen — hydrogen network operation: H2 balance and hydrogen-not-served cost.
 """
@@ -63,7 +63,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     # hydrogen network has no equivalent of, so the bound goes straight onto the investment variable. Existing pipes are not in pc and keep their own bounds.
     # Written in p.u. of the rating, as eNetCapacity1 and eNetCapacity2 are
     def eH2PipeCapacity1(OptModel,n,ni,nf,cc):
-        if (p,ni,nf,cc) not in mTEPES.ppc:
+        if (p,ni,nf,cc) not in mTEPES.ppc or mTEPES.pH2PipeNTCBck[ni,nf,cc] == 0:
             return Constraint.Skip
         return OptModel.vFlowH2[p,sc,n,ni,nf,cc] / mTEPES.pH2PipeNTCBck[ni,nf,cc] >= - OptModel.vH2PipeInvest[p,ni,nf,cc]
     setattr(OptModel, f'eH2PipeCapacity1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.pc, rule=eH2PipeCapacity1, doc='maximum hydrogen flow by candidate pipe capacity [p.u.]'))
@@ -72,7 +72,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         print('eH2PipeCapacity1          ... ', len(getattr(OptModel, f'eH2PipeCapacity1_{p}_{sc}_{st}')), ' rows')
 
     def eH2PipeCapacity2(OptModel,n,ni,nf,cc):
-        if (p,ni,nf,cc) not in mTEPES.ppc:
+        if (p,ni,nf,cc) not in mTEPES.ppc or mTEPES.pH2PipeNTCFrw[ni,nf,cc] == 0:
             return Constraint.Skip
         return OptModel.vFlowH2[p,sc,n,ni,nf,cc] / mTEPES.pH2PipeNTCFrw[ni,nf,cc] <=   OptModel.vH2PipeInvest[p,ni,nf,cc]
     setattr(OptModel, f'eH2PipeCapacity2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.pc, rule=eH2PipeCapacity2, doc='maximum hydrogen flow by candidate pipe capacity [p.u.]'))
