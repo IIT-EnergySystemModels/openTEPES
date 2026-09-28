@@ -1,9 +1,9 @@
 ,Variable,Unit,Description
-vNetworkInvest,Investment|Electricity|Transmission|Line,"[0,1]",Network investment decision exists in a year
+vNetworkInvest,Commissioned Capacity|Network|Electricity,"[0,1]",Network investment decision exists in a year
 vLineLosses,Line Losses|Electricity|Transmission|Line,MW,Half line losses
 vFlow,Active Power Flow|Electricity|Transmission|Line,MW,Power Flow through lines
 vTheta,Voltage Angle|Electricity,rad,Voltage angle per node
-vPNS,,MW,Power not served
+vPNS,Network|Electricity|Demand not served,MW,Power not served
 vSRMC,Price|Secondary Energy|Electricity,EUR/MWh,Locational Short-Mun Marginal Cost
 TTC,Network|Electricity|Capacity,MW,"Maximum flow of a transmission line between 2 regions (i.e. aggregate-regions, countries, nuts1, nuts2, nuts3, or nodes). Total transfer capacity (TTC). (maximum permissible thermal load)"
 FixedInvestmentCost,Network|Electricity|Investment,EUR,Fixed cost of the line. Overnight investment (capital) cost
