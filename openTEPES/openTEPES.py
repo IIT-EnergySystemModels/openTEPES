@@ -183,6 +183,8 @@ def ReportConfiguration(mTEPES):
         pType = {0: 'SOCP relaxation', 1: 'piecewise linear', 2: 'exact non-linear'}
         print(f'  AC current definition                ... {pType.get(mTEPES.pIndACModelType(), mTEPES.pIndACModelType())}')
         print(f'  AC restoration pass                  ... {"on" if mTEPES.pIndACRestore() else "off"}')
+        if mTEPES.pIndACPowerFlow() == 1:
+            print(f'  branch thermal limit                 ... {"current and apparent power" if mTEPES.pIndACApparentPowerLimit() else "current"}')
         if mTEPES.pIndACPowerFlow() == 2:
             print(f'  loop condition (IndACCycle)          ... {"on" if mTEPES.pIndACCycle() else "off"}')
         pConv = {0: 'none', 1: 'line-commutated', 2: 'voltage-source'}

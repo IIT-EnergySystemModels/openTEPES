@@ -268,32 +268,24 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     for col in dfs['dfOption'].columns:
         par[f'p{col}'] = int(dfs['dfOption'][col].iloc[0])
 
-    # Option flags a case may leave out of oT_Data_Option entirely. Absent means the historical behaviour: DC network, no AC model.
-    #   pIndACPowerFlow  0 = DC (default)
-    #                    1 = branch flow: |V|^2, |I|^2 and P, Q per branch, with the angle carried as a node potential
-    #                    2 = bus injection in W space: W_ii = |V_i|^2 and W_ij = V_i conj(V_j) per branch, relaxed by a second-order cone
-    #                    3 = bus injection in rectangular coordinates: V = e + jf, the exact non-convex equations, for a non-linear solver
-    #                    Bose & Low prove 1 and 2 give the SAME bound. That is a statement about the optimal value, not about conditioning, solve
-    #                    time or behaviour inside branch and bound, which is why both are offered and measured rather than one assumed better.
-    #   pIndACCycle      0 = off (default), 1 = add the loop condition sum(arg W_ij) = 0 around each independent cycle.
-    #                    Meaningful only for 2: in W space the angle lives in arg(W_ij) and nothing ties it around a loop. For 1 the angle is an
-    #                    explicit node potential so the sum is identically zero and the constraint says nothing; for 3 the voltages are explicit.
-    #   pIndACModelType  0 = SOCP relaxation (default, the only option that returns a valid bound)
-    #                    1 = piecewise-linear branch flow, a MILP and therefore the only variant that scales to a full year
-    #                    2 = exact NLP, for the Phase 7 validation pass with the binaries fixed
-    # See doc/design/AC_OPF_Formulation_Choices.md for why these three and not the rest.
-    #   pIndACRestore    0 = report the relaxed solution as it stands (default)
-    #                    1 = after solving, hold the plan and re-solve the network at the exact current equality on a non-linear
-    #                        solver, so the reported operating point satisfies the AC equations. See ACRestorationPass.
-    #   pIndACConverter  0 = HVDC links carry active power only, with no converter (default, and what the DC model has always done)
-    #                    1 = line-commutated converters: each station DRAWS reactive power, tan(acos(pf)) times the active power it
-    #                        transfers, at both ends. This is the realistic default for classic HVDC and it makes the AC system need
-    #                        more compensation, not less.
-    #                    2 = voltage-source converters: each station is a controllable reactive source or sink within its rating, so
-    #                        it behaves like a STATCOM and RELIEVES the AC system instead of burdening it.
-    #   pIndBinShuntSwitch  1 = a switchable shunt is discrete, on or off (default, and what a mechanically switched bank actually does)
-    #                       0 = the same state relaxed to [0,1], which keeps an AC run continuous at the cost of letting a bank sit half in
-    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle']:
+    # Option flags a case may omit from oT_Data_Option; absent means a DC network and no AC model.
+    #   pIndACPowerFlow           0 DC (default); 1 branch flow: |V|^2, |I|^2, P and Q per branch, angle as a node potential;
+    #                             2 bus injection in W space, W_ii = |V_i|^2 and W_ij = V_i conj(V_j), SOC relaxation;
+    #                             3 bus injection in rectangular coordinates, V = e + jf, exact and non-convex, for a non-linear solver.
+    #                             1 and 2 give the same bound (Bose & Low) but differ in conditioning, solve time and branch and bound.
+    #   pIndACCycle               0 off (default); 1 loop condition sum(arg W_ij) = 0 around each independent cycle. Only for 2; under 1
+    #                             and 3 the angles or voltages are explicit, so the sum is already zero.
+    #   pIndACModelType           0 SOCP relaxation (default, the only valid bound); 1 piecewise linear, a MILP that scales to a full
+    #                             year; 2 exact NLP, for validation with the binaries fixed. See doc/design/AC_OPF_Formulation_Choices.md.
+    #   pIndACRestore             0 report the relaxed solution (default); 1 hold the plan and re-solve the network at the exact current
+    #                             equality with a non-linear solver, so the reported point satisfies the AC equations (ACRestorationPass).
+    #   pIndACConverter           0 HVDC links carry active power only, as in the DC model (default); 1 line-commutated: each station
+    #                             draws tan(acos(pf)) times the active power it transfers; 2 voltage-source: each station supplies or
+    #                             absorbs reactive power within its rating, like a STATCOM.
+    #   pIndACApparentPowerLimit  0 current limit only (default); 1 also P^2 + Q^2 <= rating^2 at both ends. Branch flow only.
+    #   pIndBinShuntSwitch        1 a switchable shunt is on or off (default); 0 its state is relaxed to [0,1], which keeps an AC run
+    #                             continuous at the cost of a bank partly in service.
+    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle', 'pIndACApparentPowerLimit']:
         par.setdefault(key, 0)
     # Command-line overrides land here: after both tables have been read, so they win, and before the validation below,
     # so a bad value is refused with the same message a bad cell in the case would get.
@@ -381,6 +373,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         raise NotImplementedError(f"IndACRestore = {par['pIndACRestore']} is not implemented; use 0 (off) or 1 (exact restoration pass)")
     if par['pIndACConverter'] not in (0, 1, 2):
         raise NotImplementedError(f"IndACConverter = {par['pIndACConverter']} is not implemented; use 0 (none), 1 (LCC) or 2 (VSC)")
+    if par['pIndACApparentPowerLimit'] not in (0, 1):
+        raise NotImplementedError(f"IndACApparentPowerLimit = {par['pIndACApparentPowerLimit']} is not implemented; "
+                                  f"use 0 (current limit only) or 1 (also apparent power at both ends)")
 
     # load parameters from dfParameter — single-row mixed scalars.
     for col in dfs['dfParameter'].columns:

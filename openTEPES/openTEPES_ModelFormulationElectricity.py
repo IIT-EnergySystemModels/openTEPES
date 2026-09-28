@@ -12,7 +12,7 @@ import math
 import networkx as nx
 import pandas   as pd
 from collections   import defaultdict
-from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, tan, NonNegativeReals, Objective, SolverFactory, sin, sqrt
+from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, tan, NonNegativeReals, Objective, SolverFactory, Suffix, sin, sqrt
 
 
 def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -1492,6 +1492,8 @@ PWL_SEGMENTS = 10
 
 # Tangent lines used to approximate the converter capability disc. Twelve leaves the bound loose by 1/cos(pi/12), i.e. 3.5%.
 CONV_CUTS = 12
+# Sides of the polygon inside the apparent power circle; at most 0.9% below the rating.
+APPARENT_CUTS = 24
 
 def _smax_pu(mTEPES, la):
     """Largest apparent power the model permits on a branch, in per unit.
@@ -1525,6 +1527,16 @@ def _vlo_from(mTEPES, la):
 def _vhi_from(mTEPES, la):
     """Highest voltage the series impedance sees at the sending end, tap included."""
     return mTEPES.pVMaxBus[la[0]] * mTEPES.pLineTapFactor[la]
+
+
+def _eApparentDisc(mTEPES, pP, pQ, p, sc, live):
+    """(P/Smax)^2 + (Q/Smax)^2 <= 1 at one branch end."""
+    def rule(OptModel, n, ni, nf, cc):
+        if not live((ni,nf,cc)):
+            return Constraint.Skip
+        pSmax = mTEPES.pLineSmax[ni,nf,cc]
+        return (pP[p,sc,n,ni,nf,cc] / pSmax) ** 2 + (pQ[p,sc,n,ni,nf,cc] / pSmax) ** 2 <= 1.0
+    return rule
 
 
 def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -1796,6 +1808,32 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
             pIMax = (mTEPES.pLineSmax[ni,nf,cc] / pSBase / _vlo_from(mTEPES, (ni,nf,cc))) ** 2
             return OptModel.vCurr[p,sc,n,ni,nf,cc] <= pIMax * OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         setattr(OptModel, f'eCurrentLimit_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eCurrentLimit, doc='thermal limit, released out of service [p.u.]'))
+
+        # --- (7b) the apparent power limit at both ends, optional ------------------------------------------------------------------------------------
+        # The current limit admits Smax * V / Vmin. SOCP and piecewise linear use a polygon inside the circle, because the circle as a quadratic
+        # constraint gave Gurobi numerical trouble on a 695-bus case. The NLP uses the circle, and the AC recovery step swaps it in.
+        if mTEPES.pIndACApparentPowerLimit():
+            if mTEPES.pIndACModelType() == 2:
+                for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                    setattr(OptModel, f'eApparentLimit{pTag}_{p}_{sc}_{st}',
+                            Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentDisc(mTEPES, pP, pQ, p, sc, _live),
+                                       doc='apparent power within the branch rating [p.u. of the rating]'))
+            else:
+                pInscribed = math.cos(math.pi / APPARENT_CUTS)
+
+                def _eApparentCut(pP, pQ, k):
+                    def rule(OptModel, n, ni, nf, cc):
+                        if not _live((ni,nf,cc)):
+                            return Constraint.Skip
+                        pAng = 2.0 * math.pi * k / APPARENT_CUTS
+                        return (math.cos(pAng) * pP[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ[p,sc,n,ni,nf,cc]
+                                <= mTEPES.pLineSmax[ni,nf,cc] * pInscribed)
+                    return rule
+
+                for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                    for k in range(APPARENT_CUTS):
+                        setattr(OptModel, f'eApparentLimit{pTag}{k}_{p}_{sc}_{st}',
+                                Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentCut(pP, pQ, k), doc='apparent power within the branch rating [GVA]'))
 
         # --- (9) voltage drop ------------------------------------------------------------------------------------------------------------------------
         # The big-M is derived from the three terms of the expression rather than guessed. The flow term dominates and was omitted once, leaving an
@@ -2305,6 +2343,15 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
                 Constraint(pKeys, rule=eCurrentRestored, doc='exact branch current, restoration pass'))
         nRows += len(pKeys)
 
+        # The circle replaces the polygon.
+        if mTEPES.pIndACApparentPowerLimit() and getattr(OptModel, f'eApparentLimitFrw0_{p}_{sc}_{st}', None) is not None:
+            for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
+                for k in range(APPARENT_CUTS):
+                    getattr(OptModel, f'eApparentLimit{pTag}{k}_{p}_{sc}_{st}').deactivate()
+                setattr(OptModel, f'eApparentRestored{pTag}_{p}_{sc}_{st}',
+                        Constraint(pKeys, rule=_eApparentDisc(mTEPES, pP, pQ, p, sc, lambda la: True),
+                                   doc='apparent power within the branch rating, restoration pass'))
+
     if not nRows:
         print('### WARNING: AC restoration found no relaxed current constraints to replace; nothing was done.')
         return None
@@ -2330,12 +2377,18 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     # Pyomo loads a solver's solution into the model as it returns, so an iterate from a solve that is about to be rejected would replace the relaxed
     # values before the termination condition below is read, and every result written afterwards would describe a point that did not converge. Holding
     # the solution back until the condition has been read is what makes the warning below true.
+    # Duals of this solve, only if the relaxed solve reported them.
+    pWantDuals = bool(getattr(mTEPES, 'pDuals', None))
+    if pWantDuals and not hasattr(OptModel, 'dual'):
+        OptModel.dual = Suffix(direction=Suffix.IMPORT)
     Results = Solver.solve(OptModel, load_solutions=False, tee=bool(pIndLogConsole))
     pStatus = str(Results.solver.termination_condition)
 
     if pStatus not in ('optimal', 'locallyOptimal', 'feasible'):
         print(f'### WARNING: the AC restoration did not converge ({pStatus}). The relaxed solution is unchanged in the results, and it is a LOWER '
               f'bound on the true cost, not the true cost.')
+        if hasattr(OptModel, 'dual'):
+            OptModel.del_component(OptModel.dual)
         return {'status': pStatus, 'before': pBefore, 'after': None, 'seconds': time.time() - StartTime}
 
     OptModel.solutions.load_from(Results)
@@ -2343,14 +2396,20 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     pAfter = OptModel.vTotalSCost()
     pGap   = 100.0 * (pAfter - pBefore) / abs(pAfter) if pAfter else 0.0
 
-    # The duals in mTEPES.pDuals belong to the relaxed solve and describe a solution that no longer exists. Reporting them beside the restored primal
-    # values would publish locational prices from one operating point and voltages, flows and costs from another, differing by exactly the amount this
-    # pass just moved. Clearing them makes the marginal writers skip: OutputResultsEconomic guards on pHasDuals and ACMarginalResults on key presence,
-    # so an absent price is reported as absent rather than as a wrong number.
-    if getattr(mTEPES, 'pDuals', None):
-        mTEPES.pDuals = {}
-        print('AC restoration                         ...  marginal prices dropped: the duals were the relaxed solve\'s and do not describe the '
-              'restored operating point. Re-run with IndACRestore = 0 if you need them.')
+    # The relaxed duals describe another point; the duals of the restored point replace them.
+    if pWantDuals:
+        pDuals = {}
+        if hasattr(OptModel, 'dual'):
+            for con in OptModel.component_objects(Constraint, active=True):
+                if con.is_indexed():
+                    for index in con:
+                        pValue = OptModel.dual.get(con[index])
+                        if pValue is not None:
+                            pDuals[str(con.name) + str(index)] = pValue
+            OptModel.del_component(OptModel.dual)
+        mTEPES.pDuals = pDuals
+        pSource = 'from the restored point' if pDuals else 'not reported: the solver returned no duals'
+        print(f'AC restoration                         ...  marginal prices {pSource}')
     print(f'AC restoration                         ...  {pStatus}, total cost {pBefore:.4f} -> {pAfter:.4f} MEUR '
           f'({pGap:+.2f}% the relaxation was understating), {round(time.time() - StartTime)} s')
     return {'status': pStatus, 'before': pBefore, 'after': pAfter, 'gap_percent': pGap, 'rows': nRows,

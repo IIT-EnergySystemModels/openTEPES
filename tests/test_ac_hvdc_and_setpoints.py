@@ -231,6 +231,85 @@ def test_a_priced_setpoint_holds_its_busbar(tmp_path):
 
 
 # --------------------------------------------------------------------------------------------------------------------
+# Apparent power limit at both ends of a branch
+# --------------------------------------------------------------------------------------------------------------------
+
+def _with_apparent_limit(tmp_path, name, value):
+    """9n_AC with IndACApparentPowerLimit set in oT_Data_Option."""
+    d, n = _clone(tmp_path, "9n_AC", name)
+    opt = pd.read_csv(os.path.join(d, n, f"oT_Data_Option_{n}.csv"))
+    opt["IndACApparentPowerLimit"] = value
+    _write(d, n, "Option", opt)
+    return d, n
+
+
+def test_apparent_power_limit_is_off_by_default_and_validated(tmp_path):
+    """Off by default; values other than 0 and 1 are refused."""
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+    assert mTEPES.pIndACApparentPowerLimit() == 0
+    d, n = _with_apparent_limit(tmp_path, "9n_AC_apl_bad", 2)
+    with pytest.raises(NotImplementedError, match="IndACApparentPowerLimit"):
+        _build(d, n)
+
+
+@pytest.mark.solve
+def test_apparent_power_limit_holds_every_branch_within_its_rating(tmp_path):
+    """Without the option a branch exceeds its rating; with it, none does."""
+    from openTEPES.openTEPES import openTEPES_run
+    if not SolverFactory("gurobi").available(exception_flag=False):
+        pytest.skip("gurobi is not available")
+
+    def largest_loading(value):
+        d, n = _with_apparent_limit(tmp_path / f"v{value}", "9n_AC_apl", value)
+        try:
+            openTEPES_run(d, n, "gurobi", pIndOutputResults=1, pIndLogConsole=0)
+        except Exception as e:
+            if "size-limited" in str(e) or "too large" in str(e).lower():
+                pytest.skip("gurobi licence cannot take a model this size")
+            raise
+        u = pd.read_csv(os.path.join(d, n, f"oT_Result_NetworkElecUtilizationAC_{n}.csv"), header=[0, 1, 2], index_col=[0, 1, 2])
+        return float(u.max().max())
+
+    assert largest_loading(0) > 101.0, "without the option a branch should exceed its rating"
+    assert largest_loading(1) <= 100.0 + 1e-4
+
+
+@pytest.mark.solve
+def test_apparent_power_limit_survives_the_ac_recovery_step(tmp_path):
+    """The recovery step swaps in the circle and keeps every branch within its rating. 12 hours: ipopt does not converge on the full year."""
+    from openTEPES.openTEPES import openTEPES_run
+    if not SolverFactory("gurobi").available(exception_flag=False) or not SolverFactory("ipopt").available(exception_flag=False):
+        pytest.skip("gurobi and ipopt are needed")
+
+    def largest_loading(value):
+        d, n = _with_apparent_limit(tmp_path / f"v{value}", "9n_AC_apl_restore", value)
+        dur = pd.read_csv(os.path.join(d, n, f"oT_Data_Duration_{n}.csv"))
+        keep, full = set(dur.loc[:11, "LoadLevel"]), len(dur)
+        for f in os.listdir(os.path.join(d, n)):
+            path = os.path.join(d, n, f)
+            if f.endswith(".csv") and "LoadLevel" in (df := pd.read_csv(path)).columns:
+                df[df["LoadLevel"].isin(keep)].to_csv(path, index=False)
+        res = pd.read_csv(os.path.join(d, n, f"oT_Data_RESEnergy_{n}.csv"))
+        res["RESEnergy"] = pd.to_numeric(res["RESEnergy"], errors="coerce").fillna(0.0) * 12 / full
+        _write(d, n, "RESEnergy", res)
+        opt = pd.read_csv(os.path.join(d, n, f"oT_Data_Option_{n}.csv"))
+        opt["IndACRestore"] = 1
+        _write(d, n, "Option", opt)
+        try:
+            model = openTEPES_run(d, n, "gurobi", pIndOutputResults=1, pIndLogConsole=0)
+        except Exception as e:
+            if "size-limited" in str(e) or "too large" in str(e).lower():
+                pytest.skip("gurobi licence cannot take a model this size")
+            raise
+        assert any(c.name.startswith("eApparentRestoredFrw") for c in model.component_objects()) == bool(value)
+        u = pd.read_csv(os.path.join(d, n, f"oT_Result_NetworkElecUtilizationAC_{n}.csv"), header=[0, 1, 2], index_col=[0, 1, 2])
+        return float(u.max().max())
+
+    assert largest_loading(0) > 101.0, "without the option a branch should exceed its rating"
+    assert largest_loading(1) <= 100.0 + 1e-3
+
+
+# --------------------------------------------------------------------------------------------------------------------
 # Duals on a quadratically constrained model
 # --------------------------------------------------------------------------------------------------------------------
 
