@@ -3,8 +3,7 @@
 The script expects this folder layout:
 
 1. This script plus IAMC variable-definition files in the same directory.
-2. One subfolder per case (e.g. ``WAPP``) containing
-   ``oT_Result_<ResultName>_<CaseName>.csv`` files.
+2. One subfolder per case (e.g. ``WAPP``) containing ``oT_Result_<ResultName>_<CaseName>.csv`` files.
 
 Configuration is done at the top-level constants:
 
@@ -98,13 +97,11 @@ def ReadIAMCFiles() -> dict[str, pd.DataFrame]:
     -------
     dict[str, pd.DataFrame]
         Dictionary keyed by ``generation``, ``system``, and ``transmission``.
-        Each table is indexed by the variable key (first CSV column) and
-        contains at least ``Variable`` and ``Unit`` columns.
+        Each table is indexed by the variable key (first CSV column) and contains at least ``Variable`` and ``Unit`` columns.
 
     Notes
     -----
-    Files are decoded as cp1252 because they may include characters such as
-    the euro sign. Index labels are stripped to avoid lookup failures caused
+    Files are decoded as cp1252 because they may include characters such as the euro sign. Index labels are stripped to avoid lookup failures caused
     by trailing whitespace.
     """
     DataFrames: dict[str, pd.DataFrame] = {}
@@ -216,16 +213,12 @@ def WriteResultToIAMC(ResultName: str, df: pd.DataFrame, IAMCVars: dict[str, pd.
     Returns
     -------
     pd.DataFrame
-        IAMC table in wide format with identifier columns
-        (model/scenario/region/variable/unit/subannual) and one column
-        per period.
+        IAMC table in wide format with identifier columns (model/scenario/region/variable/unit/subannual) and one column per period.
 
     Notes
     -----
-    - Region uses ``InitialNode|FinalNode|Circuit`` for 3-level columns, or
-      the node/plant name for single-level columns.
-    - Scenario uses ``<CaseName>|<Scenario>`` when available, otherwise
-      ``<CaseName>``.
+    - Region uses ``InitialNode|FinalNode|Circuit`` for 3-level columns, or the node/plant name for single-level columns.
+    - Scenario uses ``<CaseName>|<Scenario>`` when available, otherwise ``<CaseName>``.
     - Subannual uses ``LoadLevel`` when present, otherwise empty.
     - Variable and unit are taken from ``ResultDefinitions`` + IAMC metadata.
     """
