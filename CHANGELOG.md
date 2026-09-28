@@ -4,6 +4,7 @@
 
 - [FIXED] protect against values 0 of TTCFwd and TTCBck fo H2 and heat pipelines
 - [FIXED] computation of dual variable in OutputResultsStorage
+- [ADDED] `IndACRestoreWarmStart` starts the AC recovery step close to the relaxed solution; off by default.
 - [FIXED] with `IndACRestore = 1`, the locational marginal prices are the duals of the AC recovery step instead of none.
 - [FIXED] considering the period availability of the generating units in the objective function
 - [ADDED] `IndACApparentPowerLimit` in `oT_Data_Option` limits the apparent power at both ends of each AC branch to its rating.

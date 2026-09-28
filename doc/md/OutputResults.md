@@ -1130,6 +1130,8 @@ A relaxed solve is not expected to satisfy the series relation exactly, and the 
 the bundled `9n_AC` case the relaxed solution is about 68 MW off; with `IndACRestore = 1` the same case returns 0.00001 MW.
 
 With `IndACRestore = 1`, the locational marginal prices are the duals of the AC recovery step, at the restored operating point.
+With `IndACRestoreWarmStart = 1`, the recovery step starts ipopt close to the relaxed solution (`bound_push` and `bound_frac`
+1e-8, `mu_init` 1e-6); an `ipopt.opt` file in the working folder overrides these settings.
 
 ## Hydrogen balance and network operation
 

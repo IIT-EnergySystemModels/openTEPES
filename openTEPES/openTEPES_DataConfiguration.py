@@ -1211,6 +1211,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pIndACModelType       = Param(initialize=par['pIndACModelType']      , within=NonNegativeIntegers, doc='Indicator of the AC model type: 0 SOCP, 1 piecewise linear, 2 exact NLP'            )
     mTEPES.pIndACRestore         = Param(initialize=par['pIndACRestore']        , within=NonNegativeIntegers, doc='Indicator of the exact AC restoration pass: 0 off, 1 on'                 )
     mTEPES.pIndACApparentPowerLimit = Param(initialize=par['pIndACApparentPowerLimit'], within=Binary,          doc='Apparent power limit at both ends of an AC branch: 0 off, 1 on'          )
+    mTEPES.pIndACRestoreWarmStart = Param(initialize=par['pIndACRestoreWarmStart'], within=Binary,            doc='AC recovery step started close to the relaxed solution: 0 off, 1 on'  )
     mTEPES.pIndACConverter       = Param(initialize=par['pIndACConverter']      , within=NonNegativeIntegers, doc='Indicator of the HVDC converter model: 0 none, 1 LCC, 2 VSC'             )
     mTEPES.pIndACCycle           = Param(initialize=par['pIndACCycle']          , within=NonNegativeIntegers, doc='Loop condition around each independent cycle: 0 off, 1 on'               )
     mTEPES.pIndBinShuntSwitch    = Param(initialize=par['pIndBinShuntSwitch']   , within=Binary,              doc='Hourly shunt on/off state: 1 binary, 0 relaxed'                         )
