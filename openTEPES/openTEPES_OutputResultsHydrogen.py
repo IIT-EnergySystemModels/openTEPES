@@ -249,4 +249,4 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     fig.write_html(f'{_path}/oT_Plot_MapNetworkH2_{CaseName}.html')
 
     PlottingNetMapsTime = time.time() - StartTime
-    print('Plotting hydrogen    network     maps  ... ', round(PlottingNetMapsTime), 's')
+    print('Plotting   hydrogen  network     maps  ... ', round(PlottingNetMapsTime), 's')
