@@ -1,7 +1,9 @@
 # Change Log
 
-## [4.19.0rc] - 2026-09-28 Unreleased in PyPI
+## [4.19.0rc] - 2026-09-30 Unreleased in PyPI
 
+- [ADDED] added AvarageVariableCost file for every area with the load level operation cost (operation, operating reserve, O&M, emission, reliability)
+  divided by the load level demand.
 - [FIXED] protect against values 0 of TTCFwd and TTCBck fo H2 and heat pipelines
 - [FIXED] computation of dual variable in OutputResultsStorage
 - [ADDED] `IndACRestoreWarmStart` starts the AC recovery step close to the relaxed solution; off by default.

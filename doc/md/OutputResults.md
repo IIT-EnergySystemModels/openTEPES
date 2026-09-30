@@ -1669,6 +1669,16 @@ Period        Scenario    Area        Marginal of the minimum RES energy [€/MW
 ============  ==========  ==========  =================================================
 ```
 
+File `oT_Result_AverageVariableCost_AreaName.csv`
+
+```{eval-rst}
+============  ==========  ==========  ===========================================================================================================
+Identifier                            Description
+=================================================================================================================================================
+Period        Scenario    Load level  Variable cost (operating reserve+O&M+emission+reliability) of the generators divided by the demand [€/MWh]
+============  ==========  ==========  ===========================================================================================================
+```
+
 File `oT_Result_MarginalIncrementalVariableCost.csv`
 
 ```{eval-rst}
