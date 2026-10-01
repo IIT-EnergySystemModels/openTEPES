@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 01, 2026
 
 openTEPES.openTEPES_ModelFormulationHydrogen — hydrogen network operation: H2 balance and hydrogen-not-served cost.
 """
@@ -15,12 +15,12 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
     StartTime = time.time()
 
-    # incoming and outgoing pipelines (lin) (lout)
-    lin  = defaultdict(set)
-    lout = defaultdict(set)
+    # incoming and outgoing pipelines (pin) (pout)
+    pin  = defaultdict(set)
+    pout = defaultdict(set)
     for ni,nf,cc in mTEPES.pa:
-        lin [nf].add((ni,cc))
-        lout[ni].add((nf,cc))
+        pin [nf].add((ni,cc))
+        pout[ni].add((nf,cc))
 
     # nodes to electrolyzers (l2n)
     l2n = defaultdict(set)
@@ -48,10 +48,10 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     # a rate balance in tH2/h at every load level, the shape eBalanceElec has in GW. Every term is a rate, so no term carries pDuration: the electrolyser
     # draws vESSTotalCharge GW and turns it into GW/(GWh/tH2) = tH2/h, and pDemandH2 is read per hour. Duration enters only in eH2Inventory and in the costs
     def eBalanceH2(OptModel,n,nd):
-        if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0:
+        if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(pout[nd]) + len(pin[nd]) == 0:
             return Constraint.Skip
         return (sum(OptModel.vH2Production[p,sc,n,sr] for sr in r2n[nd]) + sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in l2n[nd] if (p,el) in mTEPES.peh) - sum(OptModel.vTotalOutputHeat[p,sc,n,hh]*mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh) - sum(OptModel.vTotalOutput[p,sc,n,h2p]*mTEPES.pProductionFunctionH2ToPower[h2p] for h2p in g2n[nd] if (p,h2p) in mTEPES.pg) - sum(OptModel.vH2StorCharge[p,sc,n,hs] - OptModel.vH2StorDischarge[p,sc,n,hs] for hs in s2nd[nd]) + OptModel.vH2NS[p,sc,n,nd] - OptModel.vH2Exc[p,sc,n,nd] -
-                sum(OptModel.vFlowH2[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.ppa)) == mTEPES.pDemandH2[p,sc,n,nd]
+                sum(OptModel.vFlowH2[p,sc,n,nd,nf,cc] for nf,cc in pout[nd] if (p,nd,nf,cc) in mTEPES.ppa) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in pin[nd] if (p,ni,nd,cc) in mTEPES.ppa)) == mTEPES.pDemandH2[p,sc,n,nd]
     setattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2/h]'))
 
     if pIndLogConsole:
@@ -115,7 +115,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
     def eTotalRH2Cost(OptModel,n):
         # guard matches eBalanceH2. pLoadLevelDuration, as eTotalRHeatCost does for vHeatNS: vH2NS is a rate
-        return OptModel.vTotalRH2Cost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]))
+        return OptModel.vTotalRH2Cost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(pout[nd]) + len(pin[nd]))
     setattr(OptModel, f'eTotalRH2Cost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRH2Cost, doc='H2 system reliability cost [MEUR]'))
 
     if pIndLogConsole:

@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 01, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -900,11 +900,25 @@ def SettingUpVariables(OptModel, mTEPES):
             nFixedVariables += 1
 
     # incoming and outgoing lines (lin) (lout) and lines with losses (linl) (loutl)
-    lin   = defaultdict(set)
-    lout  = defaultdict(set)
+    lin  = defaultdict(set)
+    lout = defaultdict(set)
     for ni,nf,cc in mTEPES.la:
         lin [nf].add((ni,cc))
         lout[ni].add((nf,cc))
+
+    # incoming and outgoing hydrogen pipes (pin) (pout)
+    pin  = defaultdict(set)
+    pout = defaultdict(set)
+    for ni, nf, cc in mTEPES.pa:
+        pin[nf].add((ni, cc))
+        pout[ni].add((nf, cc))
+
+    # incoming and outgoing heat pipes (hin) (hout)
+    hin  = defaultdict(set)
+    hout = defaultdict(set)
+    for ni, nf, cc in mTEPES.ha:
+        hin[nf].add((ni, cc))
+        hout[ni].add((nf, cc))
 
     # nodes to generators (g2n)
     g2n = defaultdict(set)
@@ -938,11 +952,11 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHydrogen():
         # fixing the H2 ENS in nodes with no hydrogen demand
         for p,sc,n,nd in mTEPES.psnnd:
-            if mTEPES.pDemandH2[p,sc,n,nd] ==  0.0:
-                OptModel.vH2NS [p,sc,n,nd].fix(0.0)
+            if mTEPES.pDemandH2[p,sc,n,nd] == 0.0:
+                OptModel.vH2NS[p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
-            if len(l2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandH2[p,sc,n,nd] > 0.0:
-                OptModel.vH2NS [p,sc,n,nd].fix(mTEPES.pDemandH2[p,sc,n,nd])
+            if len(l2n[nd]) + len(b2n[nd]) + len(pin[nd]) + len(pout[nd]) == 0 and mTEPES.pDemandH2[p,sc,n,nd] > 0.0:
+                OptModel.vH2NS[p,sc,n,nd].fix(mTEPES.pDemandH2[p,sc,n,nd])
                 nFixedVariables += 1
 
     if mTEPES.pIndHeat():
@@ -951,8 +965,8 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pDemandHeat[p,sc,n,nd] ==  0.0:
                 OptModel.vHeatNS [p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
-            if len(chp2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandHeat[p,sc,n,nd] > 0.0:
-                OptModel.vHeatNS [p,sc,n,nd].fix(mTEPES.pDemandHeat[p,sc,n,nd])
+            if len(chp2n[nd]) + len(hout[nd]) + len(hin[nd]) == 0 and mTEPES.pDemandHeat[p,sc,n,nd] > 0.0:
+                OptModel.vHeatNS[p,sc,n,nd].fix(mTEPES.pDemandHeat[p,sc,n,nd])
                 nFixedVariables += 1
 
     # @profile
@@ -1371,8 +1385,8 @@ def SettingUpVariablesAC(OptModel, mTEPES):
 
     # The reference bus holds nominal voltage: it is the anchor the bound propagation spreads from, and the slack of any AC power flow the results
     # are checked against.
-    for p, sc, n in mTEPES.psn:
-        OptModel.vW[p, sc, n, mTEPES.rf.first()].fix(mTEPES.pVNom() ** 2)
+    for p,sc,n in mTEPES.psn:
+        OptModel.vW[p,sc,n,mTEPES.rf.first()].fix(mTEPES.pVNom() ** 2)
         nFixedVariables += 1
 
     # --- distance from the voltage setpoint --------------------------------------------------------------------------------------------------------
@@ -1393,7 +1407,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
     if mTEPES.pIndACPowerFlow() == 1:                       # squared current is a branch flow variable; bus injection carries no analogue
         OptModel.vCurr     = Var(mTEPES.psnlaa, within=NonNegativeReals, initialize=0.0, doc='squared current magnitude through the branch [p.u.]')
 
-    for p, sc, n, ni, nf, cc in mTEPES.psnlaa:
+    for p,sc,n,ni,nf,cc in mTEPES.psnlaa:
         # |I| is capped by the rating at the lowest voltage the impedance sees at the SENDING end, tap included. The apparent power at either end is
         # then |V| * |I| with that end's own highest voltage. Using the sending end's band for the far end boxes the receiving flows about 5% tighter
         # than the physics allows on a 0.95-1.05 band wherever the sending bus is the pinned reference, which can cut off feasible operating points.
@@ -1424,7 +1438,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
     # is not committed, or is producing nothing, cannot supply reactive power. Without that a unit that is off still delivers its full rated Mvar for
     # free, which systematically understates how much compensation a system needs.
     OptModel.vReactiveTotalOutput = Var(mTEPES.psngq, within=Reals, doc='reactive power output of a reactive-capable unit [Gvar]')
-    for p, sc, n, gq in mTEPES.psngq:
+    for p,sc,n,gq in mTEPES.psngq:
         OptModel.vReactiveTotalOutput[p,sc,n,gq].setlb(mTEPES.pMinReactivePower[gq])
         OptModel.vReactiveTotalOutput[p,sc,n,gq].setub(mTEPES.pMaxReactivePower[gq])
 
@@ -1458,7 +1472,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
     # |M| = |x*P - r*Q| <= z*|S| by Cauchy-Schwarz, with z = sqrt(r^2+x^2) and |S| reaching Smax*Vmax/Vmin. Using (x+r)*Smax instead is SMALLER than
     # that whenever r << x, which is the normal case, and eAngleEnvM is an equality — so a box derived that way does not make the model conservative,
     # it makes it infeasible. A non-positive reactance would also flip the sign of the bound, so the magnitude is taken.
-    for p, sc, n, ni, nf, cc in mTEPES.psnlaa:
+    for p,sc,n,ni,nf,cc in mTEPES.psnlaa:
         pZ      = math.sqrt(mTEPES.pLineZ2[ni,nf,cc])
         pSmaxPu = mTEPES.pLineSmax[ni,nf,cc] / mTEPES.pSBase * mTEPES.pVMaxBus[ni] / mTEPES.pVMinBus[ni]
         pMBound = abs(pZ * pSmaxPu)
@@ -1492,7 +1506,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
         OptModel.vQShunt = Var(mTEPES.psnsh, within=Reals, doc='reactive power injected by a bus shunt device [Gvar]')
         # Q = Bshb * vW * pSBase, so the reachable range follows from the voltage band at the device's own bus and the sign of the susceptance.
         # A reactor (Bshb < 0) absorbs; a capacitor injects.
-        for p, sc, n, sh in mTEPES.psnsh:
+        for p,sc,n,sh in mTEPES.psnsh:
             nd  = mTEPES.sh2n[sh]
             pQ1 = mTEPES.pBusBshb[sh]() * mTEPES.pVMinBus[nd] ** 2 * mTEPES.pSBase
             pQ2 = mTEPES.pBusBshb[sh]() * mTEPES.pVMaxBus[nd] ** 2 * mTEPES.pSBase
@@ -1508,7 +1522,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
         # that load out of the system entirely. Declared only when some device actually has a conductance, which is the normal case's zero.
         if any(mTEPES.pBusGshb[sh]() for sh in mTEPES.sh):
             OptModel.vPShunt = Var(mTEPES.psnsh, within=Reals, doc='active power injected by a bus shunt device [GW]')
-            for p, sc, n, sh in mTEPES.psnsh:
+            for p,sc,n,sh in mTEPES.psnsh:
                 nd  = mTEPES.sh2n[sh]
                 pP1 = -mTEPES.pBusGshb[sh]() * mTEPES.pVMinBus[nd] ** 2 * mTEPES.pSBase
                 pP2 = -mTEPES.pBusGshb[sh]() * mTEPES.pVMaxBus[nd] ** 2 * mTEPES.pSBase
@@ -1582,7 +1596,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
             #
             # The cost is one binary per DC link per load level, and only when the LCC model is switched on. DC links are few.
             OptModel.vDCFlowDir = Var(mTEPES.psnlad, within=Binary, doc='DC link flow direction, 1 forward {0,1}')
-            for p, sc, n, ni, nf, cc in mTEPES.psnlad:
+            for p,sc,n,ni,nf,cc in mTEPES.psnlad:
                 pBox = mTEPES.pLineNTCMax[ni,nf,cc]
                 OptModel.vDCFlowPos[p,sc,n,ni,nf,cc].setub(pBox)
                 OptModel.vDCFlowNeg[p,sc,n,ni,nf,cc].setub(pBox)
@@ -1596,7 +1610,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
             # The bounds have to span zero, because eQConvOff below forces the pair to zero when the link is not in service. A converter that is not
             # there supplies nothing: without that gate an unbuilt HVDC CANDIDATE hands the system a free STATCOM at both ends, so the model declines
             # to build shunts and condensers it actually needs and the link's own investment decision is distorted.
-            for p, sc, n, ni, nf, cc in mTEPES.psnlad:
+            for p,sc,n,ni,nf,cc in mTEPES.psnlad:
                 pQMax = pConvTan * mTEPES.pLineNTCMax[ni,nf,cc]
                 for v in (OptModel.vQConvFrw, OptModel.vQConvBck):
                     v[p,sc,n,ni,nf,cc].setlb(-pQMax)

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 30, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 01, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -111,12 +111,12 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if mTEPES.pIndHydrogen():
 
-            # incoming and outgoing lines (lin) (lout)
-            lin  = defaultdict(set)
-            lout = defaultdict(set)
+            # incoming and outgoing lines (pin) (pout)
+            pin  = defaultdict(set)
+            pout = defaultdict(set)
             for ni,nf,cc in mTEPES.pa:
-                lin [nf].add((ni,cc))
-                lout[ni].add((nf,cc))
+                pin [nf].add((ni,cc))
+                pout[ni].add((nf,cc))
 
             # nodes to hydrogen boilers (b2n): eBalanceH2 also exists at a node that only hosts an H2 boiler (openTEPES_ModelFormulationHydrogen.py)
             b2n = defaultdict(set)
@@ -125,7 +125,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                     b2n[nd].add(g)
 
             #%% outputting the LSRMC of H2
-            sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(e2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
+            sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(e2n[nd]) + len(b2n[nd]) + len(pout[nd]) + len(pin[nd]) and (p,sc,n) in mTEPES.psn]
             # eBalanceH2 is a rate balance, so its dual is divided by pLoadLevelDuration as the electricity price is, to come out in EUR/tH2
             OutputResults = pd.Series(data=[mTEPES.pDuals[f"eBalanceH2_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
             OutputResults *= 1e3
@@ -138,15 +138,15 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                     chart.save(f'{_path}/oT_Plot_NetworkSRMCH2_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
         if mTEPES.pIndHeat():
-            # incoming and outgoing lines (lin) (lout)
-            lin  = defaultdict(set)
-            lout = defaultdict(set)
+            # incoming and outgoing lines (hin) (hout)
+            hin  = defaultdict(set)
+            hout = defaultdict(set)
             for ni,nf,cc in mTEPES.ha:
-                lin [nf].add((ni,cc))
-                lout[ni].add((nf,cc))
+                hin [nf].add((ni,cc))
+                hout[ni].add((nf,cc))
 
             #%% outputting the LSRMC of heat
-            sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(c2n[nd]) + len(h2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
+            sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(c2n[nd]) + len(h2n[nd]) + len(hout[nd]) + len(hin[nd]) and (p,sc,n) in mTEPES.psn]
             OutputResults = pd.Series(data=[mTEPES.pDuals[f"eBalanceHeat_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
             OutputResults *= 1e3
             OutputResults.to_frame(name='LSRMCHeat').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMCHeat').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkSRMCHeat_{CaseName}.csv', sep=',')

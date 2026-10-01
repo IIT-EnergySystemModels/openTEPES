@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.19.0rc] - 2026-09-30 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-01 Unreleased in PyPI
 
+- [FIXED] detection of connecting lines in a H2 and heat networks to assign H2 and heat not served
 - [ADDED] added AvarageVariableCost file for every area with the load level operation cost (operation, operating reserve, O&M, emission, reliability)
   divided by the load level demand.
 - [FIXED] protect against values 0 of TTCFwd and TTCBck fo H2 and heat pipelines
