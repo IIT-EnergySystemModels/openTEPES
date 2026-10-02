@@ -238,7 +238,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
         if mTEPES.es:
             # eESSInventory is declared over mTEPES.nesc (openTEPES_ModelFormulationElectricity.py), i.e. only the load levels that close a storage cycle; mTEPES.nesc is a plain list, so test membership against a set built once
             pNESC         = set(mTEPES.nesc)
-            pZeroMaxStorage = {es: sum(mTEPES.pMaxStorage[p,sc,n,es]() for n in mTEPES.n) == 0.0 for p,sc,es in mTEPES.psc*mTEPES.es}
+            pZeroMaxStorage = {es: sum(mTEPES.pMaxStorage[p,sc,n,es]() for n in mTEPES.n) == 0.0 for p,sc,es in mTEPES.ps*mTEPES.es}
             sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.s2n*mTEPES.es if (p,sc,n,es) in mTEPES.psnes and (n,es) in pNESC and (mTEPES.pTotalMaxCharge[es] or mTEPES.pTotalEnergyInflows[es]) or pZeroMaxStorage[p,sc,es]]
             OutputToFile  = pd.Series(data=[abs(mTEPES.pDuals[f"eESSInventory_{p}_{sc}_{st}('{n}', '{es}')"])/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
             OutputToFile *= 1e3
