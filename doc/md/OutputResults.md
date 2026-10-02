@@ -1235,6 +1235,16 @@ Period        Scenario    Load level  Node        Hydrogen not served by node [t
 ============  ==========  ==========  ==========  ====================================
 ```
 
+File `oT_Result_NetworkH2Excess.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ====================================
+Identifier                            Header      Description
+====================================  ==========  ====================================
+Period        Scenario    Load level  Node        Hydrogen excess by node [tH2/h]
+============  ==========  ==========  ==========  ====================================
+```
+
 ## Heat generation operation
 
 File `oT_Result_GenerationHeat.csv`

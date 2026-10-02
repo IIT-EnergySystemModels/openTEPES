@@ -589,7 +589,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pMaxStorageH2']  = _optional_gen_col('MaximumStorageH2').fillna(0.0)
     par['pMaxChargeH2']   = _optional_gen_col('MaximumChargeH2' ).fillna(0.0)
     par['pIniStorageH2']  = _optional_gen_col('InitialStorageH2').fillna(0.0)
-    par['pStorageTypeH2'] = _optional_gen_col('StorageTypeH2', 'Weekly').fillna('Weekly')
+    par['pStorageTypeH2'] = _optional_gen_col('StorageTypeH2', 'Hourly').fillna('Hourly')
 
     par['pEfficiency']                 = dfs['dfGeneration']  ['Efficiency'                ]                                                             #               ESS round-trip efficiency      [p.u.]
     par['pStorageType']                = dfs['dfGeneration']  ['StorageType'               ]                                                             #               ESS storage  type

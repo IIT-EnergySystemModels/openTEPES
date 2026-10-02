@@ -303,8 +303,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     if pIndLogConsole:
         print('eInflows2Comm             ... ', len(getattr(OptModel, f'eInflows2Comm_{p}_{sc}_{st}')), ' rows')
 
+    pZeroMaxStorage = {es: sum(mTEPES.pMaxStorage[p,sc,nn,es]() for nn in mTEPES.n) == 0.0 for es in mTEPES.es}
+
     def eESSInventory(OptModel,n,es):
-        if (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
+        if (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0) or pZeroMaxStorage[es]:
             return Constraint.Skip
         if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
             if es not in mTEPES.ec:

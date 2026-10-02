@@ -44,8 +44,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         if g in mTEPES.h2p:
             g2n[nd].add(g)
 
-
-    # a rate balance in tH2/h at every load level, the shape eBalanceElec has in GW. Every term is a rate, so no term carries pDuration: the electrolyser
+    # a rate balance in tH2/h at every load level, the shape eBalanceElec has in GW. Every term is a rate, so no term carries pDuration: the electrolyzer
     # draws vESSTotalCharge GW and turns it into GW/(GWh/tH2) = tH2/h, and pDemandH2 is read per hour. Duration enters only in eH2Inventory and in the costs
     def eBalanceH2(OptModel,n,nd):
         if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(pout[nd]) + len(pin[nd]) == 0:

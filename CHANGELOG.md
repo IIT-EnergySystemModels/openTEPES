@@ -1,7 +1,10 @@
 # Change Log
 
-## [4.19.0rc] - 2026-10-01 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-02 Unreleased in PyPI
 
+- [CHANGED] Hourly default value of StorageTypeH2.
+- [ADDED] added NetworkH2Excess file for every area with the excess of H2 production over the demand.
+- [CHANGED] don't formulate the inventory constraint if maximum storage = 0.
 - [FIXED] detection of connecting lines in a H2 and heat networks to assign H2 and heat not served
 - [ADDED] added AvarageVariableCost file for every area with the load level operation cost (operation, operating reserve, O&M, emission, reliability)
   divided by the load level demand.

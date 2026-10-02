@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 02, 2026
 
 Hydrogen network operation results.
 
@@ -121,6 +121,11 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(pout[nd]) + len(pin[nd])]
     OutputToFile = pd.Series(data=[OptModel.vH2NS[p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
     OutputToFile.to_frame(name='tH2/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tH2/h').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkHNS_{CaseName}.csv', sep=',')
+
+    # r2n too, so a node supplied only by a reformer reports its unserved hydrogen
+    sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(pout[nd]) + len(pin[nd])]
+    OutputToFile = pd.Series(data=[OptModel.vH2Exc[p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
+    OutputToFile.to_frame(name='tH2/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tH2/h').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkH2Excess_{CaseName}.csv', sep=',')
 
     # hydrogen storage output: scoped to gg, so the generation writer never sees it
     if mTEPES.hs:
