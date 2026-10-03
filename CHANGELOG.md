@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.19.0rc] - 2026-10-02 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-03 Unreleased in PyPI
 
+- [FIXED] electricity inventory constraint eESSInventory units omit the vESSTotalCharge due to the H2 production for electrolyzer
 - [CHANGED] Hourly default value of StorageTypeH2.
 - [ADDED] added NetworkH2Excess file for every area with the excess of H2 production over the demand.
 - [CHANGED] don't formulate the inventory constraint if maximum storage = 0.
