@@ -12,7 +12,7 @@ import math
 import networkx as nx
 import pandas   as pd
 from collections   import defaultdict
-from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, NonNegativeReals, Objective, SolverFactory, Suffix
+from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, NonNegativeReals, Objective, SolverFactory, Suffix, tan, sin, sqrt
 
 
 def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, p, sc, st):
