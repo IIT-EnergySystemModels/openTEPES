@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 04, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -304,7 +304,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eInflows2Comm             ... ', len(getattr(OptModel, f'eInflows2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eESSInventory(OptModel,n,es):
-        if (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
+        if (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0) or (mTEPES.pMaxStorage[p,sc,n,es]() == 0.0 and mTEPES.pProductionFunctionH2[es] > 0.0):
             return Constraint.Skip
         if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
             if es not in mTEPES.ec:
