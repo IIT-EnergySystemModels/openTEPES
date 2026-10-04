@@ -2,6 +2,14 @@
 
 ## [4.19.0rc] - 2026-09-25 Unreleased in PyPI
 
+- [FIXED] `IndACApparentPowerLimit` now also limits the apparent power at both ends of each branch in bus injection solved as a
+  non-linear program: rectangular coordinates (`IndACPowerFlow = 3`), W space with the loop condition (`IndACPowerFlow = 2`,
+  `IndACCycle = 1`) and the exact model type. It was read but applied in branch flow only, so in bus injection the far end of a
+  branch had no apparent power limit. On the 695-bus Nordic case with the thinner conductor bundle, rectangular coordinates
+  priced SE4 at 127.0 EUR/MWh at the evening peak without the limit and 226.6 with it, the branch flow optimum with the AC
+  recovery step, which they now reach to four decimals over a day in a sixth of the solve time. In the W-space cone solved
+  with Gurobi the option is not applied and a warning says so: the inscribed polygon made the barrier stop with numerical
+  trouble on `9n_AC` although ipopt solved the same model.
 - [FIXED] computation of dual variable in OutputResultsStorage
 - [FIXED] with `IndACRestore = 1`, the locational marginal prices are the duals of the AC recovery step instead of none.
 - [FIXED] considering the period availability of the generating units in the objective function

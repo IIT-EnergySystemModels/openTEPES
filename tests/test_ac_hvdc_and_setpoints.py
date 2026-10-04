@@ -309,6 +309,72 @@ def test_apparent_power_limit_survives_the_ac_recovery_step(tmp_path):
     assert largest_loading(1) <= 100.0 + 1e-3
 
 
+def _first_hours(d, n, hours=12):
+    """Keep the first hours of a case and scale the RES energy target to them."""
+    dur = pd.read_csv(os.path.join(d, n, f"oT_Data_Duration_{n}.csv"))
+    keep, full = set(dur.loc[:hours - 1, "LoadLevel"]), len(dur)
+    for f in os.listdir(os.path.join(d, n)):
+        path = os.path.join(d, n, f)
+        if f.endswith(".csv") and "LoadLevel" in (df := pd.read_csv(path)).columns:
+            df[df["LoadLevel"].isin(keep)].to_csv(path, index=False)
+    res = pd.read_csv(os.path.join(d, n, f"oT_Data_RESEnergy_{n}.csv"))
+    res["RESEnergy"] = pd.to_numeric(res["RESEnergy"], errors="coerce").fillna(0.0) * hours / full
+    _write(d, n, "RESEnergy", res)
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("mode, cycle", [(3, 0), (2, 1)])
+def test_apparent_power_limit_holds_in_bus_injection(tmp_path, mode, cycle):
+    """The option limits both ends in bus injection solved as a non-linear program: rectangular coordinates, and W space with
+    the loop condition. Before, it was applied in branch flow only, and a bus-injection branch could exceed its rating.
+    12 hours: ipopt does not converge on the full year."""
+    solver = "ipopt"
+    from openTEPES.openTEPES import openTEPES_run
+    if not SolverFactory(solver).available(exception_flag=False):
+        pytest.skip(f"{solver} is not available")
+
+    def largest_loading(value):
+        d, n = _with_apparent_limit(tmp_path / f"m{mode}c{cycle}v{value}", f"9n_AC_apl_bim{mode}", value)
+        _first_hours(d, n)
+        opt = pd.read_csv(os.path.join(d, n, f"oT_Data_Option_{n}.csv"))
+        opt["IndACPowerFlow"] = mode
+        opt["IndACCycle"] = cycle
+        _write(d, n, "Option", opt)
+        try:
+            model = openTEPES_run(d, n, solver, pIndOutputResults=1, pIndLogConsole=0)
+        except Exception as e:
+            if "size-limited" in str(e) or "too large" in str(e).lower():
+                pytest.skip(f"{solver} licence cannot take a model this size")
+            raise
+        assert any(c.name.startswith("eApparentLimitBck") for c in model.component_objects()) == bool(value)
+        u = pd.read_csv(os.path.join(d, n, f"oT_Result_NetworkElecUtilizationAC_{n}.csv"), header=[0, 1, 2], index_col=[0, 1, 2])
+        return float(u.max().max())
+
+    assert largest_loading(0) > 101.0, "without the option a branch should exceed its rating"
+    assert largest_loading(1) <= 100.0 + 1e-3
+
+
+@pytest.mark.solve
+def test_apparent_power_limit_is_not_applied_in_the_w_space_cone(tmp_path, capsys):
+    """In the W-space cone the option is reported as not applied, not silently ignored."""
+    from openTEPES.openTEPES import openTEPES_run
+    if not SolverFactory("gurobi").available(exception_flag=False):
+        pytest.skip("gurobi is not available")
+    d, n = _with_apparent_limit(tmp_path, "9n_AC_apl_cone", 1)
+    _first_hours(d, n)
+    opt = pd.read_csv(os.path.join(d, n, f"oT_Data_Option_{n}.csv"))
+    opt["IndACPowerFlow"] = 2
+    _write(d, n, "Option", opt)
+    try:
+        model = openTEPES_run(d, n, "gurobi", pIndOutputResults=0, pIndLogConsole=0)
+    except Exception as e:
+        if "size-limited" in str(e) or "too large" in str(e).lower():
+            pytest.skip("gurobi licence cannot take a model this size")
+        raise
+    assert "not applied in the W-space cone" in capsys.readouterr().out
+    assert not any(c.name.startswith("eApparentLimit") for c in model.component_objects())
+
+
 # --------------------------------------------------------------------------------------------------------------------
 # Duals on a quadratically constrained model
 # --------------------------------------------------------------------------------------------------------------------

@@ -1481,6 +1481,20 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
         setattr(OptModel, f'eBIMTangent_{p}_{sc}_{st}',
                 Constraint(mTEPES.n*mTEPES.laa, rule=eBIMTangent, doc='angle tied to the voltage product, ACT form'))
 
+    # --- the apparent power limit at both ends, optional ---------------------------------------------------------------------------------------------
+    # eBIMSLimit above is the sending-end counterpart of the branch flow CURRENT limit, P^2 + Q^2 <= (Smax/Vmin)^2 w_i, which admits up to Smax*V/Vmin.
+    # The option adds the flat cap at both ends, as branch flow does. Without it the far end was not limited at all, and on the Nordic case with the
+    # thinner conductor bundle the evening peak that the cap creates in branch flow did not appear.
+    # It is applied, as the circle, where the model is solved as a non-linear program anyway: rectangular coordinates, the exact model type, or W
+    # space with the loop condition, whose tangent equality already needs ipopt. In the W-space cone alone it is not: there the polygon made Gurobi's
+    # barrier stop with numerical trouble on 9n_AC (12 hours) although ipopt solved the same model, and the homogeneous algorithm did not help.
+    if mTEPES.pIndACApparentPowerLimit():
+        if pMode == 3 or mTEPES.pIndACModelType() == 2 or (pMode == 2 and bool(mTEPES.pIndACCycle())):
+            _ApparentPowerLimit(OptModel, mTEPES, p, sc, st, _live, pDisc=True)
+        else:
+            print('### WARNING: IndACApparentPowerLimit is not applied in the W-space cone (IndACPowerFlow = 2 without IndACCycle); only the '
+                  'sending-end limit eBIMSLimit holds. Use branch flow, rectangular coordinates or the loop condition for the limit at both ends.')
+
     print('Generating BIM network constraints     ... ', round(time.time() - StartTime), 's')
 
 # ======================================================================================================================
@@ -1537,6 +1551,37 @@ def _eApparentDisc(mTEPES, pP, pQ, p, sc, live):
         pSmax = mTEPES.pLineSmax[ni,nf,cc]
         return (pP[p,sc,n,ni,nf,cc] / pSmax) ** 2 + (pQ[p,sc,n,ni,nf,cc] / pSmax) ** 2 <= 1.0
     return rule
+
+
+def _ApparentPowerLimit(OptModel, mTEPES, p, sc, st, live, pDisc):
+    """The apparent power at both ends of each AC branch within its rating, for either formulation.
+
+    pDisc writes the circle itself, for a model that is solved as a non-linear program anyway. Otherwise the circle is replaced by a polygon inside
+    it, because the circle as a quadratic constraint gave Gurobi numerical trouble on a 695-bus case; the polygon is at most 0.9% below the rating.
+    Both formulations name their far-end flows vFlowElecBck and vFlowReactBck, so the same constraints serve branch flow and bus injection.
+    """
+    pEnds = (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck))
+    if pDisc:
+        for pTag, pP, pQ in pEnds:
+            setattr(OptModel, f'eApparentLimit{pTag}_{p}_{sc}_{st}',
+                    Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentDisc(mTEPES, pP, pQ, p, sc, live),
+                               doc='apparent power within the branch rating [p.u. of the rating]'))
+        return
+    pInscribed = math.cos(math.pi / APPARENT_CUTS)
+
+    def _eApparentCut(pP, pQ, k):
+        def rule(OptModel, n, ni, nf, cc):
+            if not live((ni,nf,cc)):
+                return Constraint.Skip
+            pAng = 2.0 * math.pi * k / APPARENT_CUTS
+            return (math.cos(pAng) * pP[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ[p,sc,n,ni,nf,cc]
+                    <= mTEPES.pLineSmax[ni,nf,cc] * pInscribed)
+        return rule
+
+    for pTag, pP, pQ in pEnds:
+        for k in range(APPARENT_CUTS):
+            setattr(OptModel, f'eApparentLimit{pTag}{k}_{p}_{sc}_{st}',
+                    Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentCut(pP, pQ, k), doc='apparent power within the branch rating [GVA]'))
 
 
 def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -1813,27 +1858,7 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         # The current limit admits Smax * V / Vmin. SOCP and piecewise linear use a polygon inside the circle, because the circle as a quadratic
         # constraint gave Gurobi numerical trouble on a 695-bus case. The NLP uses the circle, and the AC recovery step swaps it in.
         if mTEPES.pIndACApparentPowerLimit():
-            if mTEPES.pIndACModelType() == 2:
-                for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
-                    setattr(OptModel, f'eApparentLimit{pTag}_{p}_{sc}_{st}',
-                            Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentDisc(mTEPES, pP, pQ, p, sc, _live),
-                                       doc='apparent power within the branch rating [p.u. of the rating]'))
-            else:
-                pInscribed = math.cos(math.pi / APPARENT_CUTS)
-
-                def _eApparentCut(pP, pQ, k):
-                    def rule(OptModel, n, ni, nf, cc):
-                        if not _live((ni,nf,cc)):
-                            return Constraint.Skip
-                        pAng = 2.0 * math.pi * k / APPARENT_CUTS
-                        return (math.cos(pAng) * pP[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ[p,sc,n,ni,nf,cc]
-                                <= mTEPES.pLineSmax[ni,nf,cc] * pInscribed)
-                    return rule
-
-                for pTag, pP, pQ in (('Frw', OptModel.vFlowElec, OptModel.vFlowReactFrw), ('Bck', OptModel.vFlowElecBck, OptModel.vFlowReactBck)):
-                    for k in range(APPARENT_CUTS):
-                        setattr(OptModel, f'eApparentLimit{pTag}{k}_{p}_{sc}_{st}',
-                                Constraint(mTEPES.n*mTEPES.laa, rule=_eApparentCut(pP, pQ, k), doc='apparent power within the branch rating [GVA]'))
+            _ApparentPowerLimit(OptModel, mTEPES, p, sc, st, _live, pDisc=mTEPES.pIndACModelType() == 2)
 
         # --- (9) voltage drop ------------------------------------------------------------------------------------------------------------------------
         # The big-M is derived from the three terms of the expression rather than guessed. The flow term dominates and was omitted once, leaving an
