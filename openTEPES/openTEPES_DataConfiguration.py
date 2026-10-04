@@ -1325,15 +1325,15 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pOperReserveDwEnergy = Param(mTEPES.psnar, initialize=par['pOperReserveDwEnergy'].to_dict()   , within=NonNegativeReals,    doc='Operating reserve activation'                        )
 
     if par['pIndHydrogen']:
-        mTEPES.pProductionFunctionH2 = Param(mTEPES.el, initialize=par['pProductionFunctionH2'].to_dict()    , within=NonNegativeReals,    doc='Production function of an electrolyzer plant'        )
+        mTEPES.pProductionFunctionH2        = Param(mTEPES.el, initialize=par['pProductionFunctionH2'].to_dict()    , within=NonNegativeReals,    doc='Production function of an electrolyzer plant'        )
         mTEPES.pProductionFunctionH2ToPower = Param(mTEPES.h2p, initialize=par['pProductionFunctionH2ToPower'].to_dict(), within=NonNegativeReals, doc='Production function of a hydrogen-fired generator')
-        mTEPES.pMaxStorageH2      = Param(mTEPES.hs, initialize=par['pMaxStorageH2'].to_dict()     , within=NonNegativeReals, doc='Maximum hydrogen storage    [tH2]')
-        mTEPES.pMaxChargeH2       = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2/h]')
-        mTEPES.pIniStorageH2      = Param(mTEPES.hs, initialize=par['pIniStorageH2'].to_dict()     , within=NonNegativeReals, doc='Initial hydrogen storage    [tH2]')
-        mTEPES.pStorageTimeStepH2 = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle [load levels]')
-        mTEPES.pMaximumProductionH2  = Param(mTEPES.sr, initialize=par['pMaximumProductionH2'].to_dict() , within=NonNegativeReals, doc='Maximum hydrogen production without electricity [tH2/h]')
-        mTEPES.pProductionCostH2     = Param(mTEPES.sr, initialize=par['pProductionCostH2'].to_dict()    , within=NonNegativeReals, doc='Cost of that hydrogen, fuel + VOM + carbon    [MEUR/tH2]')
-        mTEPES.pProductionEmissionH2 = Param(mTEPES.sr, initialize=par['pProductionEmissionH2'].to_dict(), within=NonNegativeReals, doc='Carbon emitted making it, for reporting      [tCO2/tH2]')
+        mTEPES.pMaxStorageH2                = Param(mTEPES.hs, initialize=par['pMaxStorageH2'].to_dict()     , within=NonNegativeReals, doc='Maximum hydrogen storage    [tH2]')
+        mTEPES.pMaxChargeH2                 = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2/h]')
+        mTEPES.pIniStorageH2                = Param(mTEPES.hs, initialize=par['pIniStorageH2'].to_dict()     , within=NonNegativeReals, doc='Initial hydrogen storage    [tH2]')
+        mTEPES.pStorageTimeStepH2           = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle [load levels]')
+        mTEPES.pMaximumProductionH2         = Param(mTEPES.sr, initialize=par['pMaximumProductionH2'].to_dict() , within=NonNegativeReals, doc='Maximum hydrogen production without electricity [tH2/h]')
+        mTEPES.pProductionCostH2            = Param(mTEPES.sr, initialize=par['pProductionCostH2'].to_dict()    , within=NonNegativeReals, doc='Cost of that hydrogen, fuel + VOM + carbon    [MEUR/tH2]')
+        mTEPES.pProductionEmissionH2        = Param(mTEPES.sr, initialize=par['pProductionEmissionH2'].to_dict(), within=NonNegativeReals, doc='Carbon emitted making it, for reporting      [tCO2/tH2]')
 
     if par['pIndHeat']:
         par['pMinPowerHeat'] = filter_rows(par['pMinPowerHeat'], mTEPES.psnch)
