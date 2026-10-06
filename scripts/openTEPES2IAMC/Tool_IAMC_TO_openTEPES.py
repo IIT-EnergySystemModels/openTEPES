@@ -1,10 +1,16 @@
-import numpy              as np
+from pathlib import Path
+
 import pandas        as pd
 import time          # count clock time
+import os
 
 StartTime = time.time()
-ModelName = 'openTEPES'
-CaseName  = '9n'                              # To select the case
+ModelName = 'openTEPES 4.18.17'
+# DirName   = Path('C:/Users/Erik/Documents/GitHub/openTEPES_PRO/openTEPES')
+DirName   = Path('C:/Users/aramos/OneDrive - Universidad Pontificia Comillas/Andres/openTEPES')
+CaseName  = 'SN2022'                              # To select the case
+Folder = '_IAMC'
+_path = os.path.join(DirName, CaseName)
 
 #%%                    IAMC -> openTEPES: Process
 #                      1) Loading dictionary
@@ -15,13 +21,10 @@ CaseName  = '9n'                              # To select the case
 #                      6) Power Transmission data transformation
 #                      7) Writing CSV
 
-var_PowerSystem          = pd.read_csv('oT_IAMC_var_ID_PowerSystem.csv', index_col=[0    ])
-
-var_PowerTransmission    = pd.read_csv('oT_IAMC_var_ID_PowerTransmission.csv', index_col=[0    ])
-
-var_PowerGeneration      = pd.read_csv('oT_IAMC_var_ID_PowerGeneration.csv', index_col=[0    ])
-
-var_GenDict              = pd.read_csv('oT_GenDict.csv', index_col=[0    ])
+var_PowerSystem          = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerSystem.csv'),       index_col=[0])
+var_PowerTransmission    = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerTransmission.csv'), index_col=[0])
+var_PowerGeneration      = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerGeneration.csv'),   index_col=[0])
+var_GenDict              = pd.read_csv(os.path.join(DirName, Folder, 'oT_GenDict.csv'),                       index_col=[0])
 
 var_PowerGeneration.fillna(0, inplace=True)
 
@@ -47,7 +50,7 @@ print('Reading                        input data   ... ', round(ReadingDataTime)
 
 def Converter_Type1(X0,X1,X2,X3,X4,X5):
     dfVariable               = X0[X0.Variable == X1].assign(Period     = X2)
-    dfVariable               = dfVariable[[X3, 'Period', X4, X5, X2]]      #Colums: Scenario, Period, Subannual, Region, y2030
+    dfVariable               = dfVariable[[X3, 'Period', X4, X5, X2]]      #Columns: Scenario, Period, Subannual, Region, y2030
     index                    = dfVariable[X3].str.split('|', expand=True)
     index                    = index[len(index.columns) - 1]
     dfVariable[X3]           = index

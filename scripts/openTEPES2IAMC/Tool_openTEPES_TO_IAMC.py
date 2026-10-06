@@ -20,9 +20,52 @@ StartTime = time.time()
 ModelName = 'openTEPES 4.18.17'
 # DirName = Path('C:/Users/Erik/Documents/GitHub/openTEPES_PRO/openTEPES')
 DirName   = Path('C:/Users/aramos/OneDrive - Universidad Pontificia Comillas/Andres/openTEPES')
-CaseName  = 'SN2022'                              # To select the case
+CaseName  = 'WAPP_NZ'                              # To select the case
 Folder    = '_IAMC'
 _path     = os.path.join(DirName, CaseName)
+CSV_READ_ENCODINGS = ('utf-8-sig', 'utf-8', 'cp1252')
+CSV_WRITE_ENCODING = 'utf-8-sig'
+EXCEL_ENGINE       = 'xlsxwriter'
+
+
+def read_csv_with_fallback(path, **kwargs):
+    if 'encoding' in kwargs:
+        return pd.read_csv(path, **kwargs)
+
+    last_error = None
+    for encoding in CSV_READ_ENCODINGS:
+        try:
+            return pd.read_csv(path, encoding=encoding, **kwargs)
+        except UnicodeDecodeError as exc:
+            last_error = exc
+
+    raise ValueError(
+        f"Unable to decode CSV file '{path}'. Tried encodings: {', '.join(CSV_READ_ENCODINGS)}."
+    ) from last_error
+
+
+def read_table_file(path, **kwargs):
+    suffix = Path(path).suffix.lower()
+    if suffix == '.csv':
+        return read_csv_with_fallback(path, **kwargs)
+    if suffix in ('.xlsx', '.xlsm', '.xls'):
+        return pd.read_excel(path, **kwargs)
+    raise ValueError(f"Unsupported input file format '{suffix}' for '{path}'.")
+
+
+def write_table_file(df, path, sheet_name='Sheet1', index=False, **kwargs):
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+
+    suffix = Path(path).suffix.lower()
+    if suffix == '.csv':
+        encoding = kwargs.pop('encoding', CSV_WRITE_ENCODING)
+        df.to_csv(path, index=index, encoding=encoding, **kwargs)
+        return
+    if suffix in ('.xlsx', '.xlsm', '.xls'):
+        with pd.ExcelWriter(path, engine=EXCEL_ENGINE) as writer:
+            df.to_excel(writer, sheet_name=sheet_name, index=index, **kwargs)
+        return
+    raise ValueError(f"Unsupported output file format '{suffix}' for '{path}'.")
 
 #%%                    openTEPES -> IAMC: Process
 #                      1) Loading dictionary
@@ -34,16 +77,16 @@ _path     = os.path.join(DirName, CaseName)
 #                      7) Writing XLSX data
 #                      8) Converting openTEPES results to IAMC XLSX
 #%% Loading the dictionary
-var_PowerSystem        = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerSystem.csv'      ), index_col=[0])
-var_PowerTransmission  = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerTransmission.csv'), index_col=[0])
-var_PowerGeneration    = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerGeneration.csv'  ), index_col=[0])
+var_PowerSystem       = read_table_file(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerSystem.csv'      ), index_col=[0])
+var_PowerTransmission = read_table_file(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerTransmission.csv'), index_col=[0])
+var_PowerGeneration   = read_table_file(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerGeneration.csv'  ), index_col=[0])
 
 #%% reading data from CSV (only the four files this tool actually uses; the other oT_Data_* frames were read and never referenced)
-dfDemand             = pd.read_csv(f'{_path}/oT_Data_Demand_'               f'{CaseName}.csv', index_col=[0,1,2])
-dfGeneration         = pd.read_csv(f'{_path}/oT_Data_Generation_'           f'{CaseName}.csv', index_col=[0    ])
-dfNetwork            = pd.read_csv(f'{_path}/oT_Data_Network_'              f'{CaseName}.csv', index_col=[0,1,2])
-dfNodeToZone         = pd.read_csv(f'{_path}/oT_Dict_NodeToZone_'           f'{CaseName}.csv', index_col=[0    ])
-NodeName             = dfDemand.columns
+dfDemand     = read_table_file(f'{_path}/oT_Data_Demand_'               f'{CaseName}.csv', index_col=[0,1,2])
+dfGeneration = read_table_file(f'{_path}/oT_Data_Generation_'           f'{CaseName}.csv', index_col=[0    ])
+dfNetwork    = read_table_file(f'{_path}/oT_Data_Network_'              f'{CaseName}.csv', index_col=[0,1,2])
+dfNodeToZone = read_table_file(f'{_path}/oT_Dict_NodeToZone_'           f'{CaseName}.csv', index_col=[0    ])
+NodeName     = dfNodeToZone.index.tolist()
 
 # substitute NaN by 0 only in numeric columns
 def fillna_numeric(df, value=0.0):
@@ -129,7 +172,7 @@ def Converter_Type1(X0,X1,X2,X4,X5,X6):
     if X6 == 0:
         a.loc[a['model'   ] == PeriodName,   'model'   ] = str(X4)
         a.loc[a['scenario'] == ScenarioName, 'scenario'] = X5 + '|' + ScenarioName
-        a['node'] = a['region']
+        a['node'  ] = a['region']
         a['region'] = a['region'].map(dfNodeToZone['Zone']).fillna(a['region'])
         requires_zone_sum = (a['node'] != a['region']).any()
         a[PeriodName] = a[PeriodName] * 1e-3
@@ -137,7 +180,7 @@ def Converter_Type1(X0,X1,X2,X4,X5,X6):
         a.loc[a['model'   ] == PeriodName,   'model'   ] = str(X4)
         a.loc[a['scenario'] == ScenarioName, 'scenario'] = X5 + '|' + ScenarioName
         for i in dfGeneration.index:
-            a.loc[a['region']   == i, 'region']   = dfGeneration['Node'][i]
+            a.loc[a['region'  ]   == i, 'region']   = dfGeneration['Node'][i]
             a.loc[a['variable'] == i, 'variable'] = var_PowerGeneration.loc[X0]['Variable'] + '|' + dfGeneration['Technology'][i]
         for i in NodeName:
             a.loc[a['region']   == i, 'region']   = dfNodeToZone['Zone'][i]
@@ -187,7 +230,7 @@ def Converter_Type3(X1):
 
     return a
 #%% Power Demand - Dataframe
-InputDemand                                                        = Converter_Type1('PowerDemand', var_PowerSystem, dfDemand, ModelName, CaseName, 0)
+InputDemand = Converter_Type1('PowerDemand', var_PowerSystem, dfDemand, ModelName, CaseName, 0)
 
 #%% Power Generation - Main Dataframe
 ScenarioName = InputDemand['scenario'][0]
@@ -274,6 +317,7 @@ pNetwork                                                      = dfNetwork.reset_
 for i in NodeName:
     pNetwork.loc[pNetwork['InitialNode'] == i, 'InitialNode'] = dfNodeToZone['Zone'][i]
     pNetwork.loc[pNetwork['FinalNode'  ] == i, 'FinalNode'  ] = dfNodeToZone['Zone'][i]
+pNetwork                                                      = pNetwork.loc[pNetwork['InitialNode'] != pNetwork['FinalNode']].copy()
 pNetwork                                                      = pNetwork.assign(Model    = ModelName)
 pNetwork                                                      = pNetwork.assign(Scenario = ScenarioName)
 pNetwork                                                      = pNetwork.assign(Region   = pNetwork['InitialNode']+'>'+pNetwork['FinalNode'])
@@ -315,19 +359,16 @@ def YearColumnsToInt(df):
     return df.rename(columns={c: int(c) for c in df.columns if str(c).isdigit()})
 
 output_path = os.path.join(DirName, Folder, 'oT_IAMC_Data_Generation_'f'{ModelName}_{CaseName}.xlsx')
-with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-    YearColumnsToInt(InputGen).to_excel(writer, sheet_name='Sheet1', index=False)
+write_table_file(YearColumnsToInt(InputGen), output_path)
 print(f"Files saved to {output_path}")
 print(f'Writing Generation data: OK')
 
 output_path = os.path.join(DirName, Folder, 'oT_IAMC_Data_Network_'f'{ModelName}_{CaseName}.xlsx')
-with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-    YearColumnsToInt(InputTran).to_excel(writer, sheet_name='Sheet1', index=False)
+write_table_file(YearColumnsToInt(InputTran), output_path)
 print(f'Writing Network    data: OK')
 
 output_path = os.path.join(DirName, Folder, 'oT_IAMC_Data_Demand_'f'{ModelName}_{CaseName}.xlsx')
-with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-    YearColumnsToInt(InputDemand).to_excel(writer, sheet_name='Sheet1', index=False)
+write_table_file(YearColumnsToInt(InputDemand), output_path)
 print(f'Writing Demand     data: OK')
 
 # Mapping of a short key to each IAMC variable-definition CSV file name.
@@ -379,7 +420,7 @@ ResultDefinitions = {
 def ReadOutputDictionaries():
     OutputDictionaries = {}
     for key, file_name in Files.items():
-        dictionary = pd.read_csv(os.path.join(DirName, Folder, file_name), index_col=[0], encoding='cp1252')
+        dictionary = read_table_file(os.path.join(DirName, Folder, file_name), index_col=[0])
         dictionary.index = dictionary.index.astype(str).str.strip()
         OutputDictionaries[key] = dictionary
     return OutputDictionaries
@@ -413,7 +454,11 @@ def ConvertResultToIAMC(ResultName, ResultData, OutputDictionaries):
             # the region name, and every line joining the same pair of zones collapses in the pivot_table below, whose aggfunc='sum' adds them up
             ni = long_data['InitialNode'].astype(str)
             nf = long_data['FinalNode'  ].astype(str)
-            region = ni.map(dfNodeToZone['Zone']).fillna(ni) + '>' + nf.map(dfNodeToZone['Zone']).fillna(nf)
+            ni_zone = ni.map(dfNodeToZone['Zone']).fillna(ni)
+            nf_zone = nf.map(dfNodeToZone['Zone']).fillna(nf)
+            interzonal_mask = ni_zone != nf_zone
+            long_data = long_data.loc[interzonal_mask].copy()
+            region = ni_zone.loc[interzonal_mask] + '>' + nf_zone.loc[interzonal_mask]
         else:
             region = (long_data['InitialNode'].astype(str) + '|' + long_data['Circuit'].astype(str) + '>'
                       + long_data['FinalNode'].astype(str) + '|' + long_data['Circuit'].astype(str))
@@ -460,10 +505,9 @@ for ResultName, ReadOptions in ResultFiles.items():
         print(f'WARNING: result file not found, skipping: oT_Result_{ResultName}_{CaseName}.csv')
         continue
 
-    ResultData = pd.read_csv(ResultPath, **ReadOptions)
+    ResultData = read_table_file(ResultPath, **ReadOptions)
     IAMCResult = ConvertResultToIAMC(ResultName, ResultData, OutputDictionaries)
     OutputPath = os.path.join(DirName, Folder, f'oT_IAMC_Result_{ResultName}_{ModelName}_{CaseName}.xlsx')
-    with pd.ExcelWriter(OutputPath, engine='xlsxwriter') as writer:
-        IAMCResult.to_excel(writer, sheet_name='Sheet1', index=False)
+    write_table_file(IAMCResult, OutputPath)
     ConvertedResults += 1
     print(f'Writing {ResultName:31s} result: OK')
