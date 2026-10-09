@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 22, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 09, 2026
 """
 
 import time
@@ -282,7 +282,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     #   pIndACConverter           0 HVDC links carry active power only, as in the DC model (default); 1 line-commutated: each station
     #                             draws tan(acos(pf)) times the active power it transfers; 2 voltage-source: each station supplies or
     #                             absorbs reactive power within its rating, like a STATCOM.
-    #   pIndACApparentPowerLimit  0 current limit only (default); 1 also P^2 + Q^2 <= rating^2 at both ends. Branch flow only.
+    #   pIndACApparentPowerLimit  0 current limit only (default); 1 also P^2 + Q^2 <= rating^2 at both ends: in branch flow, and in bus
+    #                             injection when it is solved as a non-linear program (3, or 2 with IndACCycle, or IndACModelType 2).
     #   pIndACRestoreWarmStart    0 ipopt defaults (default); 1 start the AC recovery step close to the relaxed solution.
     #   pIndBinShuntSwitch        1 a switchable shunt is on or off (default); 0 its state is relaxed to [0,1], which keeps an AC run
     #                             continuous at the cost of a bank partly in service.

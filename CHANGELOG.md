@@ -2,6 +2,9 @@
 
 ## [4.19.0rc] - 2026-10-03 Unreleased in PyPI
 
+- [FIXED] `IndACApparentPowerLimit` was applied in branch flow only. It now also limits the apparent power at both ends
+  in bus injection solved as a non-linear program (`IndACPowerFlow = 3`, or `2` with `IndACCycle = 1`, or `IndACModelType = 2`).
+  In the W-space cone solved with Gurobi it is not applied, and a warning says so.
 - [FIXED] electricity inventory constraint eESSInventory units omit the vESSTotalCharge due to the H2 production for electrolyzer
 - [CHANGED] Hourly default value of StorageTypeH2.
 - [ADDED] added NetworkH2Excess file for every area with the excess of H2 production over the demand.
