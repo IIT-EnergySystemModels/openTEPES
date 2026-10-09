@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 02, 2026
 
 Hydrogen network operation results.
 
@@ -32,12 +32,12 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     DIR   = os.path.dirname(__file__)
     StartTime = time.time()
 
-    # incoming and outgoing pipelines (lin) (lout)
-    lin  = defaultdict(set)
-    lout = defaultdict(set)
+    # incoming and outgoing pipelines (pin) (pout)
+    pin  = defaultdict(set)
+    pout = defaultdict(set)
     for ni,nf,cc in mTEPES.pa:
-        lin [nf].add((ni,cc))
-        lout[ni].add((nf,cc))
+        pin [nf].add((ni,cc))
+        pout[ni].add((nf,cc))
 
     # nodes to electrolyzers (l2n)
     l2n = defaultdict(set)
@@ -71,7 +71,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         if g in mTEPES.el:
             e2t[gt].add(g)
 
-    sPSNARND    = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd])]
+    sPSNARND    = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(pout[nd]) + len(pin[nd])]
     # the guard only depends on (p,gt), so evaluate it once per pair instead of once per (p,sc,n,ar,nd,gt) tuple of the product below
     pTechActive = {(p,gt): any((p,el) in mTEPES.pes for el in e2t[gt]) or any((p,hh) in mTEPES.phh for hh in g2t[gt]) for p in mTEPES.p for gt in mTEPES.gt}
     sPSNARNDGT  = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if pTechActive[p,gt]]
@@ -85,8 +85,8 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults4 = pd.Series(data=[     OptModel.vH2NS           [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                                for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenNotServed'  )
     OutputResults5 = pd.Series(data=[    -OptModel.vH2Exc          [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                                for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenExcess'     )
     OutputResults6 = pd.Series(data=[-      mTEPES.pDemandH2       [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenDemand'     )
-    OutputResults7 = pd.Series(data=[-sum(OptModel.vFlowH2         [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                         for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa)  for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowOut'    )
-    OutputResults8 = pd.Series(data=[ sum(OptModel.vFlowH2         [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                         for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.ppa)  for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowIn'     )
+    OutputResults7 = pd.Series(data=[-sum(OptModel.vFlowH2         [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                         for nf,cc in pout[nd] if (p,nd,nf,cc) in mTEPES.ppa)  for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowOut'    )
+    OutputResults8 = pd.Series(data=[ sum(OptModel.vFlowH2         [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                         for ni,cc in pin [nd] if (p,ni,nd,cc) in mTEPES.ppa)  for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowIn'     )
     # the balance table is in tonnes, as the electricity one is in GWh: every rate takes pLoadLevelDuration, the stage weight times the hours of the level
     OutputResults9 = pd.Series(data=[ sum(OptModel.vH2Production   [p,sc,n,sr      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()        for sr in r2n[nd])                                                    for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenProducedNoElec')
     OutputResults10= pd.Series(data=[ sum(OptModel.vH2Production   [p,sc,n,sr      ]()*mTEPES.pProductionEmissionH2[sr]*mTEPES.pLoadLevelDuration[p,sc,n]() for sr in r2n[nd])                                                    for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenSourceEmission')
@@ -118,9 +118,14 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkH2Utilization_{CaseName}.csv', index=False, sep=',')
 
     # r2n too, so a node supplied only by a reformer reports its unserved hydrogen
-    sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd])]
+    sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(pout[nd]) + len(pin[nd])]
     OutputToFile = pd.Series(data=[OptModel.vH2NS[p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
     OutputToFile.to_frame(name='tH2/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tH2/h').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkHNS_{CaseName}.csv', sep=',')
+
+    # r2n too, so a node supplied only by a reformer reports its unserved hydrogen
+    sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(pout[nd]) + len(pin[nd])]
+    OutputToFile = pd.Series(data=[OptModel.vH2Exc[p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
+    OutputToFile.to_frame(name='tH2/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tH2/h').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkH2Excess_{CaseName}.csv', sep=',')
 
     # hydrogen storage output: scoped to gg, so the generation writer never sees it
     if mTEPES.hs:
@@ -249,4 +254,4 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     fig.write_html(f'{_path}/oT_Plot_MapNetworkH2_{CaseName}.html')
 
     PlottingNetMapsTime = time.time() - StartTime
-    print('Plotting hydrogen    network     maps  ... ', round(PlottingNetMapsTime), 's')
+    print('Plotting   hydrogen  network     maps  ... ', round(PlottingNetMapsTime), 's')

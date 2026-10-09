@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 22, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 04, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -12,7 +12,7 @@ import math
 import networkx as nx
 import pandas   as pd
 from collections   import defaultdict
-from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, tan, NonNegativeReals, Objective, SolverFactory, Suffix, sin, sqrt
+from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, NonNegativeReals, Objective, SolverFactory, Suffix, tan, sin, sqrt
 
 
 def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -304,7 +304,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eInflows2Comm             ... ', len(getattr(OptModel, f'eInflows2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eESSInventory(OptModel,n,es):
-        if (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
+        if (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0) or (mTEPES.pMaxStorage[p,sc,n,es]() == 0.0 and es in mTEPES.el):
             return Constraint.Skip
         if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
             if es not in mTEPES.ec:
@@ -2399,6 +2399,12 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     # 0.0375. A limit of 10000 leaves room for a case three times harder while still bounding a case that never converges: 3137 iterations took 66 s
     # on that one, so the ceiling costs about three and a half minutes.
     Solver.options['max_iter'] = 10000
+    # IndACRestoreWarmStart = 1: start close to the relaxed solution. 14 times faster on one hour of a 695-bus case, but one day of the same case
+    # did not converge within max_iter, so it is not the default. An ipopt.opt file can override these settings.
+    if getattr(mTEPES, 'pIndACRestoreWarmStart', None) is not None and mTEPES.pIndACRestoreWarmStart():
+        Solver.options['bound_push'] = 1e-8
+        Solver.options['bound_frac'] = 1e-8
+        Solver.options['mu_init']    = 1e-6
     # Pyomo loads a solver's solution into the model as it returns, so an iterate from a solve that is about to be rejected would replace the relaxed
     # values before the termination condition below is read, and every result written afterwards would describe a point that did not converge. Holding
     # the solution back until the condition has been read is what makes the warning below true.

@@ -409,5 +409,4 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     LargestUnit.to_frame(name='p.u.').rename_axis(['Period', 'Scenario'], axis=0).oT.write(f'{_path}/oT_Result_LargestUnitPerUnit_{CaseName}.csv', index=True, sep=',')
 
     WritingResultsTime = time.time() - StartTime
-    print('Writing           reliability indexes  ... ', round(WritingResultsTime), 's')
-
+    print('Writing           reliability results  ... ', round(WritingResultsTime), 's')

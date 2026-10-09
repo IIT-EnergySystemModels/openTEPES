@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 22, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 02, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
 (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
@@ -17,7 +17,7 @@ from   pyomo.environ import Set, Param, Binary, NonNegativeReals, NonNegativeInt
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative import below has no parent package;
 # fall back to an absolute package import in that case.
 try:
-    from .openTEPES_InputData          import ConfigureACData
+    from          .openTEPES_InputData import ConfigureACData
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -647,10 +647,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxEnergy['Monthly'] = round( 672/mTEPES.pDurationNZMax)
     idxEnergy['Yearly' ] = round(8736/mTEPES.pDurationNZMax)
 
-    par['pStorageTimeStep']  = par['pStorageType' ].map(idxCycle   ).fillna(1)                                                                                          .astype('int')
-    par['pStorageTimeStepH2'] = par['pStorageTypeH2'].map(idxCycle).fillna(1).astype('int')
-    par['pOutflowsTimeStep'] = par['pOutflowsType'].map(idxOutflows).fillna(1).where(par['pEnergyOutflows'   ].sum()                                   > 0.0, other = 1).astype('int')
-    par['pEnergyTimeStep']   = par['pEnergyType'  ].map(idxEnergy  ).fillna(1).where(par['pVariableMinEnergy'].sum() + par['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
+    par['pStorageTimeStep'  ] = par['pStorageType'  ].map(idxCycle   ).fillna(1)                                                                                          .astype('int')
+    par['pStorageTimeStepH2'] = par['pStorageTypeH2'].map(idxCycle   ).fillna(1)                                                                                          .astype('int')
+    par['pOutflowsTimeStep' ] = par['pOutflowsType' ].map(idxOutflows).fillna(1).where(par['pEnergyOutflows'   ].sum()                                   > 0.0, other = 1).astype('int')
+    par['pEnergyTimeStep'   ] = par['pEnergyType'   ].map(idxEnergy  ).fillna(1).where(par['pVariableMinEnergy'].sum() + par['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
     # Same period vocabulary, but not gated on the min/max energy profiles: neutrality needs a block
     # length whether or not the unit also carries an energy bound.
     par['pNeutralityTimeStep'] = par['pEnergyType'].map(idxEnergy).fillna(1).astype('int')
@@ -1211,6 +1211,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pIndACModelType       = Param(initialize=par['pIndACModelType']      , within=NonNegativeIntegers, doc='Indicator of the AC model type: 0 SOCP, 1 piecewise linear, 2 exact NLP'            )
     mTEPES.pIndACRestore         = Param(initialize=par['pIndACRestore']        , within=NonNegativeIntegers, doc='Indicator of the exact AC restoration pass: 0 off, 1 on'                 )
     mTEPES.pIndACApparentPowerLimit = Param(initialize=par['pIndACApparentPowerLimit'], within=Binary,          doc='Apparent power limit at both ends of an AC branch: 0 off, 1 on'          )
+    mTEPES.pIndACRestoreWarmStart = Param(initialize=par['pIndACRestoreWarmStart'], within=Binary,            doc='AC recovery step started close to the relaxed solution: 0 off, 1 on'  )
     mTEPES.pIndACConverter       = Param(initialize=par['pIndACConverter']      , within=NonNegativeIntegers, doc='Indicator of the HVDC converter model: 0 none, 1 LCC, 2 VSC'             )
     mTEPES.pIndACCycle           = Param(initialize=par['pIndACCycle']          , within=NonNegativeIntegers, doc='Loop condition around each independent cycle: 0 off, 1 on'               )
     mTEPES.pIndBinShuntSwitch    = Param(initialize=par['pIndBinShuntSwitch']   , within=Binary,              doc='Hourly shunt on/off state: 1 binary, 0 relaxed'                         )
@@ -1223,7 +1224,12 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     _h2_exc = par.get('pH2ExcCost')
     if _h2_exc is None or _h2_exc != _h2_exc:            # absent, or the column present and the cell blank
         _h2_exc = par['pHNSCost']*0.5
-    mTEPES.pH2ExcCost            = Param(initialize=_h2_exc                    , within=NonNegativeReals,    doc='H2 excess cost'                                     )
+
+    if par['pMaxRatioDwUp'] == 0.0: par['pMaxRatioDwUp'] = 1.0
+    if par['pMinRatioDwUp'] < 0.0 or par['pMinRatioDwUp'] > 1.0 or par['pMaxRatioDwUp'] < 0.0 or par['pMaxRatioDwUp'] > 1.0 or par['pMinRatioDwUp'] > par['pMaxRatioDwUp']:
+        raise ValueError(f"Invalid reserve ratio parameters: pMinRatioDwUp={par['pMinRatioDwUp']}, pMaxRatioDwUp={par['pMaxRatioDwUp']}. Must satisfy 0 <= pMinRatioDwUp <= pMaxRatioDwUp, 0 <= pMaxRatioDwUp <= 1.0.")
+
+    mTEPES.pH2ExcCost            = Param(initialize=_h2_exc                     , within=NonNegativeReals,    doc='H2 excess cost'                                     )
     mTEPES.pHeatNSCost           = Param(initialize=par['pHTNSCost']            , within=NonNegativeReals,    doc='HTNS cost'                                          )
     mTEPES.pCO2Cost              = Param(initialize=par['pCO2Cost']             , within=NonNegativeReals,    doc='CO2 emission cost'                                  )
     mTEPES.pAnnualDiscRate       = Param(initialize=par['pAnnualDiscountRate']  , within=UnitInterval,        doc='Annual discount rate'                               )
@@ -1319,15 +1325,15 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pOperReserveDwEnergy = Param(mTEPES.psnar, initialize=par['pOperReserveDwEnergy'].to_dict()   , within=NonNegativeReals,    doc='Operating reserve activation'                        )
 
     if par['pIndHydrogen']:
-        mTEPES.pProductionFunctionH2 = Param(mTEPES.el, initialize=par['pProductionFunctionH2'].to_dict()    , within=NonNegativeReals,    doc='Production function of an electrolyzer plant'        )
+        mTEPES.pProductionFunctionH2        = Param(mTEPES.el, initialize=par['pProductionFunctionH2'].to_dict()    , within=NonNegativeReals,    doc='Production function of an electrolyzer plant'        )
         mTEPES.pProductionFunctionH2ToPower = Param(mTEPES.h2p, initialize=par['pProductionFunctionH2ToPower'].to_dict(), within=NonNegativeReals, doc='Production function of a hydrogen-fired generator')
-        mTEPES.pMaxStorageH2      = Param(mTEPES.hs, initialize=par['pMaxStorageH2'].to_dict()     , within=NonNegativeReals, doc='Maximum hydrogen storage    [tH2]')
-        mTEPES.pMaxChargeH2       = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2/h]')
-        mTEPES.pIniStorageH2      = Param(mTEPES.hs, initialize=par['pIniStorageH2'].to_dict()     , within=NonNegativeReals, doc='Initial hydrogen storage    [tH2]')
-        mTEPES.pStorageTimeStepH2 = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle [load levels]')
-        mTEPES.pMaximumProductionH2  = Param(mTEPES.sr, initialize=par['pMaximumProductionH2'].to_dict() , within=NonNegativeReals, doc='Maximum hydrogen production without electricity [tH2/h]')
-        mTEPES.pProductionCostH2     = Param(mTEPES.sr, initialize=par['pProductionCostH2'].to_dict()    , within=NonNegativeReals, doc='Cost of that hydrogen, fuel + VOM + carbon    [MEUR/tH2]')
-        mTEPES.pProductionEmissionH2 = Param(mTEPES.sr, initialize=par['pProductionEmissionH2'].to_dict(), within=NonNegativeReals, doc='Carbon emitted making it, for reporting      [tCO2/tH2]')
+        mTEPES.pMaxStorageH2                = Param(mTEPES.hs, initialize=par['pMaxStorageH2'].to_dict()     , within=NonNegativeReals, doc='Maximum hydrogen storage    [tH2]')
+        mTEPES.pMaxChargeH2                 = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2/h]')
+        mTEPES.pIniStorageH2                = Param(mTEPES.hs, initialize=par['pIniStorageH2'].to_dict()     , within=NonNegativeReals, doc='Initial hydrogen storage    [tH2]')
+        mTEPES.pStorageTimeStepH2           = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle [load levels]')
+        mTEPES.pMaximumProductionH2         = Param(mTEPES.sr, initialize=par['pMaximumProductionH2'].to_dict() , within=NonNegativeReals, doc='Maximum hydrogen production without electricity [tH2/h]')
+        mTEPES.pProductionCostH2            = Param(mTEPES.sr, initialize=par['pProductionCostH2'].to_dict()    , within=NonNegativeReals, doc='Cost of that hydrogen, fuel + VOM + carbon    [MEUR/tH2]')
+        mTEPES.pProductionEmissionH2        = Param(mTEPES.sr, initialize=par['pProductionEmissionH2'].to_dict(), within=NonNegativeReals, doc='Carbon emitted making it, for reporting      [tCO2/tH2]')
 
     if par['pIndHeat']:
         par['pMinPowerHeat'] = filter_rows(par['pMinPowerHeat'], mTEPES.psnch)

@@ -1,6 +1,6 @@
 # Change Log
 
-## [4.19.0rc] - 2026-09-25 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-03 Unreleased in PyPI
 
 - [FIXED] `IndACApparentPowerLimit` now also limits the apparent power at both ends of each branch in bus injection solved as a
   non-linear program: rectangular coordinates (`IndACPowerFlow = 3`), W space with the loop condition (`IndACPowerFlow = 2`,
@@ -10,7 +10,16 @@
   recovery step, which they now reach to four decimals over a day in a sixth of the solve time. In the W-space cone solved
   with Gurobi the option is not applied and a warning says so: the inscribed polygon made the barrier stop with numerical
   trouble on `9n_AC` although ipopt solved the same model.
+- [FIXED] electricity inventory constraint eESSInventory units omit the vESSTotalCharge due to the H2 production for electrolyzer
+- [CHANGED] Hourly default value of StorageTypeH2.
+- [ADDED] added NetworkH2Excess file for every area with the excess of H2 production over the demand.
+- [CHANGED] don't formulate the inventory constraint if maximum storage = 0.
+- [FIXED] detection of connecting lines in a H2 and heat networks to assign H2 and heat not served
+- [ADDED] added AvarageVariableCost file for every area with the load level operation cost (operation, operating reserve, O&M, emission, reliability)
+  divided by the load level demand.
+- [FIXED] protect against values 0 of TTCFwd and TTCBck fo H2 and heat pipelines
 - [FIXED] computation of dual variable in OutputResultsStorage
+- [ADDED] `IndACRestoreWarmStart` starts the AC recovery step close to the relaxed solution; off by default.
 - [FIXED] with `IndACRestore = 1`, the locational marginal prices are the duals of the AC recovery step instead of none.
 - [FIXED] considering the period availability of the generating units in the objective function
 - [ADDED] `IndACApparentPowerLimit` in `oT_Data_Option` limits the apparent power at both ends of each AC branch to its rating.

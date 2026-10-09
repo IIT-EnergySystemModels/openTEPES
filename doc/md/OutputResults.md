@@ -1130,6 +1130,8 @@ A relaxed solve is not expected to satisfy the series relation exactly, and the 
 the bundled `9n_AC` case the relaxed solution is about 68 MW off; with `IndACRestore = 1` the same case returns 0.00001 MW.
 
 With `IndACRestore = 1`, the locational marginal prices are the duals of the AC recovery step, at the restored operating point.
+With `IndACRestoreWarmStart = 1`, the recovery step starts ipopt close to the relaxed solution (`bound_push` and `bound_frac`
+1e-8, `mu_init` 1e-6); an `ipopt.opt` file in the working folder overrides these settings.
 
 ## Hydrogen balance and network operation
 
@@ -1230,6 +1232,16 @@ File `oT_Result_NetworkHNS.csv`
 Identifier                            Header      Description
 ====================================  ==========  ====================================
 Period        Scenario    Load level  Node        Hydrogen not served by node [tH2/h]
+============  ==========  ==========  ==========  ====================================
+```
+
+File `oT_Result_NetworkH2Excess.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ====================================
+Identifier                            Header      Description
+====================================  ==========  ====================================
+Period        Scenario    Load level  Node        Hydrogen excess by node [tH2/h]
 ============  ==========  ==========  ==========  ====================================
 ```
 
@@ -1665,6 +1677,16 @@ Identifier                Header      Description
 ========================  ==========  =================================================
 Period        Scenario    Area        Marginal of the minimum RES energy [€/MWh]
 ============  ==========  ==========  =================================================
+```
+
+File `oT_Result_AverageVariableCost_AreaName.csv`
+
+```{eval-rst}
+============  ==========  ==========  ===========================================================================================================
+Identifier                            Description
+=================================================================================================================================================
+Period        Scenario    Load level  Variable cost (operating reserve+O&M+emission+reliability) of the generators divided by the demand [€/MWh]
+============  ==========  ==========  ===========================================================================================================
 ```
 
 File `oT_Result_MarginalIncrementalVariableCost.csv`
