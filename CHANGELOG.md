@@ -2,14 +2,9 @@
 
 ## [4.19.0rc] - 2026-10-03 Unreleased in PyPI
 
-- [FIXED] `IndACApparentPowerLimit` now also limits the apparent power at both ends of each branch in bus injection solved as a
-  non-linear program: rectangular coordinates (`IndACPowerFlow = 3`), W space with the loop condition (`IndACPowerFlow = 2`,
-  `IndACCycle = 1`) and the exact model type. It was read but applied in branch flow only, so in bus injection the far end of a
-  branch had no apparent power limit. On the 695-bus Nordic case with the thinner conductor bundle, rectangular coordinates
-  priced SE4 at 127.0 EUR/MWh at the evening peak without the limit and 226.6 with it, the branch flow optimum with the AC
-  recovery step, which they now reach to four decimals over a day in a sixth of the solve time. In the W-space cone solved
-  with Gurobi the option is not applied and a warning says so: the inscribed polygon made the barrier stop with numerical
-  trouble on `9n_AC` although ipopt solved the same model.
+- [FIXED] `IndACApparentPowerLimit` was applied in branch flow only. It now also limits the apparent power at both ends
+  in bus injection solved as a non-linear program (`IndACPowerFlow = 3`, or `2` with `IndACCycle = 1`, or `IndACModelType = 2`).
+  In the W-space cone solved with Gurobi it is not applied, and a warning says so.
 - [FIXED] electricity inventory constraint eESSInventory units omit the vESSTotalCharge due to the H2 production for electrolyzer
 - [CHANGED] Hourly default value of StorageTypeH2.
 - [ADDED] added NetworkH2Excess file for every area with the excess of H2 production over the demand.
