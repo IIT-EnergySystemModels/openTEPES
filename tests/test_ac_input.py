@@ -1871,3 +1871,39 @@ def test_ac_without_zero_ens_keeps_both_reactive_slacks_free():
     assert not mTEPES.pIndHardZeroENS(), "9n_AC should not set the flag"
     assert not any(mTEPES.vQNSPos[k].fixed for k in mTEPES.vQNSPos)
     assert not any(mTEPES.vQNSNeg[k].fixed for k in mTEPES.vQNSNeg)
+
+# --------------------------------------------------------------------------------------------------------------------
+# The rectangular model started from the W-space cone
+# --------------------------------------------------------------------------------------------------------------------
+
+@pytest.mark.solve
+def test_cone_start_reaches_the_flat_start_optimum(tmp_path):
+    """With IndACConeStart the rectangular model starts from the cone and lands on the same optimum as from a flat start,
+    the cone cost is kept as a lower bound on it, and the model is left with the rectangular block only."""
+    from pyomo.environ import Constraint
+
+    pCost = {}
+    for pStart in (0, 1):
+        dir_name, case = _tiny_ac_case(tmp_path, f"9n_cone_start{pStart}", hours=2, restore=0)
+        _edit_csv(dir_name, case, "Option", lambda df: (df.__setitem__("IndACPowerFlow", 3),
+                                                        df.__setitem__("IndACConeStart", pStart)), index_col=None)
+        mTEPES = _run_or_skip(dir_name, case, "ipopt", 0, 0)
+        pCost[pStart] = mTEPES.vTotalSCost()
+        if pStart:
+            pBounds = getattr(mTEPES, "pACConeBound", {})
+            assert pBounds, "the cone start recorded no lower bound"
+            for pBound in pBounds.values():
+                assert pBound <= pCost[1] + 1e-6, f"the cone cost {pBound} is above the exact cost {pCost[1]}: not a bound"
+            assert not hasattr(mTEPES, "vWre"), "the cone variables were left on the rectangular model"
+            assert not [c.name for c in mTEPES.component_objects(Constraint) if c.name.endswith("cone")], "the cone block was left on the model"
+    assert abs(pCost[1] - pCost[0]) <= 1e-4 * max(abs(pCost[0]), 1e-9), f"cone start {pCost[1]} differs from flat start {pCost[0]}"
+
+
+def test_cone_start_needs_the_rectangular_model(tmp_path):
+    """IndACConeStart with any other network model is refused when the case is read."""
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_cone_start_mode")
+    _edit_csv(dir_name, name, "Option", lambda df: (df.__setitem__("IndACPowerFlow", 2),
+                                                    df.__setitem__("IndACConeStart", 1)), index_col=None)
+    mTEPES = ConcreteModel(name)
+    with pytest.raises(ValueError, match="IndACConeStart"):
+        InputData(dir_name, name, mTEPES, 0)

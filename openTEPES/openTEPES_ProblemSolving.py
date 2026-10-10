@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 10, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -32,6 +32,7 @@ try:
     from          .openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
     from          .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from          .openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
+    from          .openTEPES_ModelFormulationElectricity import ACConeWarmStart
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,6 +40,7 @@ except ImportError:
     from openTEPES.openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
     from openTEPES.openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from openTEPES.openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
+    from openTEPES.openTEPES_ModelFormulationElectricity import ACConeWarmStart
 
 
 _DUALS_UNAVAILABLE = re.compile(r"Unable to retrieve attribute '(Pi|QCPi)'")
@@ -72,6 +74,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     StartTime = time.time()
 
     FileName = f"{_path}/openTEPES_{SolverName}_{CaseName}_{p}_{sc}_{st}.log"
+
+    # ---- The rectangular model started from the W-space cone of the same stage (IndACConeStart) ----
+    if mTEPES.pIndACPowerFlow() == 3 and getattr(mTEPES, 'pIndACConeStart', None) is not None and mTEPES.pIndACConeStart():
+        ACConeWarmStart(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, p, sc, st)
 
     # ---- Set up solver (persistent or one-shot) ----
     Solver = setup_solver(OptModel, SolverName, FileName, ncall, mTEPES)
@@ -146,6 +152,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # ---- Cost-summary report (stays inline; moves to Layer 6 results/ in a follow-on PR) ----
     print            ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost(), ' Constraints', OptModel.model().nconstraints(), ' Variables', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, ' Seconds', round(SolvingTime))
+    pBound = getattr(mTEPES, 'pACConeBound', {}).get((p, sc, st))
+    if pBound is not None and OptModel.vTotalSCost():
+        pCost = OptModel.vTotalSCost()
+        print(f'  AC cone lower bound          cost [MEUR]  {pBound:.6f}  gap {100.0 * (pCost - pBound) / abs(pCost):.3f} % of the exact cost')
     if mTEPES.NoRepetition == 1:
         pScenFactor = {(pp,scc): mTEPES.pDiscountedWeight[pp] * mTEPES.pScenProb[pp,scc]() for pp,scc in mTEPES.ps}
         for pp,scc in mTEPES.ps:

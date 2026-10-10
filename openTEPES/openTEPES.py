@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 10, 2026
 """
 
 # import dill as pickle
@@ -187,6 +187,8 @@ def ReportConfiguration(mTEPES):
             print(f'  branch thermal limit                 ... {"current and apparent power" if mTEPES.pIndACApparentPowerLimit() else "current"}')
         if mTEPES.pIndACPowerFlow() == 2:
             print(f'  loop condition (IndACCycle)          ... {"on" if mTEPES.pIndACCycle() else "off"}')
+        if mTEPES.pIndACPowerFlow() == 3:
+            print(f'  start of the rectangular model       ... {"the W-space cone of the stage (IndACConeStart)" if mTEPES.pIndACConeStart() else "flat profile"}')
         pConv = {0: 'none', 1: 'line-commutated', 2: 'voltage-source'}
         print(f'  HVDC converters                      ... {pConv.get(mTEPES.pIndACConverter(), mTEPES.pIndACConverter())}')
         if mTEPES.pIndACConverter() and (mTEPES.pConverterNoLoadLoss() or mTEPES.pConverterMarginalLoss()):

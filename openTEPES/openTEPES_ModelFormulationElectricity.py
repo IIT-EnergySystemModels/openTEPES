@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 10, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -7,6 +7,7 @@ a caller can pick which to build (e.g. with or without unit commitment).
 """
 from __future__ import annotations
 
+import os
 import time
 import math
 import networkx as nx
@@ -1278,10 +1279,15 @@ def _tap(mTEPES, la):
     return mTEPES.pLineTapFactor[la]
 
 
-def SettingUpVariablesBIM(OptModel, mTEPES):
-    """Declare the bus-injection voltage variables. Returns the number of variables fixed."""
-    pMode = mTEPES.pIndACPowerFlow()
+def SettingUpVariablesBIM(OptModel, mTEPES, pMode=None):
+    """Declare the bus-injection voltage variables. Returns the number of variables fixed.
+
+    ``pMode`` overrides ``IndACPowerFlow``: the cone warm start declares the W-space variables on a rectangular model."""
+    if pMode is None:
+        pMode = mTEPES.pIndACPowerFlow()
     if pMode not in (2, 3):
+        return 0
+    if hasattr(OptModel, 'vWre' if pMode == 2 else 'vVre'):
         return 0
 
     StartTime, nFixed = time.time(), 0
@@ -1323,9 +1329,15 @@ def SettingUpVariablesBIM(OptModel, mTEPES):
     return nFixed
 
 
-def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
-    """Bus-injection network constraints for one (period, scenario, stage)."""
-    pMode = mTEPES.pIndACPowerFlow()
+def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st, pMode=None, pTag='', pCycle=None):
+    """Bus-injection network constraints for one (period, scenario, stage).
+
+    ``pMode`` overrides ``IndACPowerFlow`` and ``pTag`` is appended to every constraint name: the cone warm start builds the
+    W-space block beside the rectangular one and removes it again by that tag."""
+    if pMode is None:
+        pMode = mTEPES.pIndACPowerFlow()
+    if pCycle is None:
+        pCycle = bool(mTEPES.pIndACCycle())
     if pMode not in (2, 3):
         return
 
@@ -1346,7 +1358,7 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
     if pMode == 3:
         def eVoltageSquare(OptModel, n, nd):
             return OptModel.vW[p,sc,n,nd] == OptModel.vVre[p,sc,n,nd] ** 2 + OptModel.vVim[p,sc,n,nd] ** 2
-        setattr(OptModel, f'eVoltageSquare_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eVoltageSquare, doc='|V|^2 from the rectangular parts'))
+        setattr(OptModel, f'eVoltageSquare_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.nd, rule=eVoltageSquare, doc='|V|^2 from the rectangular parts'))
 
     # --- branch flows ---------------------------------------------------------------------------------------------------------------------------
     def _flows(OptModel, n, ni, nf, cc):
@@ -1378,7 +1390,7 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
             if not _live((ni,nf,cc)):
                 return Constraint.Skip
             return getattr(OptModel, v)[p,sc,n,ni,nf,cc] == _flows(OptModel, n, ni, nf, cc)[k] * pSBase
-        setattr(OptModel, f'{pName}_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=rule, doc='bus-injection branch flow [GW/Gvar]'))
+        setattr(OptModel, f'{pName}_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.laa, rule=rule, doc='bus-injection branch flow [GW/Gvar]'))
 
     # --- the relaxation, and the thermal limit --------------------------------------------------------------------------------------------------
     if pMode == 2:
@@ -1392,13 +1404,13 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
             if not _live((ni,nf,cc)):
                 return Constraint.Skip
             return 2.0 * OptModel.vWsum[p,sc,n,ni,nf,cc] == OptModel.vW[p,sc,n,ni] + OptModel.vW[p,sc,n,nf]
-        setattr(OptModel, f'eBIMWsum_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMWsum, doc='half sum of the bus voltages squared'))
+        setattr(OptModel, f'eBIMWsum_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMWsum, doc='half sum of the bus voltages squared'))
 
         def eBIMWdif(OptModel, n, ni, nf, cc):
             if not _live((ni,nf,cc)):
                 return Constraint.Skip
             return 2.0 * OptModel.vWdif[p,sc,n,ni,nf,cc] == OptModel.vW[p,sc,n,ni] - OptModel.vW[p,sc,n,nf]
-        setattr(OptModel, f'eBIMWdif_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMWdif, doc='half difference of the bus voltages squared'))
+        setattr(OptModel, f'eBIMWdif_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMWdif, doc='half difference of the bus voltages squared'))
 
         # STANDARD second-order cone: ||(Wre, Wim, v)|| <= u, one negative eigenvalue on a non-negative variable. The equivalent rotated form
         # Wre^2 + Wim^2 <= W_i W_j leaves an indefinite bilinear term whose convexity the solver has to infer.
@@ -1407,7 +1419,7 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
                 return Constraint.Skip
             return (OptModel.vWre[p,sc,n,ni,nf,cc] ** 2 + OptModel.vWim[p,sc,n,ni,nf,cc] ** 2
                     + OptModel.vWdif[p,sc,n,ni,nf,cc] ** 2 <= OptModel.vWsum[p,sc,n,ni,nf,cc] ** 2)
-        setattr(OptModel, f'eBIMCone_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMCone, doc='SOC relaxation of the rank-one condition'))
+        setattr(OptModel, f'eBIMCone_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMCone, doc='SOC relaxation of the rank-one condition'))
 
     def eBIMSLimit(OptModel, n, ni, nf, cc):
         if not _live((ni,nf,cc)):
@@ -1421,7 +1433,7 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
         pVmin = mTEPES.pVMinBus[ni] * _tap(mTEPES, (ni,nf,cc))
         return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] ** 2 + OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc] ** 2
                 <= (pSmax / pVmin) ** 2 * OptModel.vW[p,sc,n,ni] * OptModel.vLineCommit[p,sc,n,ni,nf,cc])
-    setattr(OptModel, f'eBIMSLimit_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMSLimit, doc='apparent power limit, gated on service [GVA]'))
+    setattr(OptModel, f'eBIMSLimit_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMSLimit, doc='apparent power limit, gated on service [GVA]'))
 
     # --- angle-difference bounds ----------------------------------------------------------------------------------------------------------------
     # The same band branch flow imposes on vTheta, and in W space it is LINEAR: Wre is |V_i||V_j| cos(theta_ij) and Wim is |V_i||V_j| sin(theta_ij),
@@ -1454,7 +1466,7 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
                 if pSign > 0:
                     return pIm <= pTan * pRe
                 return     pIm >= pTan * pRe
-            setattr(OptModel, f'{pName}_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=rule, doc='angle-difference band'))
+            setattr(OptModel, f'{pName}_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.laa, rule=rule, doc='angle-difference band'))
 
         _band(+1, 'eBIMAngleUp')
         _band(-1, 'eBIMAngleLo')
@@ -1472,13 +1484,13 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
     #
     # The tangent is non-convex, so this turns the relaxation into something closer to the exact model and needs a non-linear solver. Mode 2 already
     # wants ipopt for the reasons in the header.
-    if pMode == 2 and mTEPES.pIndACCycle():
+    if pMode == 2 and pCycle:
         def eBIMTangent(OptModel, n, ni, nf, cc):
             if not _live((ni,nf,cc)):
                 return Constraint.Skip
             return (OptModel.vWim[p,sc,n,ni,nf,cc]
                     == tan(OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]) * OptModel.vWre[p,sc,n,ni,nf,cc])
-        setattr(OptModel, f'eBIMTangent_{p}_{sc}_{st}',
+        setattr(OptModel, f'eBIMTangent_{p}_{sc}_{st}{pTag}',
                 Constraint(mTEPES.n*mTEPES.laa, rule=eBIMTangent, doc='angle tied to the voltage product, ACT form'))
 
     # --- the apparent power limit at both ends, optional ---------------------------------------------------------------------------------------------
@@ -1489,13 +1501,147 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
     # space with the loop condition, whose tangent equality already needs ipopt. In the W-space cone alone it is not: there the polygon made Gurobi's
     # barrier stop with numerical trouble on 9n_AC (12 hours) although ipopt solved the same model, and the homogeneous algorithm did not help.
     if mTEPES.pIndACApparentPowerLimit():
-        if pMode == 3 or mTEPES.pIndACModelType() == 2 or (pMode == 2 and bool(mTEPES.pIndACCycle())):
-            _ApparentPowerLimit(OptModel, mTEPES, p, sc, st, _live, pDisc=True)
+        if pMode == 3 or mTEPES.pIndACModelType() == 2 or (pMode == 2 and pCycle):
+            _ApparentPowerLimit(OptModel, mTEPES, p, sc, f'{st}{pTag}', _live, pDisc=True)
+        elif pTag:
+            # the cone of the warm start relaxes the limit as it relaxes everything else; the rectangular block keeps it
+            pass
         else:
             print('### WARNING: IndACApparentPowerLimit is not applied in the W-space cone (IndACPowerFlow = 2 without IndACCycle); only the '
                   'sending-end limit eBIMSLimit holds. Use branch flow, rectangular coordinates or the loop condition for the limit at both ends.')
 
     print('Generating BIM network constraints     ... ', round(time.time() - StartTime), 's')
+
+
+# Constraint names of the rectangular block, which the cone warm start switches off while the cone is solved.
+BIM_BLOCK_PREFIXES = ('eVoltageSquare', 'eBIM', 'eApparentLimit')
+
+
+def ACConeWarmStart(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, p, sc, st):
+    """Start the rectangular model (IndACPowerFlow = 3) from the W-space cone of the same stage.
+
+    The cone is a convex relaxation of the exact model, so its cost is a lower bound on the exact one and its point is
+    close to an exact point where the cone is tight. Starting the non-linear solve there instead of from a flat profile is
+    the usual second step in the literature (Kocuk et al. 2016, Venzke et al. 2020): the same optimum, reached faster.
+
+    Steps, on the stage model as built: the rectangular constraints are deactivated; the W-space variables and the cone
+    block are added under a tag; the cone is solved, with Gurobi when it is available and with the run's solver otherwise;
+    the voltage magnitude of every bus is the square root of its W diagonal and the angle differences are the arguments of
+    the W off-diagonals, propagated from the reference bus along a spanning tree, which is exact where the cone is tight;
+    the rectangular voltages are set from them, the dispatch keeps the cone's values, the cone block is removed and the
+    rectangular constraints are activated again. The bound is kept in ``mTEPES.pACConeBound[(p, sc, st)]`` so the solve
+    that follows can report the gap. If the cone does not solve, the model is left as it was and the solve starts flat.
+    """
+    try:
+        from .openTEPES_ProblemSolvingTuning import apply_solver_options
+    except ImportError:
+        from openTEPES.openTEPES_ProblemSolvingTuning import apply_solver_options
+
+    if mTEPES.pIndACPowerFlow() != 3:
+        return None
+    print('AC cone warm start                     ****')
+    StartTime = time.time()
+    pTag      = 'cone'
+    pSuffix   = f'_{p}_{sc}_{st}'
+
+    # the rectangular block of this stage goes to sleep; the cone block is built in its place
+    pSleeping = []
+    for c in OptModel.component_objects(Constraint, active=True):
+        if c.name.startswith(BIM_BLOCK_PREFIXES) and c.name.endswith(pSuffix):
+            c.deactivate()
+            pSleeping.append(c)
+    SettingUpVariablesBIM(OptModel, mTEPES, pMode=2)
+    NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st, pMode=2, pTag=pTag, pCycle=False)
+
+    # a dual Suffix left by an earlier stage would ask the conic solver for duals it may not have; the cone needs none
+    pDual = getattr(OptModel, 'dual', None)
+    if pDual is not None and pDual.active:
+        pDual.deactivate()
+    else:
+        pDual = None
+
+    pConeSolver = 'gurobi' if SolverFactory('gurobi').available(exception_flag=False) else SolverName
+    FileName    = os.path.join(DirName, CaseName, f'openTEPES_{pConeSolver}_cone_{CaseName}{pSuffix}.log')
+    # Gurobi's barrier failed at its second iteration on 6 of 24 day-bundles of a 695-bus case with the presets; presolve
+    # off solved three of them and the dual reductions switched back on the other three. Each attempt that fails costs seconds.
+    pAttempts = [{}, {'Presolve': 0}, {'DualReductions': 1}] if pConeSolver == 'gurobi' else [{}]
+    pStatus   = None
+    for pExtra in pAttempts:
+        Solver = SolverFactory(pConeSolver)
+        apply_solver_options(Solver, pConeSolver, FileName, 1, mTEPES)
+        for pName, pValue in pExtra.items():
+            Solver.options[pName] = pValue
+        Results = Solver.solve(OptModel, load_solutions=False, tee=bool(pIndLogConsole))
+        pStatus = str(Results.solver.termination_condition)
+        if pStatus in ('optimal', 'locallyOptimal', 'feasible'):
+            OptModel.solutions.load_from(Results)
+            break
+        print(f'### WARNING: the cone did not solve with {pConeSolver} {pExtra or "(presets)"}: {pStatus}')
+    pSolved = pStatus in ('optimal', 'locallyOptimal', 'feasible')
+
+    if pSolved:
+        pBound = OptModel.vTotalSCost()
+        if not hasattr(mTEPES, 'pACConeBound'):
+            mTEPES.pACConeBound = {}
+        mTEPES.pACConeBound[(p, sc, st)] = pBound
+        nSet = _ProjectConeToVoltages(OptModel, mTEPES, p, sc)
+        print(f'AC cone lower bound                    ... {pBound:.6f} MEUR, {nSet} bus voltages set from it')
+    else:
+        print('### WARNING: the cone warm start found no cone solution; the rectangular model starts from the flat profile.')
+
+    # the cone block goes, the rectangular block wakes up
+    for c in [c for c in OptModel.component_objects(Constraint) if c.name.endswith(pSuffix + pTag)]:
+        OptModel.del_component(c)
+    for pName in ('vWre', 'vWim', 'vWsum', 'vWdif'):
+        if hasattr(OptModel, pName):
+            OptModel.del_component(getattr(OptModel, pName))
+    for c in pSleeping:
+        c.activate()
+    if pDual is not None:
+        pDual.activate()
+    print('AC cone warm start                     ... ', round(time.time() - StartTime), 's')
+    return mTEPES.pACConeBound.get((p, sc, st)) if pSolved else None
+
+
+def _ProjectConeToVoltages(OptModel, mTEPES, p, sc):
+    """Set vVre and vVim of every load level of the stage from the cone's W, projected to rank one along a spanning tree.
+
+    |V_i| = sqrt(W_ii). W_ij = V_i conj(V_j), so arg W_ij = theta_i - theta_j, and the angles follow from the reference bus
+    of each connected part of the AC network outwards; a bus no AC branch reaches keeps its value. Returns the number of
+    buses set."""
+    pAdj = defaultdict(list)
+    for la in mTEPES.laa:
+        if (p,) + tuple(la) in mTEPES.pla:
+            pAdj[la[0]].append((la[1], la, +1.0))
+            pAdj[la[1]].append((la[0], la, -1.0))
+    pRef = mTEPES.rf.first()
+    nSet = 0
+    for n in mTEPES.n:
+        pTheta = {}
+        pRoots = [pRef] if pRef in pAdj else []
+        pRoots += [nd for nd in pAdj if nd not in pRoots]
+        for pRoot in pRoots:
+            if pRoot in pTheta:
+                continue
+            pTheta[pRoot] = 0.0
+            pQueue = [pRoot]
+            while pQueue:
+                ni = pQueue.pop(0)
+                for nf, la, pSign in pAdj[ni]:
+                    if nf in pTheta:
+                        continue
+                    k = (p, sc, n) + tuple(la)
+                    pArg = math.atan2(OptModel.vWim[k].value or 0.0, OptModel.vWre[k].value or 1.0)
+                    pTheta[nf] = pTheta[ni] - pSign * pArg
+                    pQueue.append(nf)
+        for nd, pAng in pTheta.items():
+            pMag = math.sqrt(max(OptModel.vW[p,sc,n,nd].value or 0.0, 0.0))
+            for pVar, pValue in ((OptModel.vVre, pMag * math.cos(pAng)), (OptModel.vVim, pMag * math.sin(pAng))):
+                if not pVar[p,sc,n,nd].fixed:
+                    pVar[p,sc,n,nd].set_value(pValue)
+            nSet += 1
+    return nSet
+
 
 # ======================================================================================================================
 # Branch flow AC formulation, the converter models and the exact restoration pass

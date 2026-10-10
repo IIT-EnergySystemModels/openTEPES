@@ -2,6 +2,9 @@
 
 ## [4.19.0rc] - 2026-10-03 Unreleased in PyPI
 
+- [ADDED] `IndACConeStart` starts the rectangular model (`IndACPowerFlow = 3`) from the W-space cone of the same stage:
+  the cone is solved first, its cost is reported as a lower bound with the gap to the exact cost, and the voltages are
+  set from its rank-one projection. Off by default.
 - [FIXED] `IndACApparentPowerLimit` was applied in branch flow only. It now also limits the apparent power at both ends
   in bus injection solved as a non-linear program (`IndACPowerFlow = 3`, or `2` with `IndACCycle = 1`, or `IndACModelType = 2`).
   In the W-space cone solved with Gurobi it is not applied, and a warning says so.
