@@ -1883,7 +1883,7 @@ def test_cone_start_reaches_the_flat_start_optimum(tmp_path):
     from pyomo.environ import Constraint
 
     pCost = {}
-    for pStart in (0, 1):
+    for pStart in (0, 1, 2):
         dir_name, case = _tiny_ac_case(tmp_path, f"9n_cone_start{pStart}", hours=2, restore=0)
         _edit_csv(dir_name, case, "Option", lambda df: (df.__setitem__("IndACPowerFlow", 3),
                                                         df.__setitem__("IndACConeStart", pStart)), index_col=None)
@@ -1893,10 +1893,37 @@ def test_cone_start_reaches_the_flat_start_optimum(tmp_path):
             pBounds = getattr(mTEPES, "pACConeBound", {})
             assert pBounds, "the cone start recorded no lower bound"
             for pBound in pBounds.values():
-                assert pBound <= pCost[1] + 1e-6, f"the cone cost {pBound} is above the exact cost {pCost[1]}: not a bound"
+                assert pBound <= pCost[pStart] + 1e-6, f"the cone cost {pBound} is above the exact cost {pCost[pStart]}: not a bound"
             assert not hasattr(mTEPES, "vWre"), "the cone variables were left on the rectangular model"
             assert not [c.name for c in mTEPES.component_objects(Constraint) if c.name.endswith("cone")], "the cone block was left on the model"
-    assert abs(pCost[1] - pCost[0]) <= 1e-4 * max(abs(pCost[0]), 1e-9), f"cone start {pCost[1]} differs from flat start {pCost[0]}"
+        if pStart == 2:
+            # the power flow from the projection leaves the model at a point where the nodal balances hold
+            pResiduals = getattr(mTEPES, "pACStartResidual", {})
+            assert pResiduals, "the power flow start recorded no balance residual"
+            for wP, wQ in pResiduals.values():
+                assert wP < 1e-2 and wQ < 1e-2, f"the balances are violated at the start by {wP:.4f} MW, {wQ:.4f} Mvar"
+        assert abs(pCost[pStart] - pCost[0]) <= 1e-4 * max(abs(pCost[0]), 1e-9), f"start {pStart} gives {pCost[pStart]}, the flat start {pCost[0]}"
+
+
+def test_cone_start_power_flow_converges_with_a_distributed_slack():
+    """The Newton power flow behind IndACConeStart = 2 on a two-bus network: a lossy line, a load at the far bus and the
+    reference bus taking the slack. The far bus settles where the AC equations say, and the slack equals the load plus the loss."""
+    import numpy as np
+    from openTEPES.openTEPES_ModelFormulationElectricity import _NewtonPV
+
+    pY = np.zeros((2, 2), dtype=complex)
+    y  = 1.0 / complex(0.01, 0.1)
+    pY[0, 0] += y; pY[1, 1] += y; pY[0, 1] -= y; pY[1, 0] -= y
+    pP, pQ = np.array([0.0, -0.5]), np.array([0.0, -0.1])
+    v, th, lam, nIt, pMis = _NewtonPV(pY, np.ones(2), np.zeros(2), pP, np.array([1.0, 0.0]), np.zeros(2, dtype=int), pQ,
+                                      np.array([True, False]), np.array([False, False]))
+    assert pMis < 1e-8 and nIt < 10
+    V = v * np.exp(1j * th)
+    S = V * np.conj(pY @ V)
+    assert abs(S[1] - complex(-0.5, -0.1)) < 1e-7, "the load bus does not carry its injection"
+    pLoss = abs(V[0] - V[1]) ** 2 * y.real
+    assert abs(lam[0] - (0.5 + pLoss)) < 1e-7, "the slack is not the load plus the loss"
+    assert v[1] < 1.0 and th[1] < 0.0, "a load bus sits below the reference in voltage and angle"
 
 
 def test_cone_start_needs_the_rectangular_model(tmp_path):
