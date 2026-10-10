@@ -11,9 +11,10 @@ import os
 import time
 import math
 import networkx as nx
+import numpy    as np
 import pandas   as pd
 from collections   import defaultdict
-from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, NonNegativeReals, Objective, SolverFactory, Suffix, tan, sin, sqrt
+from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, NonNegativeReals, Objective, SolverFactory, Suffix, tan, sin, sqrt, value
 
 
 def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -1531,6 +1532,11 @@ def ACConeWarmStart(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogCons
     the rectangular voltages are set from them, the dispatch keeps the cone's values, the cone block is removed and the
     rectangular constraints are activated again. The bound is kept in ``mTEPES.pACConeBound[(p, sc, st)]`` so the solve
     that follows can report the gap. If the cone does not solve, the model is left as it was and the solve starts flat.
+
+    With ``IndACConeStart = 2`` an AC power flow is solved from the projected point before the model is handed over, see
+    ``_PowerFlowFromProjection``: the projection of a loose cone is far from any AC operating point, and a non-linear solver
+    started there spends its first iterations repairing the power balance. The power flow gives it a point where the
+    balance already holds.
     """
     try:
         from .openTEPES_ProblemSolvingTuning import apply_solver_options
@@ -1586,6 +1592,8 @@ def ACConeWarmStart(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogCons
         mTEPES.pACConeBound[(p, sc, st)] = pBound
         nSet = _ProjectConeToVoltages(OptModel, mTEPES, p, sc)
         print(f'AC cone lower bound                    ... {pBound:.6f} MEUR, {nSet} bus voltages set from it')
+        if mTEPES.pIndACConeStart() == 2:
+            _PowerFlowFromProjection(OptModel, mTEPES, p, sc, st)
     else:
         print('### WARNING: the cone warm start found no cone solution; the rectangular model starts from the flat profile.')
 
@@ -1641,6 +1649,346 @@ def _ProjectConeToVoltages(OptModel, mTEPES, p, sc):
                     pVar[p,sc,n,nd].set_value(pValue)
             nSet += 1
     return nSet
+
+
+def _dSbus_dV(pY, pV):
+    """Derivatives of the bus injections with respect to the voltage angles and magnitudes (MATPOWER's dSbus_dV), dense."""
+    pI   = pY @ pV
+    dV   = np.diag(pV)
+    dI   = np.diag(pI)
+    dVn  = np.diag(pV / np.abs(pV))
+    dSdVm = dV @ np.conj(pY @ dVn) + np.conj(dI) @ dVn
+    dSdVa = 1j * dV @ np.conj(dI - pY @ dV)
+    return dSdVa, dSdVm
+
+
+def _NewtonPV(pY, pV0, pTheta0, pP, pAlpha, pArea, pQ, pRef, pPV, pTol=1e-8, pItMax=40):
+    """Newton-Raphson power flow in polar form with PV buses and one distributed slack per synchronous area.
+
+    Unknowns: the angle of every bus but the reference of its area, the magnitude of every PQ bus, and one slack
+    variable per area. Equations: the active power of every bus, ``P_i = pP_i + pAlpha_i * lambda_area(i)``, and the
+    reactive power ``pQ_i`` of every PQ bus. ``pRef`` and ``pPV`` are boolean masks; a reference bus holds both its
+    magnitude and its angle, a PV bus its magnitude. Dense: a few hundred buses solve in milliseconds, a few thousand in
+    seconds. Returns ``(v, theta, lambda, iterations, worst mismatch)``; the caller judges the mismatch."""
+    nBus, nArea = len(pV0), int(pArea.max()) + 1
+    iTheta = np.where(~pRef)[0]
+    iMag   = np.where(~pPV & ~pRef)[0]
+    v, th, lam = pV0.copy(), pTheta0.copy(), np.zeros(nArea)
+
+    def _f(v, th, lam):
+        V = v * np.exp(1j * th)
+        S = V * np.conj(pY @ V)
+        return V, np.concatenate([S.real - (pP + pAlpha * lam[pArea]), (S.imag - pQ)[iMag]])
+
+    V, F = _f(v, th, lam)
+    for k in range(pItMax):
+        if np.max(np.abs(F)) < pTol:
+            return v, th, lam, k, float(np.max(np.abs(F)))
+        dSdVa, dSdVm = _dSbus_dV(pY, V)
+        A = np.zeros((nBus, nArea))
+        A[np.arange(nBus), pArea] = -pAlpha
+        J = np.block([[dSdVa.real[:, iTheta],                dSdVm.real[:, iMag],               A                          ],
+                      [dSdVa.imag[np.ix_(iMag, iTheta)],     dSdVm.imag[np.ix_(iMag, iMag)],    np.zeros((len(iMag), nArea))]])
+        dx = np.linalg.solve(J, -F)
+        # the step is halved until the mismatch falls: a full step from a poor start can overshoot into a region with no solution
+        pStep, pNorm = 1.0, np.linalg.norm(F)
+        for _ in range(12):
+            th_t, v_t, lam_t = th.copy(), v.copy(), lam.copy()
+            th_t[iTheta] += pStep * dx[:len(iTheta)]
+            v_t [iMag  ] += pStep * dx[len(iTheta):len(iTheta) + len(iMag)]
+            lam_t        += pStep * dx[len(iTheta) + len(iMag):]
+            V_t, F_t = _f(v_t, th_t, lam_t)
+            if np.linalg.norm(F_t) < pNorm:
+                break
+            pStep /= 2.0
+        else:
+            break
+        v, th, lam, V, F = v_t, th_t, lam_t, V_t, F_t
+    return v, th, lam, pItMax, float(np.max(np.abs(F)))
+
+
+def _PowerFlowFromProjection(OptModel, mTEPES, p, sc, st):
+    """Move the start of the rectangular model from the projected cone point to an AC operating point, one power flow per load level.
+
+    The projection of ``_ProjectConeToVoltages`` keeps the cone's dispatch and gives every bus a voltage, but where the cone is
+    loose those voltages do not satisfy the AC equations with that dispatch, and the balance is violated at the start. The
+    power flow solved here takes the cone's active injections, holds the projected voltage magnitude at every bus with a
+    reactive-capable unit in service and at the reference bus of each synchronous area, keeps the cone's reactive injection
+    at the other buses, and lets one distributed slack per area, shared among the generating buses in proportion to their
+    output, take up the active power the AC losses change. The voltages, the branch flows, the shunt injections, the outputs
+    of the units that carry the slack and the reactive outputs at the regulated buses are then set from it, so that the
+    nodal balances and the flow definitions hold at the start. A load level whose power flow does not converge keeps the
+    projected point. The worst balance residual at the start is kept in ``mTEPES.pACStartResidual[(p, sc, st)]`` in MW
+    and Mvar. Returns ``(converged, load levels, largest slack in MW)``."""
+    try:
+        from .openTEPES_DataConfiguration import ac_branches
+    except ImportError:
+        from openTEPES.openTEPES_DataConfiguration import ac_branches
+
+    StartTime = time.time()
+    pSBase    = mTEPES.pSBase()
+    pBranches = ac_branches(mTEPES, p)
+    pBusSet   = {nd for la, _r, _x, _b, _t in pBranches for nd in la[:2]}
+    pBuses    = [nd for nd in mTEPES.nd if nd in pBusSet]
+    ix        = {nd: i for i, nd in enumerate(pBuses)}
+    nBus      = len(pBuses)
+    if nBus == 0:
+        return 0, 0, 0.0
+
+    # The admittance of the network: the series branches with the tap on the ni side, and the charging of a line that is always in
+    # service. The charging of a switched or candidate line enters the balance as a constant at nominal voltage, and the shunts
+    # depend on the load level; both are handled below.
+    pY0 = np.zeros((nBus, nBus), dtype=complex)
+    pFixedCharge = defaultdict(float)
+    acOut, acIn  = defaultdict(list), defaultdict(list)
+    pGraph       = nx.Graph()
+    for la, r, x, bsh, tap in pBranches:
+        i, j = ix[la[0]], ix[la[1]]
+        y    = 1.0 / complex(r, x)
+        ch   = 0.0 if (la in mTEPES.lca or mTEPES.pIndBinLineSwitch[la]) else 0.5j * bsh
+        if ch:
+            pFixedCharge[la[0]] += bsh / 2.0
+            pFixedCharge[la[1]] += bsh / 2.0
+        pY0[i, i] += y * tap * tap + ch
+        pY0[j, j] += y + ch
+        pY0[i, j] -= y * tap
+        pY0[j, i] -= y * tap
+        acOut[la[0]].append(la)
+        acIn [la[1]].append(la)
+        pGraph.add_edge(la[0], la[1])
+
+    # one synchronous area per connected part of the AC network, the reference bus of the case where it lies
+    pArea = np.zeros(nBus, dtype=int)
+    pRef  = np.zeros(nBus, dtype=bool)
+    pComponents = [sorted(c, key=ix.get) for c in nx.connected_components(pGraph)]
+    for a, pComp in enumerate(pComponents):
+        for nd in pComp:
+            pArea[ix[nd]] = a
+
+    g2n, q2n, sh2nd = defaultdict(list), defaultdict(list), defaultdict(list)
+    for nd, g in mTEPES.n2g:
+        if nd in ix and (p, g) in mTEPES.pg and g in mTEPES.g:
+            g2n[nd].append(g)
+    for nd, gq in mTEPES.n2gq:
+        if nd in ix and (p, gq) in mTEPES.pgq:
+            q2n[nd].append(gq)
+    for nd, sh in mTEPES.n2sh:
+        if nd in ix:
+            sh2nd[nd].append(sh)
+    pCondenser = set(mTEPES.sq)
+    pHasP      = hasattr(OptModel, 'vPShunt')
+    pRefCase   = mTEPES.rf.first()
+
+    nClipped = defaultdict(int)
+
+    def _set(pVar, key, pValue, pWhat):
+        """Set a variable to a value, within its bounds: a flow beyond its rating or a voltage outside its band is put at the bound,
+        which is where the solver would put it, and counted."""
+        pV = pVar[key]
+        if pV.fixed:
+            return
+        pLo, pHi = pV.lb, pV.ub
+        pNew = max(pValue, pLo) if pLo is not None else pValue
+        pNew = min(pNew,   pHi) if pHi is not None else pNew
+        if pNew != pValue:
+            nClipped[pWhat] += 1
+        pV.set_value(pNew)
+
+    def _bump(pVar, key, pDelta):
+        """Add pDelta to a variable within its bounds; returns what could not be added."""
+        pV = pVar[key]
+        if pV.fixed:
+            return pDelta
+        pNew = (pV.value or 0.0) + pDelta
+        pLo, pHi = pV.lb, pV.ub
+        pNew = max(pNew, pLo) if pLo is not None else pNew
+        pNew = min(pNew, pHi) if pHi is not None else pNew
+        pLeft = (pV.value or 0.0) + pDelta - pNew
+        pV.set_value(pNew)
+        return pLeft
+
+    def _room(k3, g):
+        """How far a unit's output can fall and rise within its bounds, and those of its second block, in GW."""
+        pT = OptModel.vTotalOutput[k3 + (g,)]
+        if pT.fixed:
+            return 0.0, 0.0
+        pVars = [pT]
+        if hasattr(OptModel, 'vOutput2ndBlock') and k3 + (g,) in OptModel.vOutput2ndBlock:
+            pVars.append(OptModel.vOutput2ndBlock[k3 + (g,)])
+        pDown = min((pV.value or 0.0) - pV.lb if pV.lb is not None else math.inf for pV in pVars)
+        pUp   = min(pV.ub - (pV.value or 0.0) if pV.ub is not None else math.inf for pV in pVars)
+        return max(pDown, 0.0), max(pUp, 0.0)
+
+    def _weights(k3, nd, pSign):
+        """The share of a bus's slack each of its units takes: in proportion to the room below when the slack is negative, to the
+        output of the units with room above when it is positive."""
+        pW = []
+        for g in g2n[nd]:
+            pDown, pUp = _room(k3, g)
+            pW.append(pDown if pSign < 0 else (max(OptModel.vTotalOutput[k3 + (g,)].value or 0.0, 0.0) if pUp > 1e-9 else 0.0))
+        return pW
+
+    def _flow_parts(V, la, tap, r, x):
+        """(P_ij, Q_ij, P_ji, Q_ji) in per unit, the rectangular formulas of NetworkBIMOperationModelFormulation."""
+        g, b = r / (r * r + x * x), -x / (r * r + x * x)
+        Vi, Vj = V[ix[la[0]]], V[ix[la[1]]]
+        Wii, Wjj = abs(Vi) ** 2, abs(Vj) ** 2
+        Wre, Wim = (Vi * Vj.conjugate()).real, (Vi * Vj.conjugate()).imag
+        return ( g * tap * tap * Wii - tap * ( g * Wre + b * Wim),
+                -b * tap * tap * Wii - tap * ( g * Wim - b * Wre),
+                 g * Wjj             - tap * ( g * Wre - b * Wim),
+                -b * Wjj             - tap * (-g * Wim - b * Wre))
+
+    nConverged, pSlackMax = 0, 0.0
+    for n in mTEPES.n:
+        k3 = (p, sc, n)
+        # the external injections at the cone point: what the units, the loads, the HVDC links and the charging of the switched lines put
+        # into the AC network. Read from the branch flows through the balance, so that every term the balance carries is in them.
+        pP, pQ = np.zeros(nBus), np.zeros(nBus)
+        pBeff, pGeff = np.zeros(nBus), np.zeros(nBus)
+        pWcone = np.ones(nBus)
+        for nd, i in ix.items():
+            pW = max(OptModel.vW[k3 + (nd,)].value or 0.0, 1e-6)
+            pWcone[i] = pW
+            pP[i] = (sum(OptModel.vFlowElec    [k3 + la].value or 0.0 for la in acOut[nd])
+                   + sum(OptModel.vFlowElecBck [k3 + la].value or 0.0 for la in acIn [nd]))
+            pQ[i] = (sum(OptModel.vFlowReactFrw[k3 + la].value or 0.0 for la in acOut[nd])
+                   + sum(OptModel.vFlowReactBck[k3 + la].value or 0.0 for la in acIn [nd])
+                   - pFixedCharge[nd] * pW * pSBase)
+            for sh in sh2nd[nd]:
+                if k3 + (sh,) in mTEPES.psnsh:
+                    pQsh = OptModel.vQShunt[k3 + (sh,)].value or 0.0
+                    pQ[i]   -= pQsh
+                    pBeff[i] += pQsh / (pW * pSBase)
+                    if pHasP:
+                        pPsh = OptModel.vPShunt[k3 + (sh,)].value or 0.0
+                        pP[i]   -= pPsh
+                        pGeff[i] -= pPsh / (pW * pSBase)
+        pP /= pSBase
+        pQ /= pSBase
+
+        # the buses that hold their voltage: a reactive-capable unit in service, a condenser, or the reference of an area
+        pGen  = np.zeros(nBus)
+        pQCap = defaultdict(list)
+        for nd, i in ix.items():
+            pGen[i] = sum(max(OptModel.vTotalOutput[k3 + (g,)].value or 0.0, 0.0) for g in g2n[nd])
+            for gq in q2n[nd]:
+                if gq in pCondenser or (gq in mTEPES.g and (p, gq) in mTEPES.pg and (OptModel.vTotalOutput[k3 + (gq,)].value or 0.0) > 1e-9):
+                    pQCap[nd].append(gq)
+        pPV = np.array([bool(pQCap[nd]) for nd in pBuses])
+        pRef[:] = False
+        pAlpha = np.zeros(nBus)
+        for a, pComp in enumerate(pComponents):
+            idx = [ix[nd] for nd in pComp]
+            if pRefCase in pComp:
+                r = pRefCase
+            else:
+                pCand = [nd for nd in pComp if pPV[ix[nd]]] or pComp
+                r = max(pCand, key=lambda nd: pGen[ix[nd]])
+            pRef[ix[r]] = True
+            pTot = pGen[idx].sum()
+            pAlpha[idx] = pGen[idx] / pTot if pTot > 0 else 1.0 / len(idx)
+
+        pY = pY0 + np.diag(pGeff + 1j * pBeff)
+        pV0  = np.array([math.hypot(OptModel.vVre[k3 + (nd,)].value or 0.0, OptModel.vVim[k3 + (nd,)].value or 0.0) for nd in pBuses])
+        pTh0 = np.array([math.atan2(OptModel.vVim[k3 + (nd,)].value or 0.0, OptModel.vVre[k3 + (nd,)].value or 1.0) for nd in pBuses])
+        pV0[pV0 < 0.5] = mTEPES.pVNom()
+        v, th, lam, nIt, pMis = _NewtonPV(pY, pV0, pTh0, pP, pAlpha, pArea, pQ, pRef, pPV)
+        if pMis >= 1e-6:
+            # a second try from a flat profile at the buses that are free to move
+            pV1, pTh1 = pV0.copy(), np.zeros(nBus)
+            pV1[~pPV & ~pRef] = mTEPES.pVNom()
+            pTh1[pRef] = pTh0[pRef]
+            v, th, lam, nIt, pMis = _NewtonPV(pY, pV1, pTh1, pP, pAlpha, pArea, pQ, pRef, pPV)
+        if pMis >= 1e-6:
+            continue
+        # Now that the direction of each area's slack is known, it is shared among the buses whose units have room that way, in
+        # proportion to that room, and the power flow is solved again from the point found. A unit at its minimum cannot back off
+        # and one at its maximum cannot add, and a share they cannot take would be left in the balance.
+        pAlpha2 = np.zeros(nBus)
+        for a, pComp in enumerate(pComponents):
+            idx = [ix[nd] for nd in pComp]
+            pRoom = np.array([sum(_weights(k3, nd, lam[a])) for nd in pComp])
+            pAlpha2[idx] = pRoom / pRoom.sum() if pRoom.sum() > 0 else pAlpha[idx]
+        v2, th2, lam2, nIt2, pMis2 = _NewtonPV(pY, v, th, pP, pAlpha2, pArea, pQ, pRef, pPV)
+        if pMis2 < 1e-6:
+            v, th, lam, pAlpha = v2, th2, lam2, pAlpha2
+        nConverged += 1
+        pSlackMax = max(pSlackMax, float(np.max(np.abs(lam))) * pSBase * 1e3)
+
+        V = v * np.exp(1j * th)
+        S = V * np.conj(pY @ V)
+        for nd, i in ix.items():
+            for pVar, pValue in ((OptModel.vVre, V[i].real), (OptModel.vVim, V[i].imag), (OptModel.vW, v[i] ** 2)):
+                _set(pVar, k3 + (nd,), pValue, 'voltages outside their band' if pVar is OptModel.vW else 'voltage parts')
+            # a shunt injects in proportion to the voltage squared; its susceptance, and its state, are those of the cone point
+            for sh in sh2nd[nd]:
+                if k3 + (sh,) in mTEPES.psnsh:
+                    for pVar in (OptModel.vQShunt,) + ((OptModel.vPShunt,) if pHasP else ()):
+                        pVar[k3 + (sh,)].set_value((pVar[k3 + (sh,)].value or 0.0) / pWcone[i] * v[i] ** 2)
+            # the slack of the area, the bus's share, goes to its units in proportion to their output, or to unserved energy where it has none
+            # Each unit moves within its bounds, and its second block with it so that eTotalOutput still holds; two passes, so that
+            # what a unit at a bound cannot take goes to the others. A remainder with no unit to take it is unserved energy.
+            pDelta = pAlpha[i] * lam[pArea[i]] * pSBase
+            if abs(pDelta) > 0.0:
+                pLeft = pDelta
+                for _ in range(2):
+                    if abs(pLeft) <= 1e-12 or not g2n[nd]:
+                        break
+                    pOut = _weights(k3, nd, pLeft)
+                    pTot = sum(pOut)
+                    pAsk, pLeft = pLeft, 0.0
+                    for g, pO in zip(g2n[nd], pOut):
+                        pShare = pAsk * (pO / pTot if pTot > 0 else 1.0 / len(g2n[nd]))
+                        pRest  = _bump(OptModel.vTotalOutput, k3 + (g,), pShare)
+                        if hasattr(OptModel, 'vOutput2ndBlock') and k3 + (g,) in OptModel.vOutput2ndBlock:
+                            pRest = max(pRest, _bump(OptModel.vOutput2ndBlock, k3 + (g,), pShare - pRest), key=abs)
+                            if abs(pRest) > 1e-12:
+                                # the second block stopped first: the total follows it back
+                                _bump(OptModel.vTotalOutput, k3 + (g,), -pRest)
+                        pLeft += pRest
+                if pLeft > 1e-12:
+                    _bump(OptModel.vENS, k3 + (nd,), pLeft)
+            # at a bus that held its voltage the reactive power of its units is whatever the power flow needed, within their
+            # bounds; what they cannot give is reactive power not served
+            if pPV[i] or pRef[i]:
+                pDeltaQ = (S[i].imag - pQ[i]) * pSBase
+                pLeft   = pDeltaQ
+                for _ in range(2):
+                    if abs(pLeft) <= 1e-12 or not pQCap[nd]:
+                        break
+                    pAsk, pLeft = pLeft, 0.0
+                    for gq in pQCap[nd]:
+                        pLeft += _bump(OptModel.vReactiveTotalOutput, k3 + (gq,), pAsk / len(pQCap[nd]))
+                if pLeft > 1e-12:
+                    _bump(OptModel.vQNSPos, k3 + (nd,), pLeft)
+                elif pLeft < -1e-12:
+                    _bump(OptModel.vQNSNeg, k3 + (nd,), -pLeft)
+        for la, r, x, bsh, tap in pBranches:
+            pPij, pQij, pPji, pQji = _flow_parts(V, la, tap, r, x)
+            for pVar, pValue in ((OptModel.vFlowElec, pPij), (OptModel.vFlowReactFrw, pQij), (OptModel.vFlowElecBck, pPji), (OptModel.vFlowReactBck, pQji)):
+                _set(pVar, k3 + la, pValue * pSBase, 'flows beyond their rating')
+
+    # the balance residual at the start, the quantity the power flow is there to remove
+    wP, wQ, pWhere = 0.0, 0.0, ''
+    for pName, pUnit in ((f'eBalanceElec_{p}_{sc}_{st}', 'P'), (f'eBalanceReact_{p}_{sc}_{st}', 'Q')):
+        pCon = getattr(OptModel, pName, None)
+        if pCon is None:
+            continue
+        for idx in pCon:
+            pRes = abs(value(pCon[idx].body) - value(pCon[idx].upper)) * 1e3
+            if pUnit == 'P' and pRes > wP:
+                wP, pWhere = pRes, f' (worst at {idx[1]}, {idx[0]})'
+            elif pUnit == 'Q':
+                wQ = max(wQ, pRes)
+    if not hasattr(mTEPES, 'pACStartResidual'):
+        mTEPES.pACStartResidual = {}
+    mTEPES.pACStartResidual[(p, sc, st)] = (wP, wQ)
+    pClipped = ', '.join(f'{n} {what}' for what, n in nClipped.items() if what != 'voltage parts')
+    print(f'AC power flow from the projection      ... {nConverged} of {len(mTEPES.n)} load levels converged, slack up to {pSlackMax:.1f} MW, '
+          f'balance residual at the start {wP:.3f} MW{pWhere}, {wQ:.3f} Mvar'
+          f'{"; at a bound: " + pClipped if pClipped else ""}, {round(time.time() - StartTime)} s')
+    return nConverged, len(mTEPES.n), pSlackMax
 
 
 # ======================================================================================================================

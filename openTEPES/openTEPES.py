@@ -188,7 +188,8 @@ def ReportConfiguration(mTEPES):
         if mTEPES.pIndACPowerFlow() == 2:
             print(f'  loop condition (IndACCycle)          ... {"on" if mTEPES.pIndACCycle() else "off"}')
         if mTEPES.pIndACPowerFlow() == 3:
-            print(f'  start of the rectangular model       ... {"the W-space cone of the stage (IndACConeStart)" if mTEPES.pIndACConeStart() else "flat profile"}')
+            pStart = {0: 'flat profile', 1: 'the W-space cone of the stage (IndACConeStart)', 2: 'a power flow from the W-space cone of the stage (IndACConeStart)'}
+            print(f'  start of the rectangular model       ... {pStart[mTEPES.pIndACConeStart()]}')
         pConv = {0: 'none', 1: 'line-commutated', 2: 'voltage-source'}
         print(f'  HVDC converters                      ... {pConv.get(mTEPES.pIndACConverter(), mTEPES.pIndACConverter())}')
         if mTEPES.pIndACConverter() and (mTEPES.pConverterNoLoadLoss() or mTEPES.pConverterMarginalLoss()):
