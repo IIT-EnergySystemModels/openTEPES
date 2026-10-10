@@ -1783,14 +1783,15 @@ def _PowerFlowFromProjection(OptModel, mTEPES, p, sc, st):
 
     def _set(pVar, key, pValue, pWhat):
         """Set a variable to a value, within its bounds: a flow beyond its rating or a voltage outside its band is put at the bound,
-        which is where the solver would put it, and counted."""
+        which is where the solver would put it, and counted. A variable with no room between its bounds, such as a shunt with no
+        susceptance, is not counted: its value had nowhere to go."""
         pV = pVar[key]
         if pV.fixed:
             return
         pLo, pHi = pV.lb, pV.ub
         pNew = max(pValue, pLo) if pLo is not None else pValue
         pNew = min(pNew,   pHi) if pHi is not None else pNew
-        if pNew != pValue:
+        if pNew != pValue and not (pLo is not None and pHi is not None and pHi - pLo <= 1e-12):
             nClipped[pWhat] += 1
         pV.set_value(pNew)
 
