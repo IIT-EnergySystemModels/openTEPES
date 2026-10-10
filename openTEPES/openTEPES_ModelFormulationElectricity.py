@@ -1925,7 +1925,7 @@ def _PowerFlowFromProjection(OptModel, mTEPES, p, sc, st):
             for sh in sh2nd[nd]:
                 if k3 + (sh,) in mTEPES.psnsh:
                     for pVar in (OptModel.vQShunt,) + ((OptModel.vPShunt,) if pHasP else ()):
-                        pVar[k3 + (sh,)].set_value((pVar[k3 + (sh,)].value or 0.0) / pWcone[i] * v[i] ** 2)
+                        _set(pVar, k3 + (sh,), (pVar[k3 + (sh,)].value or 0.0) / pWcone[i] * v[i] ** 2, 'shunt injections')
             # the slack of the area, the bus's share, goes to its units in proportion to their output, or to unserved energy where it has none
             # Each unit moves within its bounds, and its second block with it so that eTotalOutput still holds; two passes, so that
             # what a unit at a bound cannot take goes to the others. A remainder with no unit to take it is unserved energy.
