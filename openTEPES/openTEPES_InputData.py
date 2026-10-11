@@ -286,7 +286,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     #                             injection when it is solved as a non-linear program (3, or 2 with IndACCycle, or IndACModelType 2).
     #   pIndACRestoreWarmStart    0 ipopt defaults (default); 1 start the AC recovery step close to the relaxed solution.
     #   pIndACConeStart           0 flat start (default); 1 solve the W-space cone of the stage first and start the rectangular model
-    #                             (IndACPowerFlow = 3) from its rank-one projection; the cone cost is reported as a lower bound.
+    #                             (IndACPowerFlow = 3) from its rank-one projection; 2 the same, then an AC power flow from the projected
+    #                             point so that the model starts at an operating point; the cone cost is reported as a lower bound.
     #   pIndBinShuntSwitch        1 a switchable shunt is on or off (default); 0 its state is relaxed to [0,1], which keeps an AC run
     #                             continuous at the cost of a bank partly in service.
     for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle', 'pIndACApparentPowerLimit',
@@ -380,10 +381,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         raise NotImplementedError(f"IndACConverter = {par['pIndACConverter']} is not implemented; use 0 (none), 1 (LCC) or 2 (VSC)")
     if par['pIndACRestoreWarmStart'] not in (0, 1):
         raise NotImplementedError(f"IndACRestoreWarmStart = {par['pIndACRestoreWarmStart']} is not implemented; use 0 (ipopt defaults) or 1 (warm start)")
-    if par['pIndACConeStart'] not in (0, 1):
-        raise NotImplementedError(f"IndACConeStart = {par['pIndACConeStart']} is not implemented; use 0 (flat start) or 1 (start from the W-space cone)")
+    if par['pIndACConeStart'] not in (0, 1, 2):
+        raise NotImplementedError(f"IndACConeStart = {par['pIndACConeStart']} is not implemented; use 0 (flat start), 1 (start from the W-space cone) "
+                                  f"or 2 (start from a power flow solved from the cone)")
     if par['pIndACConeStart'] and par['pIndACPowerFlow'] != 3:
-        raise ValueError(f"IndACConeStart = 1 starts the rectangular model from the W-space cone and needs IndACPowerFlow = 3, not {par['pIndACPowerFlow']}")
+        raise ValueError(f"IndACConeStart = {par['pIndACConeStart']} starts the rectangular model from the W-space cone and needs IndACPowerFlow = 3, "
+                         f"not {par['pIndACPowerFlow']}")
     if par['pIndACApparentPowerLimit'] not in (0, 1):
         raise NotImplementedError(f"IndACApparentPowerLimit = {par['pIndACApparentPowerLimit']} is not implemented; "
                                   f"use 0 (current limit only) or 1 (also apparent power at both ends)")

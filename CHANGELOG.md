@@ -2,6 +2,10 @@
 
 ## [4.19.0rc] - 2026-10-03 Unreleased in PyPI
 
+- [ADDED] `IndACConeStart = 2` solves an AC power flow from the projected cone point before the rectangular model is
+  handed to the solver, with the cone's dispatch, the projected voltage at the regulated buses and a distributed slack
+  per synchronous area, so that the nodal balances hold at the start. Where the cone is loose its projection violates
+  them by a lot and the non-linear solver spends its first iterations repairing that.
 - [ADDED] `IndACConeStart` starts the rectangular model (`IndACPowerFlow = 3`) from the W-space cone of the same stage:
   the cone is solved first, its cost is reported as a lower bound with the gap to the exact cost, and the voltages are
   set from its rank-one projection. Off by default.
