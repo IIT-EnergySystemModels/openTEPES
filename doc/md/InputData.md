@@ -391,7 +391,9 @@ Period      Scenario        LoadLevel   Area    System inertia of the area for e
 
 Given that the system inertia depends on the area, defining an area as a country can be sensible. The system inertia can impose a minimum synchronous power and,
 consequently, force the commitment of at least some rotating units. Each generating unit can contribute to the system inertia. The system inertia is the sum of
-the inertia of all the committed units in the area.
+the inertia of all the committed units in the area. Given that the system inertia is a function of the committed units, it is necessary to define binary
+commitment decisions for the generating units. Review that the indicator IndBinGenOperat = 1 and the column BinaryCommitment = Yes in the generating units
+that contribute to the system inertia.
 
 Internally, all the values below 1e-5 times the maximum system electricity demand of each area will be converted into 0 by the model.
 
