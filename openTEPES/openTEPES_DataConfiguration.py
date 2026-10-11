@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 11, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
 (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
@@ -898,7 +898,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pMaxPower2ndBlock' ] = par['pMaxPowerElec'] - par['pMinPowerElec']
         par['pMaxCharge2ndBlock'] = par['pMaxCharge'   ] - par['pMinCharge'   ]
 
-        par['pMaxCapacity']       = par['pMaxPowerElec'].where(par['pMaxPowerElec'] > par['pMaxCharge'], par['pMaxCharge'])
+        pMaxCapacityPeak          = pd.concat([par['pMaxPowerElec'].max(axis=0), par['pMaxCharge'].max(axis=0).reindex(par['pMaxPowerElec'].columns, fill_value=0.0)], axis=1).max(axis=1)
+        par['pMaxCapacity']       = pd.DataFrame([pMaxCapacityPeak] * len(par['pMaxPowerElec']), index=par['pMaxPowerElec'].index, columns=par['pMaxPowerElec'].columns)
 
         if g2a[ar]:
             par['pMaxPower2ndBlock' ][par['pMaxPower2ndBlock' ][[g for g in g2a[ar]]] < par['pEpsilonElec']] = 0.0

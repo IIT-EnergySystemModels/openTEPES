@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 11, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -15,11 +15,11 @@ from   pyomo.environ import Set, Param, Var, Binary, NonNegativeReals, NonNegati
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative import below has no parent package;
 # fall back to an absolute package import in that case.
 try:
-    from .openTEPES_ModelFormulationElectricity           import SettingUpVariablesBIM
+    from          .openTEPES_ModelFormulationElectricity import SettingUpVariablesBIM
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_ModelFormulationElectricity  import SettingUpVariablesBIM
+    from openTEPES.openTEPES_ModelFormulationElectricity import SettingUpVariablesBIM
 
 
 def apply_investment_bounds(mTEPES, OptModel, pEpsilon: float = 1e-6) -> None:
@@ -1283,7 +1283,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
 
         for p,sc,ar in mTEPES.ps*mTEPES.ar:
-            if mTEPES.pRESEnergy[p,ar]() > sum(mTEPES.pDemandElec[p,sc,n,nd]()*mTEPES.pLoadLevelDuration[p,sc,n]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd):
+            if mTEPES.pRESEnergy[p,ar]() > abs(sum(mTEPES.pDemandElec[p,sc,n,nd]()*mTEPES.pLoadLevelDuration[p,sc,n]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd)):
                 raise ValueError('### Minimum renewable energy requirement exceeds the demand ', p, sc, ar, mTEPES.pRESEnergy[p,ar](), sum(mTEPES.pDemandElec[p,sc,n,nd]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd))
 
     DetectInfeasibilities(mTEPES)

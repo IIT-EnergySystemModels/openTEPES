@@ -1,7 +1,9 @@
 # Change Log
 
-## [4.19.0rc] - 2026-10-03 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-11 Unreleased in PyPI
 
+- [FIXED] MaxCapacity as the maximum between MaxPowerElec and MaxCharge for any load level. This parameter upper bounds the outflows
+- [FIXED] consider negative demand in testing if the minimum renewable energy requirement exceeds the demand
 - [ADDED] `IndACConeStart = 2` solves an AC power flow from the projected cone point before the rectangular model is
   handed to the solver, with the cone's dispatch, the projected voltage at the regulated buses and a distributed slack
   per synchronous area, so that the nodal balances hold at the start. Where the cone is loose its projection violates
