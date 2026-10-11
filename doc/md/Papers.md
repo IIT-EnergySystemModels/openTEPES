@@ -6,6 +6,16 @@ openTEPES documentation master file, created by Andres Ramos
 
 The **openTEPES** model has been used in these publications:
 
+- E.F. Álvarez, J.F. Gutierrez-Guerra, A. Ramos Market-driven co-sizing of a hybrid power-and-hydrogen virtual power plant for energy and frequency reserve markets.
+  Frontiers. xxx
+
+- E.F. Álvarez, L. Olmos, A. Ramos The Cost of Decoupled Planning: Co-optimising Transmission, Batteries and Hydrogen under Demand-Side Participation 
+  in a European Power System. Sustainable Energy, Grids and Networks. xxx
+
+- M. Martínez, F. Martín-Martínez, A. Ramos, C. Mateo, J.P. Chaves-Ávila, T. Gómez, D. Ribó-Pérez, P. Frías Quantifying the Full System Value of Distributed
+  Energy Storage and Demand Response for a Decarbonized Spanish Power System. International Journal of Electrical Power & Energy Systems 182,
+  September 2026 112176. xxx
+
 - H. Berriri, O. Fekih, M. Nouira, L. Olmos, A. Ramos, M.B. Chiekh, M. Sadok Guellouz, and I. Graabak "Network-Constrained Renewable Integration in Tunisia:
   A Deterministic Assessment of Storage Flexibility and Transmission Deliverability" Energies (2026), 19, 4113.
   [10.3390/en19174113](https://doi.org/10.3390/en19174113)
