@@ -1,7 +1,9 @@
 # Change Log
 
-## [4.19.0rc] - 2026-10-11 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-12 Unreleased in PyPI
 
+- [ADDED] optional file `oT_Data_GenerationInvestmentFactor` with a factor on the investment cost of each candidate unit by
+  installation period, e.g., for learning rates. Each installed capacity keeps the factor of its period. Generation units only.
 - [FIXED] MaxCapacity as the maximum between MaxPowerElec and MaxCharge for any load level. This parameter upper bounds the outflows
 - [FIXED] consider negative demand in testing if the minimum renewable energy requirement exceeds the demand
 - [ADDED] `IndACConeStart = 2` solves an AC power flow from the projected cone point before the rectangular model is

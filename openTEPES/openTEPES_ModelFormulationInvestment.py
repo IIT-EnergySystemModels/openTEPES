@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
 
 openTEPES.openTEPES_ModelFormulationInvestment — investment variables and constraints (electricity, hydro, H2, heat) plus the installed-capacity, adequacy-reserve-margin and emission / RES-energy limits.
 """
@@ -9,6 +9,23 @@ import time
 import math
 from collections import defaultdict
 from pyomo.environ import Constraint
+
+
+def GenInvestCost(OptModel, mTEPES, p, eb):
+    """Investment cost of unit eb in period p [MEUR].
+
+    vGenerationInvest is cumulative, so each increment keeps the factor of the period it was built in.
+    """
+    if all(mTEPES.pGenInvestFactor[pp,eb] == 1.0 for pp in mTEPES.p if (pp,eb) in mTEPES.peb):
+        return mTEPES.pGenInvestCost[eb] * OptModel.vGenerationInvest[p,eb]
+    vCost, vPrev = 0.0, 0.0
+    for pp in mTEPES.p:
+        if (pp,eb) in mTEPES.peb:
+            vCost += mTEPES.pGenInvestFactor[pp,eb] * (OptModel.vGenerationInvest[pp,eb] - vPrev)
+            vPrev  = OptModel.vGenerationInvest[pp,eb]
+        if pp == p:
+            break
+    return mTEPES.pGenInvestCost[eb] * vCost
 
 
 def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
@@ -48,7 +65,7 @@ def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
     def eTotalFElecCost(OptModel,p):
         if not (mTEPES.gc or mTEPES.gd or mTEPES.lc or pShuntInvest or pSynchInvest):
             return Constraint.Skip
-        return (OptModel.vTotalFElecCost[p] == sum(mTEPES.pGenInvestCost     [gc] * OptModel.vGenerationInvest   [p,gc] for gc       in mTEPES.gc if       (p,gc) in mTEPES.pgc) +
+        return (OptModel.vTotalFElecCost[p] == sum(GenInvestCost(OptModel, mTEPES, p, gc)                           for gc       in mTEPES.gc if       (p,gc) in mTEPES.pgc) +
                                                sum(mTEPES.pGenRetireCost     [gd] * OptModel.vGenerationRetire   [p,gd] for gd       in mTEPES.gd if       (p,gd) in mTEPES.pgd) +
                                                sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) +
                                               (sum(mTEPES.pShuntFixedCost   [sh] * OptModel.vShuntInvest      [p,sh] for sh          in mTEPES.shc if      (p,sh) in mTEPES.pshc) if pShuntInvest else 0.0) +

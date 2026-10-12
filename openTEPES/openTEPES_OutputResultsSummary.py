@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
 
 System summary, flexibility, and reliability results.
 
@@ -15,10 +15,12 @@ from   collections       import defaultdict
 
 try:
     from          .openTEPES_OutputResultsCommon import _outdir
+    from          .openTEPES_ModelFormulationInvestment import GenInvestCost
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_OutputResultsCommon import _outdir
+    from openTEPES.openTEPES_ModelFormulationInvestment import GenInvestCost
 
 
 def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
@@ -72,7 +74,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHydroCost [p   ]()     for p          in mTEPES.p if mTEPES.rn) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFH2Cost    [p   ]()     for p          in mTEPES.p if mTEPES.pc) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHeatCost  [p   ]()     for p          in mTEPES.p if mTEPES.hc))
-    GenInvestmentCost      = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gc]           * OptModel.vGenerationInvest[p,gc]()     for p,gc       in mTEPES.pgc)
+    GenInvestmentCost      = sum(mTEPES.pDiscountedWeight[p] * GenInvestCost(OptModel, mTEPES, p, gc)()     for p,gc       in mTEPES.pgc)
     GenRetirementCost      = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenRetireCost[gd]           * OptModel.vGenerationRetire[p,gd]()     for p,gd       in mTEPES.pgd)
     if mTEPES.pIndHydroTopology():
         RsrInvestmentCost  = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pRsrInvestCost[rc]           * OptModel.vReservoirInvest [p,rc]()     for p,rc       in mTEPES.prc)
@@ -93,7 +95,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         ReactiveInvestmentCost = 0.0
     # Ratio Generation Investment cost/ Generation Installed Capacity [MEUR-MW]
-    GenInvCostCapacity     = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]()/mTEPES.pRatedMaxPowerElec[gc] for p,gc in mTEPES.pgc if mTEPES.pRatedMaxPowerElec[gc])
+    GenInvCostCapacity     = sum(mTEPES.pDiscountedWeight[p] * GenInvestCost(OptModel, mTEPES, p, gc)()/mTEPES.pRatedMaxPowerElec[gc] for p,gc in mTEPES.pgc if mTEPES.pRatedMaxPowerElec[gc])
     # Ratio Additional Transmission Capacity-Length [MWkm]
     NetCapacityLength      = sum(mTEPES.pLineNTCMax[ni,nf,cc]*OptModel.vNetworkInvest[p,ni,nf,cc]()*mTEPES.pLineLength[ni,nf,cc]()          for p,ni,nf,cc in mTEPES.plc)
     # Ratio Network Investment Cost/Variable RES Injection [EUR/MWh]
@@ -112,7 +114,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         VRETechRevenue = sum(mTEPES.pDuals[f"eBalanceElec_{p}_{sc}_{pLevelToStg[p,sc,n]}('{n}', '{pGen2Node[gc]}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]()*OptModel.vTotalOutput[p,sc,n,gc]() for p,sc,n,gc in mTEPES.psnre if (p,sc,n) in pLevelToStg and gc in pGen2Node and pGen2Node[gc] in pNodeConnected)
     else:
         VRETechRevenue = 0.0
-    VREInvCostCapacity = sum(mTEPES.pDiscountedWeight[p]*mTEPES.pGenInvestCost[gc]*OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc if gc in mTEPES.re)
+    VREInvCostCapacity = sum(mTEPES.pDiscountedWeight[p]*GenInvestCost(OptModel, mTEPES, p, gc)() for p,gc in mTEPES.pgc if gc in mTEPES.re)
 
     K01     = pd.Series(data={'Ratio Fossil Fuel Generation/Total Generation [%]'                       : (FossilFuelGeneration / TotalGeneration   *1e2) if pAnyEmissionData else math.nan}).to_frame(name='Value')
     if GenInvestmentCost:
@@ -164,7 +166,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     # LCOE per technology
     if mTEPES.gc:
-        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gc]           * OptModel.vGenerationInvest[p,gc]() for p,     gc in mTEPES.pgc   if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
+        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * GenInvestCost(OptModel, mTEPES, p, gc)() for p,     gc in mTEPES.pgc   if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         pTechInjection    = defaultdict(float)
         for p,sc,n,gc in mTEPES.psngc:
             pTechInjection[pGen2Tech[gc]] += mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,gc]()
@@ -174,7 +176,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     # LCOH per technology
     if mTEPES.gb:
-        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gb]           * OptModel.vGenerationInvest[p,gb]()     for p,     gb in mTEPES.pgb   if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
+        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * GenInvestCost(OptModel, mTEPES, p, gb)()     for p,     gb in mTEPES.pgb   if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         pTechInjection    = defaultdict(float)
         for p,sc,n,gb in mTEPES.psngb:
             pTechInjection[pGen2Tech[gb]] += mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutputHeat[p,sc,n,gb]()

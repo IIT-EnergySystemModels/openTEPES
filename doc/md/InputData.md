@@ -144,6 +144,7 @@ This is the list of the input data files with a brief description of each.
 | `oT_Data_RampReserveUp.csv`              | Upward ramp reserves (optional file)                                                                                                                                           |
 | `oT_Data_RampReserveDown.csv`            | Downward ramp reserves (optional file)                                                                                                                                         |
 | `oT_Data_Generation.csv`                 | Generation (electricity and heat) data                                                                                                                                         |
+| `oT_Data_GenerationInvestmentFactor.csv` | Investment cost factor of each candidate unit by installation period (optional)                                                                                                |
 | `oT_Data_VariableMaxGeneration.csv`      | Variable maximum power generation by load level                                                                                                                                |
 | `oT_Data_VariableMinGeneration.csv`      | Variable minimum power generation by load level                                                                                                                                |
 | `oT_Data_VariableMaxConsumption.csv`     | Variable maximum power consumption by load level                                                                                                                               |
@@ -620,6 +621,21 @@ A summary of the main characteristics of the different types of hydro and ESS is
 :align: center
 :scale: 40%
 ```
+
+## Generation investment cost factor (optional file)
+
+A description of the data included in the file `oT_Data_GenerationInvestmentFactor.csv` follows:
+
+```{eval-rst}
+==============  ==============  =============  ======================================================================  =====
+Identifiers                     Header         Description
+==============================  =============  ======================================================================  =====
+Period          Generator       Factor         Factor on the investment cost of the capacity installed in the period  p.u.
+==============  ==============  =============  ======================================================================  =====
+```
+
+It multiplies the annualized investment cost of a candidate unit, e.g., to represent learning rates. The capacity installed in a period keeps the factor of that period in all later periods.
+If no value is provided, the factor is 1.
 
 ## Variable maximum and minimum generation
 
