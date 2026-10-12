@@ -12,9 +12,9 @@ The **openTEPES** model has been used in these publications:
 - E.F. Álvarez, L. Olmos, A. Ramos The Cost of Decoupled Planning: Co-optimising Transmission, Batteries and Hydrogen under Demand-Side Participation 
   in a European Power System. Sustainable Energy, Grids and Networks. xxx
 
-- M. Martínez, F. Martín-Martínez, A. Ramos, C. Mateo, J.P. Chaves-Ávila, T. Gómez, D. Ribó-Pérez, P. Frías Quantifying the Full System Value of Distributed
-  Energy Storage and Demand Response for a Decarbonized Spanish Power System. International Journal of Electrical Power & Energy Systems 182,
-  September 2026 112176. xxx
+- M. Martínez, F. Martín-Martínez, A. Ramos, C. Mateo, J.P. Chaves-Ávila, T. Gómez, D. Ribó-Pérez, P. Frías "Quantifying the Full System Value of Distributed
+  Energy Storage and Demand Response for a Decarbonized Spanish Power System". International Journal of Electrical Power & Energy Systems 182,
+  September 2026 112228. [10.1016/j.ijepes.2026.112228](https://doi.org/10.1016/j.ijepes.2026.112228)
 
 - H. Berriri, O. Fekih, M. Nouira, L. Olmos, A. Ramos, M.B. Chiekh, M. Sadok Guellouz, and I. Graabak "Network-Constrained Renewable Integration in Tunisia:
   A Deterministic Assessment of Storage Flexibility and Transmission Deliverability" Energies (2026), 19, 4113.
