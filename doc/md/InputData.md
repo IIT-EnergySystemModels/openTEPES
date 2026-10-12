@@ -630,7 +630,7 @@ A description of the data included in the file `oT_Data_GenerationInvestmentFact
 ==============  ==============  =============  ======================================================================  =====
 Identifiers                     Header         Description
 ==============================  =============  ======================================================================  =====
-Period          Generator       Factor         Factor on the investment cost of the capacity installed in the period  p.u.
+Period          Generator       Factor         Factor on the investment cost of capacity installed in the period       p.u.
 ==============  ==============  =============  ======================================================================  =====
 ```
 
