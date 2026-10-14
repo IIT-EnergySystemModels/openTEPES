@@ -16,13 +16,11 @@ from   collections       import defaultdict
 
 try:
     from          .openTEPES_OutputResultsCommon import _outdir, PiePlots, LinePlots
-    from          .openTEPES_ModelFormulationInvestment import GenInvestCost
     from          .openTEPES_SettingUpVariables  import VoltagePenaltyOn
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_OutputResultsCommon import _outdir, PiePlots, LinePlots
-    from openTEPES.openTEPES_ModelFormulationInvestment import GenInvestCost
     from openTEPES.openTEPES_SettingUpVariables  import VoltagePenaltyOn
 
 
@@ -278,7 +276,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     # SysCost       = pd.Series(data=[                                                                  OptModel.vTotalSCost()                                                                                         ], index=['']    ).to_frame(name='Total          System Cost').stack()
-    GenInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(GenInvestCost(OptModel, mTEPES, p, gc)()  for gc   in mTEPES.gc    if (p,gc) in mTEPES.pgc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Generation').stack()
+    GenInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(OptModel.xGenInvestCost[p,gc]()  for gc   in mTEPES.gc    if (p,gc) in mTEPES.pgc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Generation').stack()
     GenRetCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenRetireCost[gd  ]          * OptModel.vGenerationRetire[p,gd  ]()  for gd   in mTEPES.gd    if (p,gd) in mTEPES.pgd)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Retirement Cost Generation').stack()
     NetInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost [lc  ]          * OptModel.vNetworkInvest   [p,lc  ]()  for lc   in mTEPES.lc    if (p,lc) in mTEPES.plc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Network'   ).stack()
     if mTEPES.pIndHydroTopology():
@@ -917,7 +915,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
             CnsCost[gc] = 0.0 if gc not in CnsCost.index else CnsCost[gc]
             OpCCost[gc] = 0.0 if gc not in OpCCost.index else OpCCost[gc]
 
-        InvCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * GenInvestCost(OptModel, mTEPES, p, gc)() for p in mTEPES.p if (p,gc) in mTEPES.pgc)                 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+        InvCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,gc]() for p in mTEPES.p if (p,gc) in mTEPES.pgc)                 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
         Balance = pd.Series(data=[GenRev[gc]+ChargeRev[gc]+UpRev[gc]+DwRev[gc]+RampUpRev[gc]+RampDwRev[gc]+ResRev[gc]-GenCost[gc]-EmsCost[gc]-OpGCost[gc]-CnsCost[gc]-OpCCost[gc]-InvCost[gc] for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
         CostRecovery = pd.concat([GenRev,ChargeRev,UpRev,DwRev,RampUpRev,RampDwRev,ResRev,-GenCost,-EmsCost,-OpGCost,-CnsCost,-OpCCost,-InvCost,Balance], axis=1, keys=['Revenue generation [MEUR]', 'Revenue consumption [MEUR]', 'Revenue operating reserve up [MEUR]', 'Revenue operating reserve down [MEUR]', 'Revenue ramp reserve up [MEUR]', 'Revenue ramp reserve down [MEUR]', 'Revenue reserve margin [MEUR]', 'Cost operation generation [MEUR]', 'Cost emission [MEUR]', 'Cost operating reserves generation [MEUR]', 'Cost operation consumption [MEUR]', 'Cost operating reserves consumption [MEUR]', 'Cost investment [MEUR]', ' Total [MEUR]'])
         CostRecovery.stack().to_frame(name='MEUR').reset_index().pivot_table(values='MEUR', index=['level_1'], columns=['level_0']).rename_axis([None], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_CostRecovery_{CaseName}.csv', sep=',')

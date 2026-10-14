@@ -15,12 +15,10 @@ from   collections       import defaultdict
 
 try:
     from          .openTEPES_OutputResultsCommon import _outdir
-    from          .openTEPES_ModelFormulationInvestment import GenInvestCost
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_OutputResultsCommon import _outdir
-    from openTEPES.openTEPES_ModelFormulationInvestment import GenInvestCost
 
 
 # @profile
@@ -109,7 +107,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
             # Saving and plotting generation investment cost
             OutputResults0 = OutputResults
-            OutputToFile   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * GenInvestCost(OptModel, mTEPES, p, eb)() for p,eb in mTEPES.peb], index=mTEPES.peb)
+            OutputToFile   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,eb]() for p,eb in mTEPES.peb], index=mTEPES.peb)
             OutputToFile   = OutputToFile.fillna(0).to_frame(name='MEUR').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'}).set_index(['Period', 'Generator'])
 
             OutputResults1 = pd.Series(data=[pGen2Tech[eb] for p,eb in mTEPES.peb], index=mTEPES.peb)
@@ -124,7 +122,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
             MarketResultsInv  = pd.concat([MarketResultsInv, OutputResults], axis=1)
 
-            GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * GenInvestCost(OptModel, mTEPES, p, eb)() for      eb in                    mTEPES.eb if eb in g2t[gt] and (p,     eb) in mTEPES.peb  ) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
+            GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,eb]() for      eb in                    mTEPES.eb if eb in g2t[gt] and (p,     eb) in mTEPES.peb  ) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
             GenTechInvestCost *= 1e3
             pTechInjection    = defaultdict(float)
             for p,sc,n,eb in mTEPES.psneb:

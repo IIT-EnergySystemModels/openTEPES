@@ -7,39 +7,11 @@ import os
 import shutil
 
 import pandas as pd
-import pyomo.environ as pyo
 import pytest
 
 from openTEPES.openTEPES import openTEPES_run
-from openTEPES.openTEPES_ModelFormulationInvestment import GenInvestCost
 
 CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openTEPES", "cases"))
-
-
-def _vintage_model(pFactor):
-    """One candidate over three periods, with half the unit built in 2030 and the other half in 2035."""
-    m = pyo.ConcreteModel()
-    m.p   = pyo.Set(initialize=[2030, 2035, 2040], ordered=True)
-    m.peb = pyo.Set(initialize=[(p, 'g') for p in m.p], dimen=2)
-    m.pGenInvestCost   = pyo.Param(['g'], initialize={'g': 100.0})
-    m.pGenInvestFactor = pyo.Param(m.peb, initialize=pFactor, default=1.0)
-    m.vGenerationInvest = pyo.Var(m.peb)
-    for p, v in zip(m.p, [0.5, 1.0, 1.0]):
-        m.vGenerationInvest[p, 'g'].fix(v)
-    return m
-
-
-def test_each_vintage_keeps_the_factor_of_its_period():
-    m = _vintage_model({(2030, 'g'): 1.0, (2035, 'g'): 0.8, (2040, 'g'): 0.6})
-    pCost = {p: pyo.value(GenInvestCost(m, m, p, 'g')) for p in m.p}
-    # 100 x (0.5 x 1.0 + 0.5 x 0.8); nothing built in 2040, so its factor scales nothing
-    assert pCost == pytest.approx({2030: 50.0, 2035: 90.0, 2040: 90.0})
-
-
-def test_without_factors_the_cost_is_unchanged():
-    m = _vintage_model({})
-    for p in m.p:
-        assert pyo.value(GenInvestCost(m, m, p, 'g')) == pytest.approx(100.0 * m.vGenerationInvest[p, 'g'].value)
 
 
 def _day_per_period(dest_root, pFactorRows=None):
@@ -79,5 +51,5 @@ def test_a_learning_curve_is_paid_per_vintage(tmp_path, capsys):
     pInvest = [m.vGenerationInvest[p, 'SolarPV_2']() for p in m.p]
     pBuilt  = [pInvest[0]] + [b - a for a, b in zip(pInvest, pInvest[1:])]
     pCost   = [m.pGenInvestCost['SolarPV_2'] * sum(pFactor[pp] * d for pp, d in zip(list(m.p)[:i+1], pBuilt[:i+1])) for i in range(len(pBuilt))]
-    assert [pyo.value(GenInvestCost(m, m, p, 'SolarPV_2')) for p in m.p] == pytest.approx(pCost)
+    assert [m.xGenInvestCost[p, 'SolarPV_2']() for p in m.p] == pytest.approx(pCost)
     assert sum(pInvest) > 0.0

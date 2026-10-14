@@ -33,7 +33,6 @@ try:
     from          .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from          .openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
     from          .openTEPES_ModelFormulationElectricity import ACConeWarmStart
-    from          .openTEPES_ModelFormulationInvestment import GenInvestCost
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,7 +41,6 @@ except ImportError:
     from openTEPES.openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from openTEPES.openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
     from openTEPES.openTEPES_ModelFormulationElectricity import ACConeWarmStart
-    from openTEPES.openTEPES_ModelFormulationInvestment import GenInvestCost
 
 
 _DUALS_UNAVAILABLE = re.compile(r"Unable to retrieve attribute '(Pi|QCPi)'")
@@ -165,7 +163,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             # the second addend over mTEPES.bc was dropped: OptModel.vGenerationInvestHeat does not exist, and it would double count in any
             # case, because mTEPES.eb = mTEPES.gc | mTEPES.bc (openTEPES_DataConfiguration.py) and vGenerationInvest is indexed over peb,
             # so the sum below already covers the candidate boilers
-            print    ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(GenInvestCost(OptModel, mTEPES, pp, eb)() for eb       in mTEPES.eb if (pp,eb)       in mTEPES.peb))
+            print    ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(OptModel.xGenInvestCost[pp,eb]() for eb       in mTEPES.eb if (pp,eb)       in mTEPES.peb))
             print    ('  Total generation  retirement cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[pp,gd      ]() for gd       in mTEPES.gd if (pp,gd)       in mTEPES.pgd))
             if mTEPES.pIndHydroTopology() and mTEPES.rn:
                 print('  Total reservoir   investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pRsrInvestCost    [rc      ]   * OptModel.vReservoirInvest [pp,rc      ]() for rc       in mTEPES.rn if (pp,rc)       in mTEPES.prc))
@@ -197,7 +195,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         print        (f'***** Period: {p}, Scenario: {sc}, Stage: {st} ******')
         # same as above: the mTEPES.bc addend used a variable that does not exist and would have double counted the candidate boilers,
         # which mTEPES.eb already contains
-        print        ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(GenInvestCost(OptModel, mTEPES, p, eb)() for eb       in mTEPES.eb if (p,eb)       in mTEPES.peb))
+        print        ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(OptModel.xGenInvestCost[p,eb]() for eb       in mTEPES.eb if (p,eb)       in mTEPES.peb))
         print        ('  Total generation  retirement cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[p,gd        ]() for gd       in mTEPES.gd if (p,gd)       in mTEPES.pgd))
         if mTEPES.pIndHydroTopology() and mTEPES.rn:
             print    ('  Total reservoir   investment cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pRsrInvestCost    [rc      ]   * OptModel.vReservoirInvest [p,rc        ]() for rc       in mTEPES.rn if (p,rc)       in mTEPES.prc))
