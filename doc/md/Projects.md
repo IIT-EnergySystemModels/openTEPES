@@ -6,6 +6,13 @@ openTEPES documentation master file, created by Andres Ramos
 
 The model has been used in these research projects:
 
+- [Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage 2026]
+  (https://www.iit.comillas.edu/publicacion/proyecto/en/VMEnergia_LosGuajares_2025/aplicacion-de-la-metodologia-entso-e-de-analisis-de-coste-beneficio-al-proyecto-de-la-ch-los-guajares-2026),
+  developed for **VM Energía**. October 2025 - November 2025 [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [F.
+  Labora](https://www.iit.comillas.edu/people/flabora)
+
+  > It aims to write a report on the application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage.
+
 - [A Decision-Support Framework for No-Regret Investments under Uncertainties in the Nordic Resource Adequacy Assessment](https://zenodo.org/records/21475927),
   developed for **Nordic Energy Systems Programme**. October 2025 - July 2026. [E.F. Alvarez](https://www.ri.se/en/person/erik-alvarez)
 
@@ -116,6 +123,13 @@ The model has been used in these research projects:
 :align: center
 :scale: 40%
 ```
+
+- [Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage 2025]
+  (https://www.iit.comillas.edu/publicacion/proyecto/en/VMEnergia_LosGuajares_2025/aplicacion-de-la-metodologia-entso-e-de-analisis-de-coste-beneficio-al-proyecto-de-la-ch-los-guajares-2025),
+  developed for **VM Energía**. September 2025 [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [E.
+  Lobato](https://www.iit.comillas.edu/people/enrique)
+
+  > It aims to write a report on the application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage.
 
 - [Highly-efficient and flexible integration of biomass and renewable hydrogen for low-cost combined heat and power generation to the energy system
   (Bio-FlexGen)](https://bioflexgen.eu/), developed for the **European Union**. September 2021 - August 2024. [J.P.
