@@ -6,7 +6,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 The *Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS* **(openTEPES)** determines investment plans for new
 facilities (generators, ESS, electric lines, hydrogen pipelines, and heat pipes) to meet forecasted demand at minimum cost. The objective is to evaluate future
-needs for generation and storage, and for electricity, hydrogen, and heat networks. The main results are the guidelines for the future structure of the
+needs for generation and storage, as well as for electricity, hydrogen, and heat networks. The main results are the guidelines for the future structure of the
 generation, storage, and transmission systems.
 
 The **openTEPES** model is a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP)
@@ -26,8 +26,8 @@ It automatically determines optimal expansion plans that satisfy multiple criter
   The time division allows a flexible, user-defined representation of the periods for evaluating system operation. It can also be run with time intervals of
   several consecutive hours (bi-hourly or tri-hourly resolution, depending on the hourly or quarter-hour definition) to reduce the computational burden without
   sacrificing accuracy. The model can be run with a single period (year) or several periods (years) to analyze the system's evolution. The time definition also
-  allows for specifying disconnected representative periods (e.g., days or weeks) to evaluate system operation. The period (year) must be represented by 8736
-  hours because several model features representing the system operation are based on weeks (168 hours) or lunar months (made up of 4 weeks, i.e., 672 hours).
+  allows for specifying disconnected representative periods (e.g., days or weeks) to evaluate system operation. The period (year) must be expressed
+  in 8736 hours because several model features representing system operation are based on weeks (168 hours) or lunar months (4 weeks, i.e., 672 hours)
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The
   model considers stochastic medium-term annual uncertainties (scenarios) related to the system operation. These **operational scenarios** are associated with
@@ -44,16 +44,15 @@ decisions. Capacity expansion considers the system adequacy reserve margin, maxi
 The highly detailed operational model is an electric **network-constrained unit commitment (NCUC)** based on a tight, compact formulation that includes
 operating reserves and electric line-switching decisions via **DC power flow (DCPF)**. **Ohmic losses** in the electrical network are assumed to be proportional
 to the electrical line flow. It considers various **energy storage systems (ESS)**, including pumped-hydro storage, batteries, demand response, electric
-vehicles, solar thermal, and electrolyzers. Long Duration Energy Storage (LDES) is a subset of ESS that can store energy for extended periods, typically from 8
-hours to days or even weeks or seasons.
+vehicles, solar thermal, and electrolyzers. Long Duration Energy Storage (LDES) is a subset of ESS that can store energy for extended periods, typically
+from 8 hours to days, weeks, or even seasons.
 
-The model also allows a representation of the **hydro system** based on volume and water inflow data, considering the water stream topology (**hydro cascade
-basins**). If these data are unavailable, it runs using an energy-based representation of the hydro system.
+The model also allows representation of the **hydro system** based on volume and inflow data, considering the water-stream topology (**hydro cascade basins**).
+If these data are unavailable, it runs using an energy-based representation of the hydro system.
 
 It also includes a **Power-to-Hydrogen (P2H2)** representation, with hydrogen demand satisfied by electrolyzer-produced hydrogen (electricity consumed to
 produce hydrogen) and a hydrogen network to distribute it, and a **Power-to-Heat (P2H)** representation, with heat demand satisfied by heat pumps or electric
-heaters (which consume electricity), and a heat network to distribute the heat. If hydrogen and heat are not considered, the model runs with just the other
-energy carriers.
+heaters (which consume electricity), and a heat network to distribute the heat. If hydrogen and heat are excluded, the model runs with only the other energy carriers.
 
 The main results of the model can be structured into these topics:
 
