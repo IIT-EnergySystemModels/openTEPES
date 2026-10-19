@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
 
 Investment and retirement results.
 
@@ -107,7 +107,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
             # Saving and plotting generation investment cost
             OutputResults0 = OutputResults
-            OutputToFile   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[eb] * OptModel.vGenerationInvest[p,eb]() for p,eb in mTEPES.peb], index=mTEPES.peb)
+            OutputToFile   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,eb]() for p,eb in mTEPES.peb], index=mTEPES.peb)
             OutputToFile   = OutputToFile.fillna(0).to_frame(name='MEUR').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'}).set_index(['Period', 'Generator'])
 
             OutputResults1 = pd.Series(data=[pGen2Tech[eb] for p,eb in mTEPES.peb], index=mTEPES.peb)
@@ -122,7 +122,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
             MarketResultsInv  = pd.concat([MarketResultsInv, OutputResults], axis=1)
 
-            GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[eb]           * OptModel.vGenerationInvest[p,eb]() for      eb in                    mTEPES.eb if eb in g2t[gt] and (p,     eb) in mTEPES.peb  ) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
+            GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,eb]() for      eb in                    mTEPES.eb if eb in g2t[gt] and (p,     eb) in mTEPES.peb  ) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
             GenTechInvestCost *= 1e3
             pTechInjection    = defaultdict(float)
             for p,sc,n,eb in mTEPES.psneb:

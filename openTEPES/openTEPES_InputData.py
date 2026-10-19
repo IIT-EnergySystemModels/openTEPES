@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
 """
 
 import time
@@ -202,6 +202,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
             df[col] = df[col].where(df[col].notna(), math.nan)
         if   key == 'dfEmission':
             df.fillna({col: math.inf for col in num_cols}, inplace=True)
+        elif key == 'dfGenerationInvestmentFactor':
+            # a blank factor means the cost as given, not a free unit
+            df.fillna({col: 1.0 for col in num_cols}, inplace=True)
         elif key == 'dfGeneration':
             # build a dict that gives 1.0 for 'Efficiency', 0.0 for everything else
             fill_values = {col: (1.0 if col == 'Efficiency' else 0.0) for col in num_cols}
@@ -571,6 +574,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pShiftTime']                  = dfs['dfGeneration']  ['ShiftTime'                 ]                                                             # maximum shift  time for DSM                  [h]
     par['pGenInvestCost']              = dfs['dfGeneration']  ['FixedInvestmentCost'       ] *             dfs['dfGeneration']['FixedChargeRate']        # generation fixed cost                        [MEUR]
     par['pGenRetireCost']              = dfs['dfGeneration']  ['FixedRetirementCost'       ] *             dfs['dfGeneration']['FixedChargeRate']        # generation fixed retirement cost             [MEUR]
+    # optional factor on the investment cost of the capacity installed in each period; 1.0 where not given
+    par['pGenInvestFactor']            = dfs['dfGenerationInvestmentFactor']['Factor'] if 'dfGenerationInvestmentFactor' in dfs else \
+                                         pd.Series(dtype='float64')
     par['pRatedMinCharge']             = dfs['dfGeneration']  ['MinimumCharge'             ] * 1e-3                                                      # rated minimum ESS charge                     [GW]
     par['pRatedMaxCharge']             = dfs['dfGeneration']  ['MaximumCharge'             ] * 1e-3                                                      # rated maximum ESS charge                     [GW]
     par['pRatedMinStorage']            = dfs['dfGeneration']  ['MinimumStorage'            ]                                                             # rated minimum ESS storage                    [GWh]

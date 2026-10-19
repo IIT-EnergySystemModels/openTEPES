@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
 
 openTEPES.openTEPES_InputSchema — declarative catalogue of every input table.
 
@@ -69,6 +69,7 @@ TABLE_SPECS: list[tuple[str, str, str, dict]] = [
     ("oT_Data_RESEnergy",       "res_energy",            PASSTHROUGH, dict(pk_cols=["Period", "Area"])),
     ("oT_Data_ReserveMargin",   "reserve_margin",        PASSTHROUGH, dict(pk_cols=["Period", "Area"])),
     ("oT_Data_Emission",        "emission",              PASSTHROUGH, dict(pk_cols=["Period", "Area"])),
+    ("oT_Data_GenerationInvestmentFactor", "generation_investment_factor", PASSTHROUGH, dict(pk_cols=["Period", "Generator"])),
 
     # --- Time series, stored long in DB / wide in CSV ---
     ("oT_Data_Demand",                  "demand",                   WIDE_TO_LONG, dict(entity="Node",      value="Demand")),

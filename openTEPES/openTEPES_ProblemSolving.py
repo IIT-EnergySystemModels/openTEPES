@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -163,7 +163,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             # the second addend over mTEPES.bc was dropped: OptModel.vGenerationInvestHeat does not exist, and it would double count in any
             # case, because mTEPES.eb = mTEPES.gc | mTEPES.bc (openTEPES_DataConfiguration.py) and vGenerationInvest is indexed over peb,
             # so the sum below already covers the candidate boilers
-            print    ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pGenInvestCost    [eb      ]   * OptModel.vGenerationInvest[pp,eb      ]() for eb       in mTEPES.eb if (pp,eb)       in mTEPES.peb))
+            print    ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(OptModel.xGenInvestCost[pp,eb]() for eb       in mTEPES.eb if (pp,eb)       in mTEPES.peb))
             print    ('  Total generation  retirement cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[pp,gd      ]() for gd       in mTEPES.gd if (pp,gd)       in mTEPES.pgd))
             if mTEPES.pIndHydroTopology() and mTEPES.rn:
                 print('  Total reservoir   investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pRsrInvestCost    [rc      ]   * OptModel.vReservoirInvest [pp,rc      ]() for rc       in mTEPES.rn if (pp,rc)       in mTEPES.prc))
@@ -195,7 +195,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         print        (f'***** Period: {p}, Scenario: {sc}, Stage: {st} ******')
         # same as above: the mTEPES.bc addend used a variable that does not exist and would have double counted the candidate boilers,
         # which mTEPES.eb already contains
-        print        ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pGenInvestCost    [eb      ]   * OptModel.vGenerationInvest[p,eb        ]() for eb       in mTEPES.eb if (p,eb)       in mTEPES.peb))
+        print        ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(OptModel.xGenInvestCost[p,eb]() for eb       in mTEPES.eb if (p,eb)       in mTEPES.peb))
         print        ('  Total generation  retirement cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[p,gd        ]() for gd       in mTEPES.gd if (p,gd)       in mTEPES.pgd))
         if mTEPES.pIndHydroTopology() and mTEPES.rn:
             print    ('  Total reservoir   investment cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pRsrInvestCost    [rc      ]   * OptModel.vReservoirInvest [p,rc        ]() for rc       in mTEPES.rn if (p,rc)       in mTEPES.prc))
