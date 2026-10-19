@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
 (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
@@ -996,9 +996,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     # drop generators not gc or gd
     par['pGenInvestCost']    = par['pGenInvestCost'].loc   [mTEPES.eb]
+    par['pGenOMFixedCost']   = par['pGenOMFixedCost'].loc  [mTEPES.eb]
     # a factor on a non-candidate unit or an unmodelled period scales nothing; warn only on a unit the case does not know
-    pUnknownUnits = sorted(set(par['pGenInvestFactor'].index.get_level_values('Generator')) - set(mTEPES.gg)) \
-                    if len(par['pGenInvestFactor']) else []
+    pUnknownUnits = sorted(set(par['pGenInvestFactor'].index.get_level_values('Generator')) - set(mTEPES.gg)) if len(par['pGenInvestFactor']) else []
     if pUnknownUnits:
         print(f'WARNING: oT_Data_GenerationInvestmentFactor names units not in oT_Data_Generation, ignored: {pUnknownUnits}')
     par['pGenInvestFactor']  = {(p,eb): f for (p,eb),f in par['pGenInvestFactor'].items() if (p,eb) in mTEPES.peb}
@@ -1302,8 +1302,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pDwTime               = Param(mTEPES.gg,    initialize=par['pDwTime'].to_dict()                   , within=NonNegativeIntegers, doc='Down   time'                                         )
     mTEPES.pStableTime           = Param(mTEPES.gg,    initialize=par['pStableTime'].to_dict()               , within=NonNegativeIntegers, doc='Stable time'                                         )
     mTEPES.pShiftTime            = Param(mTEPES.gg,    initialize=par['pShiftTime'].to_dict()                , within=NonNegativeIntegers, doc='Shift  time'                                         )
-    mTEPES.pGenInvestCost        = Param(mTEPES.eb,    initialize=par['pGenInvestCost'].to_dict()            , within=NonNegativeReals,    doc='Generation fixed cost'                               )
-    mTEPES.pGenInvestFactor      = Param(mTEPES.peb,   initialize=par['pGenInvestFactor']                    , within=NonNegativeReals,    doc='Generation investment cost factor', default=1.0     )
+    mTEPES.pGenInvestCost        = Param(mTEPES.eb,    initialize=par['pGenInvestCost'].to_dict()            , within=NonNegativeReals,    doc='Generation capital fixed invest cost'                )
+    mTEPES.pGenOMFixedCost       = Param(mTEPES.eb,    initialize=par['pGenOMFixedCost'].to_dict()           , within=NonNegativeReals,    doc='Generation O&M     fixed invest cost', default=0.0   )
+    mTEPES.pGenInvestFactor      = Param(mTEPES.peb,   initialize=par['pGenInvestFactor']                    , within=NonNegativeReals,    doc='Generation investment cost factor',    default=1.0   )
     mTEPES.pGenRetireCost        = Param(mTEPES.gd,    initialize=par['pGenRetireCost'].to_dict()            , within=Reals           ,    doc='Generation fixed retire cost'                        )
     mTEPES.pIndBinUnitInvest     = Param(mTEPES.eb,    initialize=par['pIndBinUnitInvest'].to_dict()         , within=Binary          ,    doc='Binary investment decision'                          )
     mTEPES.pIndBinUnitRetire     = Param(mTEPES.gd,    initialize=par['pIndBinUnitRetire'].to_dict()         , within=Binary          ,    doc='Binary retirement decision'                          )

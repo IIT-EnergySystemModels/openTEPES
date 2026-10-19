@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
 
 Sweep merger: stack each result table across the cases of a sweep.
 
@@ -103,7 +103,7 @@ def aggregate(sources, out_path=None, to="csv", case_col="case", labels=None):
 
     # Collect, per table name, the per-case frames in source order.
     per_table = {}
-    for source, label in zip(sources, labels):
+    for source, label in zip(sources, labels, strict=True):
         for name, df in _read_source(source).items():
             per_table.setdefault(name, []).append((label, df))
 

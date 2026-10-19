@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -1879,7 +1879,7 @@ def _PowerFlowFromProjection(OptModel, mTEPES, p, sc, st):
         pPV = np.array([bool(pQCap[nd]) for nd in pBuses])
         pRef[:] = False
         pAlpha = np.zeros(nBus)
-        for a, pComp in enumerate(pComponents):
+        for pComp in pComponents:
             idx = [ix[nd] for nd in pComp]
             if pRefCase in pComp:
                 r = pRefCase
@@ -1939,7 +1939,7 @@ def _PowerFlowFromProjection(OptModel, mTEPES, p, sc, st):
                     pOut = _weights(k3, nd, pLeft)
                     pTot = sum(pOut)
                     pAsk, pLeft = pLeft, 0.0
-                    for g, pO in zip(g2n[nd], pOut):
+                    for g, pO in zip(g2n[nd], pOut, strict=True):
                         pShare = pAsk * (pO / pTot if pTot > 0 else 1.0 / len(g2n[nd]))
                         pRest  = _bump(OptModel.vTotalOutput, k3 + (g,), pShare)
                         if hasattr(OptModel, 'vOutput2ndBlock') and k3 + (g,) in OptModel.vOutput2ndBlock:
@@ -1965,7 +1965,8 @@ def _PowerFlowFromProjection(OptModel, mTEPES, p, sc, st):
                     _bump(OptModel.vQNSPos, k3 + (nd,), pLeft)
                 elif pLeft < -1e-12:
                     _bump(OptModel.vQNSNeg, k3 + (nd,), -pLeft)
-        for la, r, x, bsh, tap in pBranches:
+        # the branch record also carries the shunt susceptance, not needed to report the four flow parts
+        for la, r, x, _bsh, tap in pBranches:
             pPij, pQij, pPji, pQji = _flow_parts(V, la, tap, r, x)
             for pVar, pValue in ((OptModel.vFlowElec, pPij), (OptModel.vFlowReactFrw, pQij), (OptModel.vFlowElecBck, pPji), (OptModel.vFlowReactBck, pQji)):
                 _set(pVar, k3 + la, pValue * pSBase, 'flows beyond their rating')

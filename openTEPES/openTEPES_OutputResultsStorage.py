@@ -103,7 +103,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
         if pIndPlotOutput:
             OutputToFile *= -1.0
-            # the series is built negative on line 77 and turned positive by the flip above, so the former `sum() < 0.0` test could never
+            # the series is built negative where ConsumptionEnergy is computed and turned positive by the flip above, so the former `sum() < 0.0` test could never
             # pass and this chart was never produced. Ask whether there is any consumption at all, which also avoids an empty pie.
             if (OutputToFile != 0.0).any():
                 for p,sc in mTEPES.ps:

@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -25,12 +25,9 @@ except ImportError:
 def apply_investment_bounds(mTEPES, OptModel, pEpsilon: float = 1e-6) -> None:
     """Apply the investment- and retirement-bound Params to their variables.
 
-    ``pGenLoInvest`` / ``pGenUpInvest``, ``pGenLoRetire`` / ``pGenUpRetire``,
-    ``pNetLoInvest`` / ``pNetUpInvest``, ``pSynchLoInvest`` / ``pSynchUpInvest`` and
-    ``pShuntLoInvest`` / ``pShuntUpInvest`` are ``mutable=True`` but were read only during model
-    construction, inside ``SetToZero``. Call this after mutating any of them to re-apply them to
-    ``vGenerationInvest``, ``vGenerationRetire``, ``vNetworkInvest``, ``vSynchInvest`` and
-    ``vShuntInvest``.
+    ``pGenLoInvest`` / ``pGenUpInvest``, ``pGenLoRetire`` / ``pGenUpRetire``, ``pNetLoInvest`` / ``pNetUpInvest``, ``pSynchLoInvest`` / ``pSynchUpInvest`` and
+    ``pShuntLoInvest`` / ``pShuntUpInvest`` are ``mutable=True`` but were read only during model construction, inside ``SetToZero``.
+    Call this after mutating any of them to re-apply them to ``vGenerationInvest``, ``vGenerationRetire``, ``vNetworkInvest``, ``vSynchInvest`` and ``vShuntInvest``.
 
     The two reactive families are skipped when their variables do not exist, which covers both a
     case with no AC power flow and the build-time call, which happens before they are created.
@@ -40,11 +37,9 @@ def apply_investment_bounds(mTEPES, OptModel, pEpsilon: float = 1e-6) -> None:
     is unchanged: ``SetToZero`` calls this instead of carrying its own copy.
 
     .. warning::
-       Zero means opposite things in the two paths. ``openTEPES_InputData`` replaces an
-       ``InvestmentUp`` of 0 with 1.0, so 0 in the CSV means unrestricted, and excluding a
-       candidate through the data needs a small positive epsilon, which snaps to 0 here. On a
-       built model there is no such conversion, so 0 excludes the candidate. A sweep that
-       assumes the data convention leaves every candidate available and nothing fails.
+       Zero means opposite things in the two paths. ``openTEPES_InputData`` replaces an ``InvestmentUp`` of 0 with 1.0, so 0 in the CSV means unrestricted,
+       and excluding a candidate through the data needs a small positive epsilon, which snaps to 0 here. On a built model there is no such conversion,
+       so 0 excludes the candidate. A sweep that assumes the data convention leaves every candidate available and nothing fails.
 
     Parameters:
         mTEPES:   the model instance holding the Params.
@@ -190,11 +185,10 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vESSReserveDown           = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS down operating reserve                       [GW]')
         OptModel.vENS                      = Var(mTEPES.psnnd, within=NonNegativeReals, doc='energy not served in node                        [GW]')
 
-        # Energy not served is normally a free variable penalised at pENSCost, so a system that
-        # cannot serve its demand still returns a solution and has to be screened afterwards on the
+        # Energy not served is normally a free variable penalized at pENSCost, so a system that
+        # cannot serve its demand still returns a solution and has to be screened afterward on the
         # value of vENS. Fixing the variable at zero instead asks the question directly: the model
-        # is then infeasible exactly when the demand cannot be met, which is what an adequacy study
-        # wants to establish. Off by default.
+        # is then infeasible exactly when the demand cannot be met, which is what an adequacy study wants to establish. Off by default.
         if mTEPES.pIndHardZeroENS():
             for idx in OptModel.vENS:
                 OptModel.vENS[idx].fix(0.0)
@@ -222,7 +216,8 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vTotalOutputHeat      = Var(mTEPES.psng , within=NonNegativeReals, doc='total heat output of the boiler unit             [GW]')
             [OptModel.vTotalOutputHeat[p,sc,n,ch].setub(mTEPES.pMaxPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
             [OptModel.vTotalOutputHeat[p,sc,n,ch].setlb(mTEPES.pMinPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
-            # only boilers are forced to produce at their minimum heat power. CHPs are not forced to produce at their minimum heat power, they are committed or not to produce electricity
+            # only boilers are forced to produce at their minimum heat power. CHPs are not forced to produce at their minimum heat power, they are committed or
+            # not to produce electricity
 
         if mTEPES.pIndBinGenInvest() != 1:
             OptModel.vGenerationInvest     = Var(mTEPES.peb,   within=UnitInterval,     doc='generation       investment decision exists in a year [0,1]')
@@ -579,7 +574,8 @@ def SettingUpVariables(OptModel, mTEPES):
         nFixedVariables += sum(                1  for p,sc,n,g in sPSNG)
 
         for p,sc,n,nr in mTEPES.psnnr:
-            # must-run existing units or units with no minimum power or units with variable min power > 0, or ESS existing units are always committed and must produce at least their minimum output
+            # must-run existing units or units with no minimum power or units with variable min power > 0, or ESS existing units are always committed and must
+            # produce at least their minimum output
             # not applicable to mutually exclusive units
             if   len(mTEPES.ExclusiveGroups) == 0:
                 if ((mTEPES.pMustRun[nr] and nr not in mTEPES.gc) or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or mTEPES.pVariableMinPowerElec[p,sc,n,nr] > 0.0 or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
@@ -779,38 +775,29 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ESS inventory at the end of the following pStorageTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
     # for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
-    # for p,sc,n,es in mTEPES.psnes:
-    #     if es not in mTEPES.ec:
+    # for p,sc,n,es in mTEPES.psnes:     if es not in mTEPES.ec:
     #         if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
-    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
-    #             nFixedVariables += 1
+    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())             nFixedVariables += 1
     #         if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
-    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
-    #             nFixedVariables += 1
+    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())             nFixedVariables += 1
     #         if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int( 672/mTEPES.pTimeStep()) == 0:
-    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
-    #             nFixedVariables += 1
+    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())             nFixedVariables += 1
     #         if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
-    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
-    #             nFixedVariables += 1
+    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())             nFixedVariables += 1
 
     # if mTEPES.pIndHydroTopology():
         # fixing the reservoir volume at the end of the following pReservoirTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
-        # for daily reservoir is fixed at the end of the week, for weekly reservoir is fixed at the end of the month, for monthly reservoir is fixed at the end of the year
-        # for p,sc,n,rs in mTEPES.psnrs:
-        #     if rs not in mTEPES.rn:
+        # for daily reservoir is fixed at the end of the week, for weekly reservoir is fixed at the end of the month, for monthly reservoir is fixed at the end
+        # of the year
+        # for p,sc,n,rs in mTEPES.psnrs:     if rs not in mTEPES.rn:
         #         if mTEPES.pReservoirType[rs] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
-        #             OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())
-        #             nFixedVariables += 1
+        #             OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())             nFixedVariables += 1
         #         if mTEPES.pReservoirType[rs] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
-        #             OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())
-        #             nFixedVariables += 1
+        #             OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())             nFixedVariables += 1
         #         if mTEPES.pReservoirType[rs] == 'Weekly'  and mTEPES.n.ord(n) % int( 672/mTEPES.pTimeStep()) == 0:
-        #             OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())
-        #             nFixedVariables += 1
+        #             OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())             nFixedVariables += 1
         #         if mTEPES.pReservoirType[rs] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
-        #             OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())
-        #             nFixedVariables += 1
+        #             OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())             nFixedVariables += 1
 
     for p,sc,n,ec in mTEPES.psnec:
         if mTEPES.pEnergyInflows        [p,sc,n,ec]() == 0.0:
@@ -881,8 +868,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     nFixedVariables += 1
 
     if mTEPES.pIndHydroTopology():
-        # if there are no hydro outflows, no variable is needed
-        # same one-pass accumulation over psnrs, which is exactly psn x rs filtered by prs
+        # if there are no hydro outflows, no variable is needed same one-pass accumulation over psnrs, which is exactly psn x rs filtered by prs
         pAccHydroOutflows = defaultdict(float)
         for p,sc,n,rs in mTEPES.psnrs:
             pAccHydroOutflows[rs] += mTEPES.pHydroOutflows[p,sc,n,rs]()
@@ -990,30 +976,24 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vGenerationInvest[p,eb].fix(0)
                 OptModel.vGenerationInvest[p,eb].domain = UnitInterval
                 nFixedVariables += 1
-            # if mTEPES.pElecGenPeriodIni[eb] > p or mTEPES.pElecGenPeriodFin[eb] < p:
-            #     OptModel.vGenerationInvPer[p,eb].fix(0)
-            #     OptModel.vGenerationInvPer[p,eb].domain = UnitInterval
-            #     nFixedVariables += 1
+            # if mTEPES.pElecGenPeriodIni[eb] > p or mTEPES.pElecGenPeriodFin[eb] < p:     OptModel.vGenerationInvPer[p,eb].fix(0)
+            #     OptModel.vGenerationInvPer[p,eb].domain = UnitInterval     nFixedVariables += 1
 
         for p,gd in mTEPES.pgd:
             if mTEPES.pElecGenPeriodIni[gd] > p:
                 OptModel.vGenerationRetire[p,gd].fix(0)
                 OptModel.vGenerationRetire[p,gd].domain = UnitInterval
                 nFixedVariables += 1
-            # if mTEPES.pElecGenPeriodIni[gd] > p or mTEPES.pElecGenPeriodFin[gd] < p:
-            #     OptModel.vGenerationRetPer[p,gd].fix(0)
-            #     OptModel.vGenerationRetPer[p,gd].domain = UnitInterval
-            #     nFixedVariables += 1
+            # if mTEPES.pElecGenPeriodIni[gd] > p or mTEPES.pElecGenPeriodFin[gd] < p:     OptModel.vGenerationRetPer[p,gd].fix(0)
+            #     OptModel.vGenerationRetPer[p,gd].domain = UnitInterval     nFixedVariables += 1
 
         for p,ni,nf,cc in mTEPES.plc:
             if mTEPES.pElecNetPeriodIni[ni,nf,cc] > p:
                 OptModel.vNetworkInvest[p,ni,nf,cc].fix(0)
                 OptModel.vNetworkInvest[p,ni,nf,cc].domain = UnitInterval
                 nFixedVariables += 1
-            # if mTEPES.pElecNetPeriodIni[ni,nf,cc] > p or mTEPES.pElecNetPeriodFin[ni,nf,cc] < p:
-            #     OptModel.vNetworkInvPer[p,ni,nf,cc].fix(0)
-            #     OptModel.vNetworkInvPer[p,ni,nf,cc].domain = UnitInterval
-            #     nFixedVariables += 1
+            # if mTEPES.pElecNetPeriodIni[ni,nf,cc] > p or mTEPES.pElecNetPeriodFin[ni,nf,cc] < p:     OptModel.vNetworkInvPer[p,ni,nf,cc].fix(0)
+            #     OptModel.vNetworkInvPer[p,ni,nf,cc].domain = UnitInterval     nFixedVariables += 1
 
         if mTEPES.pIndHydroTopology():
             for p,rc in mTEPES.prc:
@@ -1021,10 +1001,8 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vReservoirInvest[p,rc].fix(0)
                     OptModel.vReservoirInvest[p,rc].domain = UnitInterval
                     nFixedVariables += 1
-                # if mTEPES.pRsrPeriodIni[rc] > p or mTEPES.pRsrPeriodFin[rc] < p:
-                #     OptModel.vReservoirInvPer[p,rc].fix(0)
-                #     OptModel.vReservoirInvPer[p,rc].domain = UnitInterval
-                #     nFixedVariables += 1
+                # if mTEPES.pRsrPeriodIni[rc] > p or mTEPES.pRsrPeriodFin[rc] < p:     OptModel.vReservoirInvPer[p,rc].fix(0)
+                #     OptModel.vReservoirInvPer[p,rc].domain = UnitInterval     nFixedVariables += 1
 
         if mTEPES.pIndHydrogen():
             for p,ni,nf,cc in mTEPES.ppc:
@@ -1032,10 +1010,8 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vH2PipeInvest[p,ni,nf,cc].fix(0)
                     OptModel.vH2PipeInvest[p,ni,nf,cc].domain = UnitInterval
                     nFixedVariables += 1
-                # if mTEPES.pH2PipePeriodIni[ni,nf,cc] > p or mTEPES.pH2PipePeriodFin[ni,nf,cc] < p:
-                #     OptModel.vH2PipeInvPer[p,ni,nf,cc].fix(0)
-                #     OptModel.vH2PipeInvPer[p,ni,nf,cc].domain = UnitInterval
-                #     nFixedVariables += 1
+                # if mTEPES.pH2PipePeriodIni[ni,nf,cc] > p or mTEPES.pH2PipePeriodFin[ni,nf,cc] < p:     OptModel.vH2PipeInvPer[p,ni,nf,cc].fix(0)
+                #     OptModel.vH2PipeInvPer[p,ni,nf,cc].domain = UnitInterval     nFixedVariables += 1
 
         if mTEPES.pIndHeat():
             for p,ni,nf,cc in mTEPES.phc:
@@ -1043,10 +1019,8 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(0)
                     OptModel.vHeatPipeInvest[p,ni,nf,cc].domain = UnitInterval
                     nFixedVariables += 1
-                # if mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p or mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p:
-                #     OptModel.vHeatPipeInvPer[p,ni,nf,cc].fix(0)
-                #     OptModel.vHeatPipeInvPer[p,ni,nf,cc].domain = UnitInterval
-                #     nFixedVariables += 1
+                # if mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p or mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p:     OptModel.vHeatPipeInvPer[p,ni,nf,cc].fix(0)
+                #     OptModel.vHeatPipeInvPer[p,ni,nf,cc].domain = UnitInterval     nFixedVariables += 1
 
         # remove power plants and lines not installed in this period
         for p,g in mTEPES.pg:
@@ -1168,18 +1142,11 @@ def SettingUpVariables(OptModel, mTEPES):
         # Reservoir investment bounds: pRsrLoInvest / pRsrUpInvest are read here but never created — openTEPES_DataConfiguration does not
         # declare them and there is no plan to. The whole block therefore raised AttributeError on line 1 of the loop for any case with
         # pIndHydroTopology on. Commented out until the two Params exist; the electric and H2 twins above and below are unaffected.
-        # if mTEPES.pIndHydroTopology():
-        #     for rc in mTEPES.rn:
-        #         if  mTEPES.pRsrLoInvest[  rc]() <       pEpsilon:
-        #             mTEPES.pRsrLoInvest[  rc]   = 0
-        #         if  mTEPES.pRsrUpInvest[  rc]() <       pEpsilon:
-        #             mTEPES.pRsrUpInvest[  rc]   = 0
-        #         if  mTEPES.pRsrLoInvest[  rc]() > 1.0 - pEpsilon:
-        #             mTEPES.pRsrLoInvest[  rc]   = 1
-        #         if  mTEPES.pRsrUpInvest[  rc]() > 1.0 - pEpsilon:
-        #             mTEPES.pRsrUpInvest[  rc]   = 1
-        #         if  mTEPES.pRsrLoInvest[  rc]() >   mTEPES.pRsrUpInvest[rc]():
-        #             mTEPES.pRsrLoInvest[  rc]   =   mTEPES.pRsrUpInvest[rc]()
+        # if mTEPES.pIndHydroTopology():     for rc in mTEPES.rn:         if  mTEPES.pRsrLoInvest[  rc]() <       pEpsilon:
+        #             mTEPES.pRsrLoInvest[  rc]   = 0         if  mTEPES.pRsrUpInvest[  rc]() <       pEpsilon:             mTEPES.pRsrUpInvest[  rc]   = 0
+        #         if  mTEPES.pRsrLoInvest[  rc]() > 1.0 - pEpsilon:             mTEPES.pRsrLoInvest[  rc]   = 1
+        #         if  mTEPES.pRsrUpInvest[  rc]() > 1.0 - pEpsilon:             mTEPES.pRsrUpInvest[  rc]   = 1
+        #         if  mTEPES.pRsrLoInvest[  rc]() >   mTEPES.pRsrUpInvest[rc]():             mTEPES.pRsrLoInvest[  rc]   =   mTEPES.pRsrUpInvest[rc]()
         #     [OptModel.vReservoirInvest [p,rc].setlb(mTEPES.pRsrLoInvest[rc]()) for p,rc in mTEPES.prc]
         #     [OptModel.vReservoirInvest [p,rc].setub(mTEPES.pRsrUpInvest[rc]()) for p,rc in mTEPES.prc]
 
@@ -1236,15 +1203,15 @@ def SettingUpVariables(OptModel, mTEPES):
         if len(mTEPES.st) == 0:
             raise ValueError('### No active stages in the case study'   )
 
-        # detecting infeasibility: sum of scenario probabilities must be 1 in each period
-        # tolerance to consider 0 the difference between parameters
+        # detecting infeasibility: sum of scenario probabilities must be 1 in each period tolerance to consider 0 the difference between parameters
         pEpsilon = 1e-6
         for p in mTEPES.p:
             if abs(sum(mTEPES.pScenProb[p,sc]() for sc in mTEPES.sc if (p,sc) in mTEPES.ps)-1.0) > pEpsilon:
                 raise ValueError(f'### Sum of scenario probabilities different from 1 in period {p}.')
 
         for es in mTEPES.es:
-            # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows, or no storage capacity for charging
+            # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows, or no storage capacity
+            # for charging
             if sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) -            sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) > 0.0:
                 raise ValueError('### Total minimum output greater than total inflows for ESS unit ', es, ' by ', sum(mTEPES.pMinPowerElec  [p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) -    sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
             if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) -            sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) < 0.0:

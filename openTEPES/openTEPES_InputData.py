@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
 """
 
 import time
@@ -188,8 +188,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
                                                    columns=dfs['dfDemand'].columns)
         if 'dfNetworkHydrogen' not in dfs:
             dfs['dfNetworkHydrogen'] = pd.DataFrame(
-                columns=['Length', 'InitialPeriod', 'FinalPeriod', 'TTC', 'TTCBck',
-                         'SecurityFactor', 'FixedInvestmentCost', 'FixedChargeRate',
+                columns=['Length', 'InitialPeriod', 'FinalPeriod', 'TTC', 'TTCBck', 'SecurityFactor', 'FixedInvestmentCost', 'FixedChargeRate',
                          'BinaryInvestment', 'InvestmentLo', 'InvestmentUp'],
                 index=pd.MultiIndex.from_tuples([], names=['InitialNode', 'FinalNode', 'Circuit']))
 
@@ -575,8 +574,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pGenInvestCost']              = dfs['dfGeneration']  ['FixedInvestmentCost'       ] *             dfs['dfGeneration']['FixedChargeRate']        # generation fixed cost                        [MEUR]
     par['pGenRetireCost']              = dfs['dfGeneration']  ['FixedRetirementCost'       ] *             dfs['dfGeneration']['FixedChargeRate']        # generation fixed retirement cost             [MEUR]
     # optional factor on the investment cost of the capacity installed in each period; 1.0 where not given
-    par['pGenInvestFactor']            = dfs['dfGenerationInvestmentFactor']['Factor'] if 'dfGenerationInvestmentFactor' in dfs else \
-                                         pd.Series(dtype='float64')
+    par['pGenInvestFactor']            = dfs['dfGenerationInvestmentFactor']['Factor'] if 'dfGenerationInvestmentFactor' in dfs else pd.Series(dtype='float64')
+    # optional column: O&M fixed cost per rated capacity; 0.0 where not given
+    par['pGenOMFixedCost']             = (dfs['dfGeneration']['OMFixedCost'] if 'OMFixedCost' in dfs['dfGeneration'].columns else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0) * par['pRatedMaxPowerElec']  # O&M fixed cost [MEUR/year] = [MEUR/GW] x rated max power [GW]
     par['pRatedMinCharge']             = dfs['dfGeneration']  ['MinimumCharge'             ] * 1e-3                                                      # rated minimum ESS charge                     [GW]
     par['pRatedMaxCharge']             = dfs['dfGeneration']  ['MaximumCharge'             ] * 1e-3                                                      # rated maximum ESS charge                     [GW]
     par['pRatedMinStorage']            = dfs['dfGeneration']  ['MinimumStorage'            ]                                                             # rated minimum ESS storage                    [GWh]
@@ -591,17 +591,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     # hydrogen without electricity: reforming and imports. tH2/h, MEUR/tH2, tCO2/tH2, unscaled.
     # ProductionCostH2 carries fuel, O&M and carbon; ProductionEmissionH2 is reported only.
     for _c, _d in (('MaximumProductionH2', 0.0), ('ProductionCostH2', 0.0), ('ProductionEmissionH2', 0.0)):
-        par['p' + _c] = (dfs['dfGeneration'][_c] if _c in dfs['dfGeneration'].columns
-                         else pd.Series(_d, index=dfs['dfGeneration'].index)).fillna(_d)
+        par['p' + _c] = (dfs['dfGeneration'][_c] if _c in dfs['dfGeneration'].columns else pd.Series(_d, index=dfs['dfGeneration'].index)).fillna(_d)
 
     par['pProductionFunctionH2ToPower'] = (dfs['dfGeneration']['ProductionFunctionH2ToPower']
-                                           if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns
-                                           else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0)                                                      # production function of a boiler using H2     [gH2/kWh]
+                      if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0)  # production function of a boiler using H2     [gH2/kWh]
 
     # hydrogen storage. Optional columns: without MaximumStorageH2 the hs set is empty
     def _optional_gen_col(name, default=0.0):
-        return (dfs['dfGeneration'][name] if name in dfs['dfGeneration'].columns
-                else pd.Series(default, index=dfs['dfGeneration'].index))
+        return (dfs['dfGeneration'][name] if name in dfs['dfGeneration'].columns else pd.Series(default, index=dfs['dfGeneration'].index))
     par['pMaxStorageH2']  = _optional_gen_col('MaximumStorageH2').fillna(0.0)
     par['pMaxChargeH2']   = _optional_gen_col('MaximumChargeH2' ).fillna(0.0)
     par['pIniStorageH2']  = _optional_gen_col('InitialStorageH2').fillna(0.0)
@@ -612,8 +609,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pOutflowsType']               = dfs['dfGeneration']  ['OutflowsType'              ]                                                             #               ESS outflows type
     # Optional opt-in to energy neutrality. The period is EnergyType, read just below.
     par['pIndEnergyNeutrality']        = (dfs['dfGeneration']['EnergyNeutrality']
-                                          if 'EnergyNeutrality' in dfs['dfGeneration'].columns
-                                          else pd.Series(0, index=dfs['dfGeneration'].index)).fillna(0).astype('int')
+                 if 'EnergyNeutrality' in dfs['dfGeneration'].columns else pd.Series(0, index=dfs['dfGeneration'].index)).fillna(0).astype('int')
     par['pEnergyType']                 = dfs['dfGeneration']  ['EnergyType'                ]                                                             #               unit  energy type
     par['pRMaxReactivePower']          = dfs['dfGeneration']  ['MaximumReactivePower'      ] * 1e-3                                                      # rated maximum reactive power                 [Gvar]
     par['pRMinReactivePower']          = dfs['dfGeneration']  ['MinimumReactivePower'      ] * 1e-3                                                      # rated minimum reactive power                 [Gvar]

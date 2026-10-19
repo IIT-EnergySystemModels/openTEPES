@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
 
 openTEPES.openTEPES_Runner — Mode A and Mode B sweep runner.
 
@@ -252,7 +252,7 @@ def run(cases, solver_name, *, mode="pre-build", backend="serial", n_workers=1,
             )
 
     if aggregate_to:
-        solved = [(case, rec) for case, rec in zip(cases, records) if rec.get("status") != "error"]
+        solved = [(case, rec) for case, rec in zip(cases, records, strict=True) if rec.get("status") != "error"]
         if solved:
             sources = [_status_dir(case) for case, _ in solved]
             labels  = [rec.get("label") or case.label or case.case_name for case, rec in solved]

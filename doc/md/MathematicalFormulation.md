@@ -178,8 +178,8 @@ They are written in **uppercase** letters.
 =================================================================  ========================================================================================================================  ================
 **Generation system**
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-:math:`CFG_g`                                                      Annualized fixed cost of a candidate generator                                                                            M€/yr
-:math:`CFR_g`                                                      Annualized fixed cost of a candidate generator to be retired                                                              M€/yr
+:math:`CFG_g`                                                      Annualized fixed cost of a candidate generator to be installed (includes capital and fixed O&M costs)                     M€/yr
+:math:`CFR_g`                                                      Annualized fixed cost of a candidate generator to be retired (includes retirement minus fixed O&M costs)                  M€/yr
 :math:`A_g`                                                        Availability of each generator for adequacy reserve margin                                                                p.u.
 :math:`\underline{GP}_g, \overline{GP}_g`                          Rated minimum load and maximum output of a generator                                                                      GW
 :math:`\underline{GP}^p_{\omega ng}, \overline{GP}^p_{\omega ng}`  Minimum load and maximum output of a generator                                                                            GW

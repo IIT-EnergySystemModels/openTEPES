@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
 
 openTEPES.openTEPES_ModelFormulationInvestment — investment variables and constraints (electricity, hydro, H2, heat) plus the installed-capacity, adequacy-reserve-margin and emission / RES-energy limits.
 """
@@ -45,10 +45,18 @@ def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
         raise ValueError('AC shunt or synchronous condenser candidates are not supported by the Benders decomposition path: the master model carries '
                          'no variable for them and the cuts carry no term. Run with IndCompleteProblem = 1.')
 
-    # vGenerationInvest is cumulative, so each increment keeps the factor of the period it was built in
+    # building block of eTotalFElecCost: investment plus O&M fixed cost of the capacity of candidate eb installed up to period p. vGenerationInvest is
+    # CUMULATIVE (eConsecutiveGenInvest keeps it non-decreasing across periods), so each increment vGenerationInvest[pp] - vGenerationInvest[pp-1] must
+    # be priced with the investment factor pGenInvestFactor[pp,eb] of the period pp it was BUILT in, not with the factor of the period p being reported.
+    # The O&M fixed cost pGenOMFixedCost [MEUR/year] is paid every year on the capacity in place, so it multiplies the cumulative variable directly and
+    # the investment factor never touches it
     def xGenInvestCost(OptModel,p,eb):
+        # with every factor of the unit at 1.0 (the default when Data_GenerationInvestmentFactor is not given) the increments telescope and the plain
+        # cumulative formula avoids building the long per-period expression
         if all(mTEPES.pGenInvestFactor[pp,eb] == 1.0 for pp in mTEPES.p if (pp,eb) in mTEPES.peb):
-            return mTEPES.pGenInvestCost[eb] * OptModel.vGenerationInvest[p,eb]
+            return (mTEPES.pGenInvestCost[eb] + mTEPES.pGenOMFixedCost[eb]) * OptModel.vGenerationInvest[p,eb]
+        # walk the ordered periods up to and including p, pricing each increment at its build-period factor; vPrev carries the cumulative variable of
+        # the previous period with data for this unit (0.0 before the first one), so the expression stays linear in vGenerationInvest
         vCost, vPrev = 0.0, 0.0
         for pp in mTEPES.p:
             if (pp,eb) in mTEPES.peb:
@@ -56,17 +64,18 @@ def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
                 vPrev  = OptModel.vGenerationInvest[pp,eb]
             if pp == p:
                 break
-        return mTEPES.pGenInvestCost[eb] * vCost
-    OptModel.xGenInvestCost = Expression(mTEPES.peb, rule=xGenInvestCost, doc='generation investment cost [MEUR]')
+        return mTEPES.pGenInvestCost[eb] * vCost + mTEPES.pGenOMFixedCost[eb] * OptModel.vGenerationInvest[p,eb]
+    OptModel.xGenInvestCost = Expression(mTEPES.peb, rule=xGenInvestCost, doc='generation investment and O&M fixed cost of the capacity installed up to each period [MEUR]')
 
     def eTotalFElecCost(OptModel,p):
         if not (mTEPES.gc or mTEPES.gd or mTEPES.lc or pShuntInvest or pSynchInvest):
             return Constraint.Skip
-        return (OptModel.vTotalFElecCost[p] == sum(OptModel.xGenInvestCost[p,gc]                                     for gc       in mTEPES.gc if       (p,gc) in mTEPES.pgc) +
-                                               sum(mTEPES.pGenRetireCost     [gd] * OptModel.vGenerationRetire   [p,gd] for gd       in mTEPES.gd if       (p,gd) in mTEPES.pgd) +
+        return (OptModel.vTotalFElecCost[p] == sum(                                 OptModel.xGenInvestCost      [p,gc] for gc       in mTEPES.gc if       (p,gc) in mTEPES.pgc) +
+                                               sum((mTEPES.pGenRetireCost    [gd] -
+                                                    mTEPES.pGenOMFixedCost   [gd])* OptModel.vGenerationRetire   [p,gd] for gd       in mTEPES.gd if       (p,gd) in mTEPES.pgd) +
                                                sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) +
-                                              (sum(mTEPES.pShuntFixedCost   [sh] * OptModel.vShuntInvest      [p,sh] for sh          in mTEPES.shc if      (p,sh) in mTEPES.pshc) if pShuntInvest else 0.0) +
-                                              (sum(mTEPES.pSynchFixedCost   [sq] * OptModel.vSynchInvest      [p,sq] for sq          in mTEPES.sqc if      (p,sq) in mTEPES.psqc) if pSynchInvest else 0.0) )
+                                              (sum(mTEPES.pShuntFixedCost    [sh] * OptModel.vShuntInvest        [p,sh] for sh       in mTEPES.shc if      (p,sh) in mTEPES.pshc) if pShuntInvest else 0.0) +
+                                              (sum(mTEPES.pSynchFixedCost    [sq] * OptModel.vSynchInvest        [p,sq] for sq       in mTEPES.sqc if      (p,sq) in mTEPES.psqc) if pSynchInvest else 0.0) )
     OptModel.eTotalFElecCost = Constraint(mTEPES.p, rule=eTotalFElecCost, doc='electricity system fixed cost [MEUR]')
 
     def eConsecutiveGenInvest(OptModel,p,gc):
