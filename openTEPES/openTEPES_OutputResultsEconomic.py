@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 20, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -276,11 +276,12 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     # SysCost       = pd.Series(data=[                                                                  OptModel.vTotalSCost()                                                                                         ], index=['']    ).to_frame(name='Total          System Cost').stack()
-    GenInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(OptModel.xGenInvestCost[p,gc]()  for gc   in mTEPES.gc    if (p,gc) in mTEPES.pgc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Generation').stack()
-    GenRetCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenRetireCost[gd  ]          * OptModel.vGenerationRetire[p,gd  ]()  for gd   in mTEPES.gd    if (p,gd) in mTEPES.pgd)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Retirement Cost Generation').stack()
-    NetInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost [lc  ]          * OptModel.vNetworkInvest   [p,lc  ]()  for lc   in mTEPES.lc    if (p,lc) in mTEPES.plc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Network'   ).stack()
+    GenInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(                                       OptModel.xGenInvestCost   [p,gc  ]()  for gc   in mTEPES.gc    if (p,gc) in mTEPES.pgc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Generation').stack()
+    GenRetCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum((mTEPES.pGenRetireCost [gd] -
+                                                                         mTEPES.pGenOMFixedCost[gd])         * OptModel.vGenerationRetire[p,gd  ]()  for gd   in mTEPES.gd    if (p,gd) in mTEPES.pgd)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Retirement Cost Generation').stack()
+    NetInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost   [lc]          * OptModel.vNetworkInvest   [p,lc  ]()  for lc   in mTEPES.lc    if (p,lc) in mTEPES.plc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Network'   ).stack()
     if mTEPES.pIndHydroTopology():
-        RsrInvCost  = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost[rc  ]          * OptModel.vReservoirInvest [p,rc  ]()  for rc   in mTEPES.rn    if (p,rc) in mTEPES.prc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
+        RsrInvCost  = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost  [rc]          * OptModel.vReservoirInvest [p,rc  ]()  for rc   in mTEPES.rn    if (p,rc) in mTEPES.prc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
     else:
         RsrInvCost  = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
     if mTEPES.pIndHydrogen():

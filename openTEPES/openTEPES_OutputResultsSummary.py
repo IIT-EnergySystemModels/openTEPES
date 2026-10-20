@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 20, 2026
 
 System summary, flexibility, and reliability results.
 
@@ -72,10 +72,11 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHydroCost [p   ]()     for p          in mTEPES.p if mTEPES.rn) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFH2Cost    [p   ]()     for p          in mTEPES.p if mTEPES.pc) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHeatCost  [p   ]()     for p          in mTEPES.p if mTEPES.hc))
-    GenInvestmentCost      = sum(mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,gc]()     for p,gc       in mTEPES.pgc)
-    GenRetirementCost      = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenRetireCost[gd]           * OptModel.vGenerationRetire[p,gd]()     for p,gd       in mTEPES.pgd)
+    GenInvestmentCost      = sum(mTEPES.pDiscountedWeight[p]                                       * OptModel.xGenInvestCost   [p,gc]()     for p,gc       in mTEPES.pgc)
+    GenRetirementCost      = sum(mTEPES.pDiscountedWeight[p] * (mTEPES.pGenRetireCost   [gd]       -
+                                                                mTEPES.pGenOMFixedCost  [gd])      * OptModel.vGenerationRetire[p,gd]()     for p,gd       in mTEPES.pgd)
     if mTEPES.pIndHydroTopology():
-        RsrInvestmentCost  = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pRsrInvestCost[rc]           * OptModel.vReservoirInvest [p,rc]()     for p,rc       in mTEPES.prc)
+        RsrInvestmentCost  = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pRsrInvestCost    [rc]       * OptModel.vReservoirInvest [p,rc]()     for p,rc       in mTEPES.prc)
     else:
         RsrInvestmentCost  = 0.0
     if mTEPES.pIndHydrogen():
