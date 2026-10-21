@@ -2,6 +2,9 @@
 
 ## [4.19.0rc] - 2026-10-12 Unreleased in PyPI
 
+- [FIXED] Gurobi and CPLEX solve every period of an operation run with barrier. Before, every period or scenario after the
+  first fell to the automatic method (concurrent for Gurobi), because the stage counter was read as a warm restart. Only a
+  persistent Gurobi solver re-solving the same instance still uses the automatic method.
 - [ADDED] optional file `oT_Data_GenerationInvestmentFactor` with a factor on the investment cost of each candidate unit by
   installation period, e.g., for learning rates. Each installed capacity keeps the factor of its period. Generation units only.
 - [FIXED] MaxCapacity as the maximum between MaxPowerElec and MaxCharge for any load level. This parameter upper bounds the outflows

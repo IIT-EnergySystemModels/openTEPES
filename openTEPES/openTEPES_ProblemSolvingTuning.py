@@ -1,11 +1,12 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 21, 2026
 
 openTEPES.openTEPES_ProblemSolvingTuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
 
 Each solver family (Gurobi, CPLEX, HiGHS, GAMS) has a distinct option-setting API; ``apply_solver_options()`` centralizes the dispatch so
 ``ProblemSolving`` does not need to know which solver it is talking to. The function also picks the right barrier / simplex method depending on
-whether this is the first solve (``ncall == 1`` → barrier ``Method=2``) or a warm-restart (``ncall > 1`` → automatic ``Method=-1``).
+whether a persistent solver re-solves an instance it already holds (``ncall > 1`` → automatic ``Method=-1``, which can reuse the basis) or not
+(→ barrier ``Method=2``).
 
 For GAMS, options are returned as a set of additional CLI strings rather than set on ``Solver.options``; that is why the function returns an
 optional ``solver_options`` value for the caller to forward to ``Solver.solve()``.
@@ -50,12 +51,15 @@ def _crossover() -> int:
 def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int, mTEPES=None):
     """Apply initial-solve options to ``Solver`` based on ``SolverName``. Returns a GAMS ``solver_options`` set
     if applicable; ``None`` otherwise (for Gurobi/CPLEX/HiGHS the options are set on ``Solver.options``)."""
+    # Only a persistent solver keeps a basis between calls, so only its re-solves leave barrier. ncall alone does not say this: the
+    # operation stage loop passes p*sc*st, which exceeds 1 from the second period or scenario on even when every solve starts from scratch.
+    warm = SolverName in ("appsi_gurobi", "gurobi_persistent") and ncall > 1
     if SolverName == "gurobi" or SolverName == "gurobi_direct" or SolverName == "appsi_gurobi":
         Solver.options["OutputFlag"]      = 1
         Solver.options["LogFile"]         = FileName
         Solver.options["DisplayInterval"] = 100
         Solver.options["LPWarmStart"]     = 2
-        Solver.options["Method"]          = 2 if ncall == 1 else -1
+        Solver.options["Method"]          = -1 if warm else 2
         Solver.options["Crossover"]       = _crossover()
         Solver.options["MIPGap"]          = 0.01
         Solver.options["Threads"]         = _threads()
@@ -86,7 +90,7 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int, mTE
         Solver.set_gurobi_param("LogFile",  FileName)
         Solver.set_gurobi_param("DisplayInterval", 100)
         Solver.set_gurobi_param("LPWarmStart",     2)
-        Solver.set_gurobi_param("Method",          2 if ncall == 1 else -1)
+        Solver.set_gurobi_param("Method",          -1 if warm else 2)
         Solver.set_gurobi_param("Crossover",      _crossover())
         Solver.set_gurobi_param("MIPGap",       0.01)
         Solver.set_gurobi_param("Threads",     _threads())
@@ -96,7 +100,7 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int, mTE
 
     if SolverName == "cplex":
         # Solver.options["LogFile"]          = FileName
-        Solver.options["LPMethod"]           = 4 if ncall == 1 else 0
+        Solver.options["LPMethod"]           = 4
         Solver.options["Threads"]            = _threads()
         Solver.options["TimeLimit"]          = 72000
         # Solver.options["BarCrossAlg"]      = 0
