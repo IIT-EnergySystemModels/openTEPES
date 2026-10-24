@@ -1,6 +1,6 @@
 # Change Log
 
-## [4.19.0rc] - 2026-10-12 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-24 Unreleased in PyPI
 
 - [FIXED] Gurobi and CPLEX solve every period of an operation run with barrier. Before, every period or scenario after the
   first fell to the automatic method (concurrent for Gurobi), because the stage counter was read as a warm restart. Only a
