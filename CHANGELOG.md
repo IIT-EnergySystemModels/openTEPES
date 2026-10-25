@@ -2,6 +2,9 @@
 
 ## [4.19.0rc] - 2026-10-25 Unreleased in PyPI
 
+- [FIXED] a run started with `--log` no longer stops with exit code 2 while writing the results when kaleido is installed. The network, hydrogen
+  and heat maps no longer set a plotly renderer, which loaded kaleido and with it logistro, and logistro read `--log` as one of its own options.
+  With hydrogen or heat, the network, marginal and economic results were lost as well.
 - [ADDED] optional file `oT_Data_EmissionCost` with the CO2 cost per period and area, in EUR/tCO2.
   The default is the global CO2 cost of `oT_Data_Parameter`. The area cost is used to compute the emission cost of each generating unit.
   The global CO2 cost is used for any unit whose area has no cost. This value can finally be overridden by the values of `oT_Data_VariableEmissionCost` of each
