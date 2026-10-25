@@ -133,14 +133,15 @@ This is the list of the input data files with a brief description of each.
 | `oT_Data_Stage.csv`                      | Weight of each stage                                                                                                                                                           |
 | `oT_Data_ReserveMargin.csv`              | Minimum adequacy reserve margin for each area and period                                                                                                                       |
 | `oT_Data_Emission.csv`                   | Maximum CO2 emissions of the electric system                                                                                                                                   |
+| `oT_Data_EmissionCost.csv`               | Emission cost per period and area (optional file)                                                                                                                              |
 | `oT_Data_RESEnergy.csv`                  | Minimum RES energy for each area and period                                                                                                                                    |
 | `oT_Data_Duration.csv`                   | Duration of the load levels                                                                                                                                                    |
 | `oT_Data_Demand.csv`                     | Electricity demand                                                                                                                                                             |
 | `oT_Data_Inertia.csv`                    | System inertia by area                                                                                                                                                         |
-| `oT_Data_OperatingReserveUp.csv`         | Upward operating reserves (including aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                       |
-| `oT_Data_OperatingReserveDown.csv`       | Downward operating reserves (including aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                     |
-| `oT_Data_OperatingReserveUpEnergy.csv`   | Upward operating reserve activation (including aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                            |
-| `oT_Data_OperatingReserveDownEnergy.csv` | Downward operating reserve activation (including aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                          |
+| `oT_Data_OperatingReserveUp.csv`         | Upward operating reserves (including aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                     |
+| `oT_Data_OperatingReserveDown.csv`       | Downward operating reserves (including aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                   |
+| `oT_Data_OperatingReserveUpEnergy.csv`   | Upward operating reserve activation (including aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                           |
+| `oT_Data_OperatingReserveDownEnergy.csv` | Downward operating reserve activation (including aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                         |
 | `oT_Data_RampReserveUp.csv`              | Upward ramp reserves (optional file)                                                                                                                                           |
 | `oT_Data_RampReserveDown.csv`            | Downward ramp reserves (optional file)                                                                                                                                         |
 | `oT_Data_Generation.csv`                 | Generation (electricity and heat) data                                                                                                                                         |
@@ -169,34 +170,34 @@ but the model will not read it.
 
 A description of the options included in the file `oT_Data_Option.csv` follows:
 
-| Item                | Description                                                                                           |                                                     |
-| ------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| IndBinGenInvest     | Indicator of binary generation expansion decisions                                                    | {0 continuous, 1 binary, 2 ignore investments}      |
-| IndBinGenRetirement | Indicator of binary generation retirement decisions                                                   | {0 continuous, 1 binary, 2 ignore retirements}      |
-| IndBinRsrInvest     | Indicator of binary reservoir expansion decisions (only used for reservoirs modeled with water units) | {0 continuous, 1 binary, 2 ignore investments}      |
-| IndBinNetInvest     | Indicator of binary electricity network expansion decisions                                           | {0 continuous, 1 binary, 2 ignore investments}      |
-| IndBinNetH2Invest   | Indicator of binary hydrogen network expansion decisions                                              | {0 continuous, 1 binary, 2 ignore investments}      |
-| IndBinNetHeatInvest | Indicator of binary heat network expansion decisions                                                  | {0 continuous, 1 binary, 2 ignore investments}      |
-| IndBinGenOperat     | Indicator of binary generation operation decisions                                                    | {0 continuous, 1 binary}                            |
-| IndBinGenRamps      | Indicator of whether to consider the up/down ramp constraints                                         | {0 no ramps, 1 ramp constraints}                    |
-| IndBinGenMinTime    | Indicator of whether to consider the min up/down time constraints                                     | {0 no min time constraints, 1 min time constraints} |
-| IndBinSingleNode    | Indicator of single node case study                                                                   | {0 network, 1 single node}                          |
-| IndBinLineCommit    | Indicator of binary transmission switching decisions                                                  | {0 continuous, 1 binary}                            |
-| IndBinNetLosses     | Indicator of network losses                                                                           | {0 lossless, 1 ohmic losses}                        |
-| IndACPowerFlow      | Indicator of the AC optimal power flow and its formulation                                            | {0 DC, 1 branch flow, 2 bus injection W space, 3 bus injection rectangular} |
-| IndACModelType      | Indicator of how the branch current is written (only used when IndACPowerFlow is 1)                   | {0 second-order cone, 1 piecewise linear, 2 exact non-linear} |
-| IndACRestore        | Indicator of the restoration pass that makes the reported operating point physical                    | {0 off, 1 on}                                       |
-| IndACCycle          | Indicator of the loop condition around each independent cycle (only used when IndACPowerFlow is 2)    | {0 off, 1 on}                                       |
-| IndACConverter      | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
+| Item                    | Description                                                                                           |                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| IndBinGenInvest         | Indicator of binary generation expansion decisions                                                    | {0 continuous, 1 binary, 2 ignore investments}      |
+| IndBinGenRetirement     | Indicator of binary generation retirement decisions                                                   | {0 continuous, 1 binary, 2 ignore retirements}      |
+| IndBinRsrInvest         | Indicator of binary reservoir expansion decisions (only used for reservoirs modeled with water units) | {0 continuous, 1 binary, 2 ignore investments}      |
+| IndBinNetInvest         | Indicator of binary electricity network expansion decisions                                           | {0 continuous, 1 binary, 2 ignore investments}      |
+| IndBinNetH2Invest       | Indicator of binary hydrogen network expansion decisions                                              | {0 continuous, 1 binary, 2 ignore investments}      |
+| IndBinNetHeatInvest     | Indicator of binary heat network expansion decisions                                                  | {0 continuous, 1 binary, 2 ignore investments}      |
+| IndBinGenOperat         | Indicator of binary generation operation decisions                                                    | {0 continuous, 1 binary}                            |
+| IndBinGenRamps          | Indicator of whether to consider the up/down ramp constraints                                         | {0 no ramps, 1 ramp constraints}                    |
+| IndBinGenMinTime        | Indicator of whether to consider the min up/down time constraints                                     | {0 no min time constraints, 1 min time constraints} |
+| IndBinSingleNode        | Indicator of single node case study                                                                   | {0 network, 1 single node}                          |
+| IndBinLineCommit        | Indicator of binary transmission switching decisions                                                  | {0 continuous, 1 binary}                            |
+| IndBinNetLosses         | Indicator of network losses                                                                           | {0 lossless, 1 ohmic losses}                        |
+| IndACPowerFlow          | Indicator of the AC optimal power flow and its formulation                                            | {0 DC, 1 branch flow, 2 bus injection W space, 3 bus injection rectangular} |
+| IndACModelType          | Indicator of how the branch current is written (only used when IndACPowerFlow is 1)                   | {0 second-order cone, 1 piecewise linear, 2 exact non-linear} |
+| IndACRestore            | Indicator of the restoration pass that makes the reported operating point physical                    | {0 off, 1 on}                                       |
+| IndACCycle              | Indicator of the loop condition around each independent cycle (only used when IndACPowerFlow is 2)    | {0 off, 1 on}                                       |
+| IndACConverter          | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
 | IndACApparentPowerLimit | Indicator of the apparent power limit at both ends of an AC branch (only used when IndACPowerFlow is 1). See "The thermal limit of an AC branch" below | {0 current limit only, 1 current and apparent power} |
-| IndACRestoreWarmStart | Indicator of the starting point of the AC recovery step (only used when IndACRestore is 1) | {0 ipopt defaults, 1 close to the relaxed solution} |
-| IndACConeStart      | Indicator of the starting point of the rectangular model (only used when IndACPowerFlow is 3): the W-space cone of the stage is solved first, its cost is reported as a lower bound and the model starts from its rank-one projection, or from an AC power flow solved from that projection with the cone's dispatch, so that the power balance holds at the start | {0 flat profile, 1 the W-space cone, 2 a power flow from the cone} |
-| IndBinShuntSwitch   | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
-| IndPTDF             | Indicator of the flow-based market coupling method and where its factors come from                    | {0 off, 1 read from the case, 2 computed from the reactances} |
-| IndCycleFlow            | Indicator of the cycle flow formulation of Kirchhoff's second law (DC only)                       | {0 per branch, 1 per cycle}                         |
-| IndCompleteProblem      | Indicator of solving the complete problem or decomposing it in time                               | {0 time Benders decomposition, 1 complete}          |
-| IndSectorDecomposition  | Indicator of Benders decomposition by sector                                                      | {0 one problem, 1 by sector}                        |
-| IndSequentialSolving    | Indicator of how the stages are solved                                                            | {0 in parallel, 1 sequentially through an LP file, 2 sequentially in memory, 3 by sensitivity analysis} |
+| IndACRestoreWarmStart   | Indicator of the starting point of the AC recovery step (only used when IndACRestore is 1)            | {0 ipopt defaults, 1 close to the relaxed solution} |
+| IndACConeStart          | Indicator of the starting point of the rectangular model (only used when IndACPowerFlow is 3): the W-space cone of the stage is solved first, its cost is reported as a lower bound and the model starts from its rank-one projection, or from an AC power flow solved from that projection with the cone's dispatch, so that the power balance holds at the start | {0 flat profile, 1 the W-space cone, 2 a power flow from the cone} |
+| IndBinShuntSwitch       | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
+| IndPTDF                 | Indicator of the flow-based market coupling method and where its factors come from                    | {0 off, 1 read from the case, 2 computed from the reactances} |
+| IndCycleFlow            | Indicator of the cycle flow formulation of Kirchhoff's second law (DC only)                           | {0 per branch, 1 per cycle}                         |
+| IndCompleteProblem      | Indicator of solving the complete problem or decomposing it in time                                   | {0 time Benders decomposition, 1 complete}          |
+| IndSectorDecomposition  | Indicator of Benders decomposition by sector                                                          | {0 one problem, 1 by sector}                        |
+| IndSequentialSolving    | Indicator of how the stages are solved                                                                | {0 in parallel, 1 sequentially through an LP file, 2 sequentially in memory, 3 by sensitivity analysis} |
 
 The last four options say how the problem is **solved** rather than what is modelled. They were fixed in the code until
 version 4.18.18 and could not be selected from a case; the defaults above are the values that were in force then, so a
@@ -321,6 +322,20 @@ Period          Area            CO2Emission    Maximum CO2 emissions of the elec
 ```
 
 If no value is provided for an area, the CO2 emission limit is considered infinite.
+
+## CO2 emission costs (optional file)
+
+A description of the data included in the file `oT_Data_EmissionCost.csv` follows:
+
+```{eval-rst}
+==============  ==============  =============  ==================================================================  ======
+Identifiers                     Header         Description
+==============================  =============  ==================================================================  ======
+Period          Area            CO2Cost        CO2 emission cost of the electric system for each period and area   €/tCO2
+==============  ==============  =============  ==================================================================  ======
+```
+
+If no value or zero value is provided for a period or area, the CO2 emission cost takes the CO2Cost value of the file `oT_Data_Parameter.csv`.
 
 ## Minimum RES energy
 
@@ -712,7 +727,8 @@ Period      Scenario        LoadLevel   Generator  Variable emission cost       
 ==========  ==============  ==========  =========  =============================  ======
 ```
 
-Not all the generators need to be defined as columns of this file, only those with values different from 0.
+Not all the generators need to be defined as columns of this file, only those with values different from 0. Values 0 or empty cells are replaced by CO2 cost
+of the file `oT_Data_Parameter.csv` or by the values of the file `oT_Data_EmissionCost.csv`.
 
 Internally, all the values below 1e-4 will be converted into 0 by the model.
 

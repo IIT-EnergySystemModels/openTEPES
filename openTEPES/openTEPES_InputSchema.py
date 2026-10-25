@@ -69,6 +69,7 @@ TABLE_SPECS: list[tuple[str, str, str, dict]] = [
     ("oT_Data_RESEnergy",       "res_energy",            PASSTHROUGH, dict(pk_cols=["Period", "Area"])),
     ("oT_Data_ReserveMargin",   "reserve_margin",        PASSTHROUGH, dict(pk_cols=["Period", "Area"])),
     ("oT_Data_Emission",        "emission",              PASSTHROUGH, dict(pk_cols=["Period", "Area"])),
+    ("oT_Data_EmissionCost",    "emission_cost",         PASSTHROUGH, dict(pk_cols=["Period", "Area"])),
     ("oT_Data_GenerationInvestmentFactor", "generation_investment_factor", PASSTHROUGH, dict(pk_cols=["Period", "Generator"])),
 
     # --- Time series, stored long in DB / wide in CSV ---

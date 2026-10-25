@@ -1,7 +1,11 @@
 # Change Log
 
-## [4.19.0rc] - 2026-10-24 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-25 Unreleased in PyPI
 
+- [ADDED] optional file `oT_Data_EmissionCost` with the CO2 cost per period and area, in EUR/tCO2.
+  The default is the global CO2 cost of `oT_Data_Parameter`. The area cost is used to compute the emission cost of each generating unit.
+  The global CO2 cost is used for any unit whose area has no cost. This value can finally be overridden by the values of `oT_Data_VariableEmissionCost` of each
+  generator if different from 0.
 - [FIXED] Gurobi and CPLEX solve every period of an operation run with barrier. Before, every period or scenario after the
   first fell to the automatic method (concurrent for Gurobi), because the stage counter was read as a warm restart. Only a
   persistent Gurobi solver re-solving the same instance still uses the automatic method.

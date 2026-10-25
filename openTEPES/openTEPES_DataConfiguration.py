@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 20, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 25, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
 (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
@@ -611,15 +611,20 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pConstantVarCost']  = par['pConstantVarCost'].reindex(sorted(par['pConstantVarCost'].columns), axis=1)
 
     # variable emission cost [M€/GWh]
-    par['pVariableEmissionCost'] = par['pVariableEmissionCost'].replace(0.0, par['pCO2Cost']) #[€/tCO2]
-    par['pEmissionVarCost']      = par['pEmissionRate'] * 1e-3 * par['pVariableEmissionCost']                 # [M€/GWh] = [tCO2/MWh] * 1e-3 * [€/tCO2]
+    pGenToArea = {g: ar for ar, g in mTEPES.a2g}
+    pPeriod = par['pVariableEmissionCost'].index.get_level_values('Period') if isinstance(par['pVariableEmissionCost'].index, pd.MultiIndex) else par['pVariableEmissionCost'].index
+    pAreaEmissionCostByGen = par['pAreaEmissionCost'].reindex(index=pPeriod, columns=[pGenToArea.get(g) for g in par['pVariableEmissionCost'].columns]).set_axis(par['pVariableEmissionCost'].columns, axis=1).fillna(0.0)
+    pAreaEmissionCostByGen.index = par['pVariableEmissionCost'].index
+
+    par['pVariableEmissionCost'] = par['pVariableEmissionCost'].where(par['pVariableEmissionCost'] != 0.0, pAreaEmissionCostByGen)   # [€/tCO2]
+    par['pEmissionVarCost']      = par['pEmissionRate'] * 1e-3 * par['pVariableEmissionCost']                                        # [M€/GWh] = [tCO2/MWh] * 1e-3 * [€/tCO2]
     par['pEmissionVarCost']      = par['pEmissionVarCost'].reindex(sorted(par['pEmissionVarCost'].columns), axis=1)
 
     # minimum up- and downtime and maximum shift time converted to an integer number of time steps
-    par['pUpTime']     = round(par['pUpTime']    /mTEPES.pDurationNZMax).astype('int')
-    par['pDwTime']     = round(par['pDwTime']    /mTEPES.pDurationNZMax).astype('int')
+    par['pUpTime']     = round(par['pUpTime'    ]/mTEPES.pDurationNZMax).astype('int')
+    par['pDwTime']     = round(par['pDwTime'    ]/mTEPES.pDurationNZMax).astype('int')
     par['pStableTime'] = round(par['pStableTime']/mTEPES.pDurationNZMax).astype('int')
-    par['pShiftTime']  = round(par['pShiftTime'] /mTEPES.pDurationNZMax).astype('int')
+    par['pShiftTime']  = round(par['pShiftTime' ]/mTEPES.pDurationNZMax).astype('int')
 
     # %% definition of the time-step leap to observe the stored energy at an ESS
     idxCycle            = dict()

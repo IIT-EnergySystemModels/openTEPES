@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 20, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 25, 2026
 """
 
 import time
@@ -74,6 +74,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         'VariablePTDF'  : [0, 1, 2, 3],
     }
     FLAG_MAPPING = {
+        'EmissionCost'              : ('pIndEmissionCost',      None, 'No area emission costs'              ),
         'RampReserveUp'             : ('pIndRampReserves',      None, 'No ramp reserves'                    ),
         'RampReserveDown'           : ('pIndRampReserves',      None, 'No ramp reserves'                    ),
         'OperatingReserveDownEnergy': ('pIndReserveActivation', None, 'No operating reserve activation'     ),
@@ -162,13 +163,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         return dfs, par
 
     dfs, par = read_input_data()
-    # if 'pIndRampReserves', 'pIndReserveActivation', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat' are not in par, add them and set their value to zero
-    for key in ['pIndRampReserves', 'pIndReserveActivation', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat']:
+    # if 'pIndEmissionCost', 'pIndRampReserves', 'pIndReserveActivation', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat' are not in par, add them and set their value to zero
+    for key in ['pIndEmissionCost', 'pIndRampReserves', 'pIndReserveActivation', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat']:
         if key not in par.keys():
             par[key] = 0
 
     # A hydrogen consumer, a turbine or a boiler, is charged for fuel in eBalanceH2 alone, so
-    # either switches the carrier on. Electrolysers produce rather than consume and do not.
+    # either switches the carrier on. Electrolyzers produce rather than consume and do not.
     _gen = dfs.get('dfGeneration')
     def _units(col):
         return int((_gen[col] > 0.0).sum()) if (_gen is not None and col in _gen.columns) else 0
@@ -435,6 +436,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pEnergyInflows']        = dfs['dfEnergyInflows'         ].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy inflows                    [GW]
     par['pEnergyOutflows']       = dfs['dfEnergyOutflows'        ].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy outflows                   [GW]
 
+    par['pAreaEmissionCost'] = pd.DataFrame(par['pCO2Cost'], index=par['pPeriodWeight'].index, columns=mTEPES.ar)
+    if par['pIndEmissionCost']:
+        par['pAreaEmissionCost'].update(dfs['dfEmissionCost']['CO2Cost'].unstack('Area').reindex(index=par['pPeriodWeight'].index, columns=mTEPES.ar).replace(0.0, par['pCO2Cost']))
+
     if par['pIndRampReserves']:
         par['pRampReserveUp']    = dfs['dfRampReserveUp'         ].reindex(columns=mTEPES.ar, fill_value=0.0) * 1e-3 # system ramp up   reserves                 [GW/h]
         par['pRampReserveDw']    = dfs['dfRampReserveDown'       ].reindex(columns=mTEPES.ar, fill_value=0.0) * 1e-3 # system ramp down reserves                 [GW/h]
@@ -586,9 +591,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pProductionFunctionH2']       = dfs['dfGeneration']  ['ProductionFunctionH2'      ] * 1e-3                                                      # production function of an electrolyzer       [kWh/gH2]
     par['pProductionFunctionHeat']     = dfs['dfGeneration']  ['ProductionFunctionHeat'    ]                                                             # production function of a heat pump           [kWh/kWh]
     par['pProductionFunctionH2ToHeat'] = dfs['dfGeneration']  ['ProductionFunctionH2ToHeat'] * 1e-3
-    # hydrogen-fired generation. Optional column: without it the hg set is empty
-    # no 1e-3 here: GWh x gH2/kWh gives tonnes directly, so the term is already in tH2
-    # hydrogen without electricity: reforming and imports. tH2/h, MEUR/tH2, tCO2/tH2, unscaled.
+    # hydrogen-fired generation. Optional column: without it the hg set is empty  no 1e-3 here: GWh x gH2/kWh gives tonnes directly,
+    # so the term is already in tH2 hydrogen without electricity: reforming and imports. tH2/h, MEUR/tH2, tCO2/tH2, unscaled.
     # ProductionCostH2 carries fuel, O&M and carbon; ProductionEmissionH2 is reported only.
     for _c, _d in (('MaximumProductionH2', 0.0), ('ProductionCostH2', 0.0), ('ProductionEmissionH2', 0.0)):
         par['p' + _c] = (dfs['dfGeneration'][_c] if _c in dfs['dfGeneration'].columns else pd.Series(_d, index=dfs['dfGeneration'].index)).fillna(_d)
