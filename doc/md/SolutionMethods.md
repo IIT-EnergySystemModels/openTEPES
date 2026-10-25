@@ -49,26 +49,26 @@ It solves the electric sector and the hydrogen sector separately, using the Bend
 
 ### Solver interface: persistent vs non-persistent
 
-The solver name you pass — the `SolverName` argument of `openTEPES_run`, or the solver you type at the `openTEPES_Main` prompt — also selects **how** Pyomo
-talks to the solver across the many solves a single case performs.
+The solver name (the `SolverName` argument of `openTEPES_run`, or the solver entered at the `openTEPES_Main` prompt) also selects the interface through which
+Pyomo communicates with the solver across the successive solves of a case.
 
-**Non-persistent (the default).** `gurobi`, `gurobi_direct`, `cplex`, `highs`, `gams`, `glpk`. Pyomo writes the whole model to the solver on every solve, and
-each solve builds a fresh solver handle (`SolverFactory(SolverName)`) — nothing is kept between solves. It is simple, works with every solver, and is the
-default (`highs`).
+**Non-persistent interface (default).** `gurobi`, `gurobi_direct`, `cplex`, `highs`, `gams`, `glpk`. Pyomo exports the complete model to the solver at every
+solve, and each solve creates a new solver object (`SolverFactory(SolverName)`); no information is kept between solves. This interface is simple, is available
+for every solver, and is the default (`highs`).
 
-**Persistent (Gurobi only).** `appsi_gurobi` (the APPSI interface, `pyomo.contrib.appsi`) or `gurobi_persistent` (the older interface). The solver instance is
-attached to the model once and kept in memory: the first solve calls `set_instance`, and every later solve pushes only what changed — updated variable bounds,
-and, for `appsi_gurobi`, new or updated parameters and constraints — instead of re-exporting the model. Gurobi can also restart from the previous basis when the
-same instance is re-solved with small changes, as in the sector Benders decomposition. Between consecutive stages, however, the constraints change, and the gain
-arises from avoiding the export of the model, not from the basis.
+**Persistent interface (Gurobi only).** `appsi_gurobi` (the APPSI interface, `pyomo.contrib.appsi`) or `gurobi_persistent` (the earlier interface). The solver
+instance is attached to the model once and kept in memory: the first solve calls `set_instance`, and every later solve transfers only the modifications (updated
+variable bounds and, for `appsi_gurobi`, new or updated parameters and constraints) instead of exporting the model again. Gurobi can also restart from the
+previous basis when the same instance is re-solved with small changes, as in the sector Benders decomposition. Between consecutive stages, however, the
+constraints change, and the gain arises from avoiding the export of the model, not from the basis.
 
-**Where it matters.** A single openTEPES case is rarely one solve. The stage loop solves the model once per `(period, scenario, stage)`, then fixes the integer
-and investment decisions and re-solves the relaxed LP to recover the shadow prices (LMPs); the Benders drivers re-solve as they add cuts. On a large model,
-re-exporting the full problem to the solver on each of these solves is a real cost, so a persistent Gurobi keeps the model resident and sends only the changes.
-A single-stage LP — or any HiGHS run — has little to reuse, so non-persistent is the right choice.
+**Relevance for large cases.** An openTEPES case seldom involves a single solve. The model is solved once per `(period, scenario, stage)`; then the integer and
+investment decisions are fixed, and the relaxed LP is re-solved to obtain the dual variables (LMPs). The Benders decompositions re-solve their problems as cuts
+are added. For a large model, the export of the complete problem at each of these solves is a significant cost; a persistent Gurobi interface keeps the model
+in memory and transfers only the modifications. A single-stage LP, or any HiGHS solve, offers little to reuse; hence, the non-persistent interface is adequate.
 
-**Mode C is always non-persistent.** The hot-swap re-solve (`resolve`, see {doc}`Sweeps`) re-exports the model from the mutable parameter values on every solve,
-so it needs a plain solver name; a persistent handle would keep a stale copy of the model.
+**Non-persistent interface in Mode C.** The hot-swap re-solve (`resolve`, see {doc}`Sweeps`) exports the model again from the current values of the mutable
+parameters at every solve; hence, it requires a non-persistent solver name. A persistent interface would retain an outdated copy of the model.
 
 Examples:
 
@@ -85,8 +85,8 @@ openTEPES_run("cases", "9n", "appsi_gurobi", 1, 0)
 openTEPES_run("cases", "9n", "gurobi_persistent", 1, 0)
 ```
 
-Only Gurobi has a persistent interface here, so its incremental-update speed-up applies only to `appsi_gurobi` / `gurobi_persistent`. If you run large
-multi-stage or Benders cases on Gurobi with the plain `gurobi` name, you re-export the model on every solve and leave that speed-up unused.
+Only Gurobi has a persistent interface in openTEPES; hence, the gain from incremental updates applies only to `appsi_gurobi` and `gurobi_persistent`. Large
+multi-stage or Benders cases solved with the plain `gurobi` name export the model at every solve and forgo this gain.
 
 ### LP algorithm
 
