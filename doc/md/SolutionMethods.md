@@ -4,8 +4,8 @@ openTEPES documentation master file, created by Andres Ramos
 
 # Solution Methods
 
-The **openTEPES** model can be solved using different solution methods, depending on the size of the problem and the available computational resources. Two
-choices are made separately: how the problem is decomposed, and how each problem is solved.
+The **openTEPES** model can be solved using different solution methods, depending on the size of the problem and the available computational resources. The
+solution method comprises two choices: the decomposition of the problem and the solver settings for each optimization problem.
 
 ## Decomposition
 
@@ -58,9 +58,9 @@ default (`highs`).
 
 **Persistent (Gurobi only).** `appsi_gurobi` (the APPSI interface, `pyomo.contrib.appsi`) or `gurobi_persistent` (the older interface). The solver instance is
 attached to the model once and kept in memory: the first solve calls `set_instance`, and every later solve pushes only what changed — updated variable bounds,
-and, for `appsi_gurobi`, new or updated parameters and constraints — instead of re-exporting the model. Gurobi can also restart from the previous basis when
-it solves the same instance again with small changes, as in the sector decomposition. Between stages of the stage loop the constraints change, so the gain
-there comes from not re-exporting the model, not from the basis.
+and, for `appsi_gurobi`, new or updated parameters and constraints — instead of re-exporting the model. Gurobi can also restart from the previous basis when the
+same instance is re-solved with small changes, as in the sector Benders decomposition. Between consecutive stages, however, the constraints change, and the gain
+arises from avoiding the export of the model, not from the basis.
 
 **Where it matters.** A single openTEPES case is rarely one solve. The stage loop solves the model once per `(period, scenario, stage)`, then fixes the integer
 and investment decisions and re-solves the relaxed LP to recover the shadow prices (LMPs); the Benders drivers re-solve as they add cuts. On a large model,
@@ -90,25 +90,25 @@ multi-stage or Benders cases on Gurobi with the plain `gurobi` name, you re-expo
 
 ### LP algorithm
 
-openTEPES sets the LP algorithm itself, in `openTEPES_ProblemSolvingTuning.py`. The figure shows the choice for each call site and solver interface; the green
-boxes are barrier.
+The LP algorithm is selected by openTEPES (file `openTEPES_ProblemSolvingTuning.py`). The figure shows the algorithm for each problem type and solver interface;
+green boxes denote the barrier method.
 
 ```{image} ../img/SolverMethod.png
-:alt: LP algorithm chosen by openTEPES for each call site and solver interface
+:alt: LP algorithm selected by openTEPES for each problem type and solver interface
 :align: center
 :width: 100%
 ```
 
-* `gurobi`, `gurobi_direct`, `cplex` and `gams` solve every problem with barrier (`Method=2` for Gurobi, `LPMethod=4` for CPLEX).
-* `appsi_gurobi` and `gurobi_persistent` use barrier for the first solve of an instance. When they solve the same instance again (`ncall > 1`), as the sector
-  decomposition does, they use the automatic method (`Method=-1`), which can restart from the stored basis.
-* `highs` chooses the method itself. Other solvers use their defaults.
-* After a mixed-integer solve, the integer and investment variables are fixed and the LP is solved again for the duals, with the automatic method
-  (`Method=-1` for Gurobi, `LPMethod=0` for CPLEX).
+* `gurobi`, `gurobi_direct`, `cplex` and `gams` use the barrier method for every problem (`Method=2` for Gurobi, `LPMethod=4` for CPLEX).
+* `appsi_gurobi` and `gurobi_persistent` use the barrier method for the first solve of a model instance and the automatic method (`Method=-1`) for every later
+  solve of the same instance, i.e., the later periods and scenarios of an operation problem and the iterations of the sector Benders decomposition.
+* With `highs`, HiGHS selects the algorithm itself; the remaining solvers use their default settings.
+* After a mixed-integer (MIP) solve, the integer and investment variables are fixed, and the resulting LP is re-solved with the automatic method to obtain the
+  dual variables (`Method=-1` for Gurobi, `LPMethod=0` for CPLEX).
 
-Barrier gives the same duals every time the same problem is solved. For an LP, the automatic method of Gurobi runs barrier and simplex in parallel
-(concurrent) and keeps the first to finish. On a degenerate LP the duals then depend on which method won, and they can change from one solve to the
-next.
+The barrier method yields reproducible dual variables, i.e., the same duals whenever the same problem is solved. In contrast, for an LP the automatic method of
+Gurobi runs the barrier and simplex methods concurrently and returns the first solution found. On a degenerate LP the dual solution is not unique; hence, the
+duals depend on the method that finishes first and may change from one solve to the next.
 
-`--crossover 0` skips the crossover step after a Gurobi barrier solve. The solve is faster, but at degenerate points some duals differ from those of a
-basic solution.
+The option `--crossover 0` omits the crossover step after a Gurobi barrier solve. The solution time decreases; however, at degenerate points some duals differ
+from those of a basic solution.
