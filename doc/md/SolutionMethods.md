@@ -9,7 +9,7 @@ choices are made separately: how the problem is decomposed, and how each problem
 
 ## Decomposition
 
-### Direct solution
+### Complete problem
 
 The optimization problem can be solved directly using a commercial solver (e.g., Gurobi, CPLEX) or an open-source solver (e.g., CBC, GLPK). This method is
 suitable for small to medium-sized problems. As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows**. For a
