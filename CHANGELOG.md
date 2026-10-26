@@ -12,6 +12,9 @@
 - [FIXED] Gurobi and CPLEX solve every period of an operation run with barrier. Before, every period or scenario after the
   first fell to the automatic method (concurrent for Gurobi), because the stage counter was read as a warm restart. Only a
   persistent Gurobi solver re-solving the same instance still uses the automatic method.
+- [ADDED] section on the LP algorithm in `SolutionMethods.md`, with a figure of the algorithm selected for each problem type and solver
+  interface. The page is grouped into decomposition and solver settings; the basis is now stated to be reused only when the same
+  instance is re-solved.
 - [ADDED] optional file `oT_Data_GenerationInvestmentFactor` with a factor on the investment cost of each candidate unit by
   installation period, e.g., for learning rates. Each installed capacity keeps the factor of its period. Generation units only.
 - [FIXED] MaxCapacity as the maximum between MaxPowerElec and MaxCharge for any load level. This parameter upper bounds the outflows
