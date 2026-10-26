@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 25, 2026
 
 Heat network operation results.
 
@@ -11,7 +11,6 @@ shared flow-series and snapshot-selection helpers live in ``openTEPES_OutputResu
 import time
 import os
 import pandas            as     pd
-import plotly.io         as     pio
 import plotly.graph_objs as     go
 from   collections       import defaultdict
 from   colour            import Color
@@ -217,7 +216,6 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     with open(os.path.join(DIR, 'openTEPES.mapbox_token')) as f:
         token = f.read()
 
-    pio.renderers.default = 'chrome'
     fig = go.Figure()
 
     # Add nodes

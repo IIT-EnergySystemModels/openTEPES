@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 25, 2026
 
 Electric network operation results and network map.
 
@@ -13,7 +13,6 @@ import time
 import os
 import math
 import pandas            as     pd
-import plotly.io         as     pio
 import plotly.graph_objs as     go
 from   collections       import defaultdict
 
@@ -254,8 +253,6 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     # Sub functions
     def oT_selecting_data(p,sc,n):
         # Nodes data
-        pio.renderers.default = 'chrome'
-
         # build each column in one pass instead of writing three scalar .loc cells per node. Nodes that have no zone keep the defaults the columns used to be
         # initialized with, which is what the loop left them at by never visiting them
         # a comprehension, NOT dict(mTEPES.ndzn): dict() on a Pyomo scalar Set goes through the component API and yields {None: <the Set>}, never the elements
