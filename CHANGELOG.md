@@ -2,6 +2,9 @@
 
 ## [4.19.0rc] - 2026-10-25 Unreleased in PyPI
 
+- [FIXED] architecture diagram (`doc/img/openTEPES_architecture.svg`) brought in line with the code: each implemented module is named
+  as in the package, and the stage and sector Benders decompositions, the stage subproblems, the in-memory input source and the Mode C
+  warm re-solve are added. The solver layer is grouped into decomposition and solver settings, as in `SolutionMethods.md`.
 - [FIXED] a run started with `--log` no longer stops with exit code 2 while writing the results when kaleido is installed. The network, hydrogen
   and heat maps no longer set a plotly renderer, which loaded kaleido and with it logistro, and logistro read `--log` as one of its own options.
   With hydrogen or heat, the network, marginal and economic results were lost as well.
