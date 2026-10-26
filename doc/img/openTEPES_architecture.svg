@@ -27,8 +27,8 @@
   <rect width="1140" height="1560" fill="#fafafa"/>
 
   <!-- Header -->
-  <text x="570" y="32" text-anchor="middle" class="title">openTEPES layered architecture — implemented and planned</text>
-  <text x="570" y="52" text-anchor="middle" class="subtitle">I/O  ▸  construction  ▸  formulation  ▸  solver  ▸  results · one file per energy sector · sweeps run through the runner</text>
+  <text x="570" y="32" text-anchor="middle" class="title">openTEPES layered architecture: implemented and planned modules</text>
+  <text x="570" y="52" text-anchor="middle" class="subtitle">I/O  ▸  construction  ▸  formulation  ▸  solver  ▸  results · one file per energy sector · sweeps in three modes</text>
 
   <!-- Legend: implemented vs planned -->
   <rect x="724" y="60" width="18" height="13" rx="3" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.1"/>
@@ -75,8 +75,8 @@
     <text x="90" y="230" text-anchor="middle" class="layer-tag">LAYER 2</text>
     <text x="90" y="251" text-anchor="middle" class="layer-name">I/O</text>
     <text x="90" y="266" text-anchor="middle" class="layer-note">openTEPES_Input*.py</text>
-    <text x="90" y="279" text-anchor="middle" class="layer-note">no pyomo — pure</text>
-    <text x="90" y="292" text-anchor="middle" class="layer-note">pandas / SQL</text>
+    <text x="90" y="279" text-anchor="middle" class="layer-note">no Pyomo: pandas</text>
+    <text x="90" y="292" text-anchor="middle" class="layer-note">and SQL only</text>
 
     <rect x="175.0" y="225" width="125" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="237.5" y="247" text-anchor="middle" class="mod" style="font-size:11px">…Schema.py</text>
@@ -125,22 +125,22 @@
     <rect x="175" y="383" width="210" height="65" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="280" y="404" text-anchor="middle" class="mod">InputData.py</text>
     <text x="280" y="420" text-anchor="middle" class="mod-sub">InputData</text>
-    <text x="280" y="434" text-anchor="middle" class="mod-sub">reads sets + params</text>
+    <text x="280" y="434" text-anchor="middle" class="mod-sub">reads sets and parameters</text>
 
     <rect x="405" y="383" width="250" height="65" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="530" y="404" text-anchor="middle" class="mod">DataConfiguration.py</text>
     <text x="530" y="420" text-anchor="middle" class="mod-sub">DataConfiguration</text>
-    <text x="530" y="434" text-anchor="middle" class="mod-sub">derived sets &amp; flags</text>
+    <text x="530" y="434" text-anchor="middle" class="mod-sub">derived sets and indicators</text>
 
     <rect x="675" y="383" width="250" height="65" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="800" y="404" text-anchor="middle" class="mod">SettingUpVariables.py</text>
     <text x="800" y="420" text-anchor="middle" class="mod-sub">SettingUpVariables</text>
-    <text x="800" y="434" text-anchor="middle" class="mod-sub">decision Vars + bounds</text>
+    <text x="800" y="434" text-anchor="middle" class="mod-sub">decision variables + bounds</text>
 
-    <text x="945" y="402" class="mod-sub">mutable Params + overlay:</text>
-    <text x="945" y="417" class="mod-sub">done (Mode C / Mode B).</text>
-    <text x="945" y="432" class="mod-sub">★ planned: split sets</text>
-    <text x="945" y="447" class="mod-sub">vs params in InputData</text>
+    <text x="945" y="402" class="mod-sub">mutable parameters + overlay:</text>
+    <text x="945" y="417" class="mod-sub">done (Modes B and C).</text>
+    <text x="945" y="432" class="mod-sub">★ planned: sets and</text>
+    <text x="945" y="447" class="mod-sub">parameters split in InputData</text>
   </g>
 
   <!-- arrow 3 -->
@@ -164,7 +164,7 @@
     <text x="318" y="548" text-anchor="middle" class="sector-tag">CROSS-SECTOR</text>
     <rect x="170" y="556" width="140" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
     <text x="240" y="578" text-anchor="middle" class="mod">…Objective.py</text>
-    <text x="240" y="594" text-anchor="middle" class="mod-sub">total cost o.f.</text>
+    <text x="240" y="594" text-anchor="middle" class="mod-sub">total cost objective</text>
     <text x="240" y="608" text-anchor="middle" class="mod-sub">+ stage costs</text>
 
     <rect x="325" y="556" width="140" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
@@ -173,7 +173,7 @@
     <text x="395" y="608" text-anchor="middle" class="mod-sub">emission · RES</text>
 
     <!-- one file per energy sector -->
-    <text x="788" y="548" text-anchor="middle" class="sector-tag">ENERGY SECTORS  —  one file each</text>
+    <text x="788" y="548" text-anchor="middle" class="sector-tag">ENERGY SECTORS: one file each</text>
     <rect x="480" y="556" width="165" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
     <text x="562" y="578" text-anchor="middle" class="mod">…Electricity.py</text>
     <text x="562" y="594" text-anchor="middle" class="mod-sub">demand · reserves · storage</text>
@@ -195,7 +195,7 @@
     <text x="1035" y="608" text-anchor="middle" class="mod-sub">power-to-heat</text>
 
     <!-- electricity network formulation: one of three, chosen by IndACPowerFlow -->
-    <text x="407" y="640" text-anchor="middle" class="sector-tag">ELECTRICITY NETWORK  —  pick one</text>
+    <text x="407" y="640" text-anchor="middle" class="sector-tag">ELECTRICITY NETWORK: one of three</text>
     <line x1="562" y1="622" x2="562" y2="650" stroke="#b03030" stroke-width="1.2"/>
     <line x1="252" y1="650" x2="567" y2="650" stroke="#b03030" stroke-width="1.2"/>
     <line x1="252" y1="650" x2="252" y2="664" stroke="#b03030" stroke-width="1.2"/>
@@ -236,8 +236,8 @@
     <text x="90" y="929" text-anchor="middle" class="layer-note">decomposition, then</text>
     <text x="90" y="941" text-anchor="middle" class="layer-note">settings of each solve</text>
 
-    <text x="483.6" y="833" text-anchor="middle" class="sector-tag">DECOMPOSITION  —  chosen by …StageIter.py</text>
-    <text x="952.8" y="833" text-anchor="middle" class="sector-tag">SWEEPS  —  MODE C</text>
+    <text x="483.6" y="833" text-anchor="middle" class="sector-tag">DECOMPOSITION: chosen by …StageIter.py</text>
+    <text x="952.8" y="833" text-anchor="middle" class="sector-tag">SWEEPS: MODE C</text>
     <rect x="175.0" y="840" width="148" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
     <text x="249.0" y="858" text-anchor="middle" class="mod" style="font-size:11px">…StageIter.py</text>
     <text x="249.0" y="875" text-anchor="middle" class="mod-sub">stage loop · method choice</text>
@@ -256,7 +256,7 @@
     <rect x="957.0" y="840" width="148" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
     <text x="1031.0" y="858" text-anchor="middle" class="mod" style="font-size:11px">…Resolve.py</text>
     <text x="1031.0" y="875" text-anchor="middle" class="mod-flag">★ hot-swap re-solve</text>
-    <text x="483.6" y="905" text-anchor="middle" class="sector-tag">SOLVER SETTINGS  —  each solve</text>
+    <text x="483.6" y="905" text-anchor="middle" class="sector-tag">SOLVER SETTINGS: each solve</text>
     <text x="874.6" y="905" text-anchor="middle" class="sector-tag">STANDALONE</text>
     <rect x="175.0" y="912" width="148" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
     <text x="249.0" y="930" text-anchor="middle" class="mod" style="font-size:11px">ProblemSolving.py</text>
@@ -308,13 +308,13 @@
     <text x="247" y="1048" text-anchor="middle" class="mod-sub">capacity additions</text>
     <rect x="322" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="391" y="988" text-anchor="middle" class="mod">…Generation.py</text>
-    <text x="391" y="1002" text-anchor="middle" class="mod-sub">elec + heat dispatch</text>
+    <text x="391" y="1002" text-anchor="middle" class="mod-sub">power and heat dispatch</text>
     <rect x="322" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="391" y="1034" text-anchor="middle" class="mod">…Storage.py</text>
     <text x="391" y="1048" text-anchor="middle" class="mod-sub">ESS · reservoir</text>
     <rect x="466" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="535" y="988" text-anchor="middle" class="mod">…Network.py</text>
-    <text x="535" y="1002" text-anchor="middle" class="mod-sub">elec flows · map</text>
+    <text x="535" y="1002" text-anchor="middle" class="mod-sub">power flows · map</text>
     <rect x="466" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="535" y="1034" text-anchor="middle" class="mod">…Hydrogen.py</text>
     <text x="535" y="1048" text-anchor="middle" class="mod-sub">H2 pipe network</text>
@@ -323,16 +323,16 @@
     <text x="535" y="1094" text-anchor="middle" class="mod-sub">heat pipe network</text>
     <rect x="610" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="679" y="988" text-anchor="middle" class="mod">…Economic.py</text>
-    <text x="679" y="1002" text-anchor="middle" class="mod-sub">cost · marginal · econ</text>
+    <text x="679" y="1002" text-anchor="middle" class="mod-sub">costs · marginal prices</text>
     <rect x="610" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="679" y="1034" text-anchor="middle" class="mod">…Summary.py</text>
-    <text x="679" y="1048" text-anchor="middle" class="mod-sub">summary · flex · reliab</text>
+    <text x="679" y="1048" text-anchor="middle" class="mod-sub">flexibility · reliability</text>
     <rect x="754" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="823" y="988" text-anchor="middle" class="mod">…Common.py</text>
-    <text x="823" y="1002" text-anchor="middle" class="mod-sub">out-dir · Altair plots</text>
+    <text x="823" y="1002" text-anchor="middle" class="mod-sub">output folder · plots</text>
     <rect x="754" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="823" y="1034" text-anchor="middle" class="mod">…MapCommon.py</text>
-    <text x="823" y="1048" text-anchor="middle" class="mod-sub">flow-series · snapshot</text>
+    <text x="823" y="1048" text-anchor="middle" class="mod-sub">flow series · snapshots</text>
     <rect x="754" y="1062" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="823" y="1080" text-anchor="middle" class="mod">…Sink.py</text>
     <text x="823" y="1094" text-anchor="middle" class="mod-sub">DuckDB / CSV result sink</text>
@@ -344,7 +344,7 @@
     <text x="967" y="1002" text-anchor="middle" class="mod-flag">★ merge sweep outputs</text>
     <rect x="898" y="1016" width="138" height="40" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2" stroke-dasharray="4 3"/>
     <text x="967" y="1034" text-anchor="middle" class="mod">mcda.py</text>
-    <text x="967" y="1048" text-anchor="middle" class="mod-sub" font-style="italic">optional · ext tooling</text>
+    <text x="967" y="1048" text-anchor="middle" class="mod-sub" font-style="italic">optional · external tools</text>
   </g>
 
   <!-- ================== TESTS / OUTPUTS ================== -->
@@ -370,7 +370,7 @@
     <rect x="20" y="1290" width="1100" height="125" rx="10" fill="#f6effa" stroke="#7a4a8a" stroke-width="1.5"/>
     <rect x="20" y="1290" width="140" height="125" rx="10" fill="#7a4a8a"/>
     <text x="90" y="1320" text-anchor="middle" class="layer-tag">SWEEP MODES</text>
-    <text x="90" y="1341" text-anchor="middle" class="layer-name">parallel</text>
+    <text x="90" y="1341" text-anchor="middle" class="layer-name">A · B · C</text>
     <text x="90" y="1361" text-anchor="middle" class="layer-note">Runner.py: A and B</text>
     <text x="90" y="1374" text-anchor="middle" class="layer-note">…Resolve.py: C</text>
 
@@ -390,7 +390,7 @@
     <text x="637" y="1354" text-anchor="middle" class="mod-sub">shared baseline DataFrames in RAM;</text>
     <text x="637" y="1368" text-anchor="middle" class="mod-sub">each worker applies its own overlay dict</text>
     <text x="637" y="1383" text-anchor="middle" class="mod-sub">cost: build + solve per worker (no re-I/O)</text>
-    <text x="637" y="1397" text-anchor="middle" class="mod-sub">use: parameter sweeps · Monte-Carlo demand</text>
+    <text x="637" y="1397" text-anchor="middle" class="mod-sub">use: parameter sweeps · Monte Carlo demand</text>
 
     <!-- Mode C -->
     <rect x="800" y="1303" width="305" height="100" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.4"/>
