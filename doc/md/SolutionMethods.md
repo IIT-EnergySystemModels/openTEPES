@@ -5,7 +5,7 @@ openTEPES documentation master file, created by Andres Ramos
 # Solution Methods
 
 The **openTEPES** model can be solved using different solution methods, depending on the size of the problem and the available computational resources. The
-solution method comprises two choices: the decomposition of the problem and the solver settings for each optimization problem.
+solution method comprises the decomposition of the problem and the solver settings.
 
 ## Decomposition
 
@@ -49,26 +49,23 @@ It solves the electric sector and the hydrogen sector separately, using the Bend
 
 ### Solver interface: persistent vs non-persistent
 
-The solver name (the `SolverName` argument of `openTEPES_run`, or the solver entered at the `openTEPES_Main` prompt) also selects the interface through which
-Pyomo communicates with the solver across the successive solves of a case.
+The solver name (the `SolverName` argument of `openTEPES_run`, or the solver entered at the `openTEPES_Main` prompt) also selects the interface between Pyomo
+and the solver.
 
-**Non-persistent interface (default).** `gurobi`, `gurobi_direct`, `cplex`, `highs`, `gams`, `glpk`. Pyomo exports the complete model to the solver at every
-solve, and each solve creates a new solver object (`SolverFactory(SolverName)`); no information is kept between solves. This interface is simple, is available
-for every solver, and is the default (`highs`).
+**Non-persistent interface (default).** `gurobi`, `gurobi_direct`, `cplex`, `highs`, `gams`, `glpk`. Pyomo exports the complete model at every solve to a new
+solver object (`SolverFactory(SolverName)`). This interface is available for every solver; the default is `highs`.
 
-**Persistent interface (Gurobi only).** `appsi_gurobi` (the APPSI interface, `pyomo.contrib.appsi`) or `gurobi_persistent` (the earlier interface). The solver
-instance is attached to the model once and kept in memory: the first solve calls `set_instance`, and every later solve transfers only the modifications (updated
-variable bounds and, for `appsi_gurobi`, new or updated parameters and constraints) instead of exporting the model again. Gurobi can also restart from the
-previous basis when the same instance is re-solved with small changes, as in the sector Benders decomposition. Between consecutive stages, however, the
-constraints change, and the gain arises from avoiding the export of the model, not from the basis.
+**Persistent interface (Gurobi only).** `appsi_gurobi` (APPSI, `pyomo.contrib.appsi`) or `gurobi_persistent` (the earlier interface). The solver instance is
+attached to the model once (`set_instance`); later solves transfer only the modifications: variable bounds and, for `appsi_gurobi`, parameters and constraints.
+Gurobi can restart from the previous basis when the same instance is re-solved with small changes, as in the sector Benders decomposition. Between stages the
+constraints change, and the gain comes from avoiding the export of the model, not from the basis.
 
-**Relevance for large cases.** An openTEPES case seldom involves a single solve. The model is solved once per `(period, scenario, stage)`; then the integer and
-investment decisions are fixed, and the relaxed LP is re-solved to obtain the dual variables (LMPs). The Benders decompositions re-solve their problems as cuts
-are added. For a large model, the export of the complete problem at each of these solves is a significant cost; a persistent Gurobi interface keeps the model
-in memory and transfers only the modifications. A single-stage LP, or any HiGHS solve, offers little to reuse; hence, the non-persistent interface is adequate.
+**Relevance for large cases.** A case involves many solves: one per `(period, scenario, stage)`, an LP re-solve with the integer and investment decisions fixed
+to obtain the dual variables (LMPs), and the iterations of the Benders decompositions. For a large model solved with Gurobi, the persistent interface avoids the
+export of the model at each solve; the plain `gurobi` name forgoes this gain. A single-stage LP, or any HiGHS solve, gains little from it.
 
-**Non-persistent interface in Mode C.** The hot-swap re-solve (`resolve`, see {doc}`Sweeps`) exports the model again from the current values of the mutable
-parameters at every solve; hence, it requires a non-persistent solver name. A persistent interface would retain an outdated copy of the model.
+**Non-persistent interface in Mode C.** The hot-swap re-solve (`resolve`, see {doc}`Sweeps`) exports the model with the current values of the mutable
+parameters at every solve; hence, it requires a non-persistent solver name.
 
 Examples:
 
@@ -85,13 +82,9 @@ openTEPES_run("cases", "9n", "appsi_gurobi", 1, 0)
 openTEPES_run("cases", "9n", "gurobi_persistent", 1, 0)
 ```
 
-Only Gurobi has a persistent interface in openTEPES; hence, the gain from incremental updates applies only to `appsi_gurobi` and `gurobi_persistent`. Large
-multi-stage or Benders cases solved with the plain `gurobi` name export the model at every solve and forgo this gain.
-
 ### LP algorithm
 
-The LP algorithm is selected by openTEPES (file `openTEPES_ProblemSolvingTuning.py`). The figure shows the algorithm for each problem type and solver interface;
-green boxes denote the barrier method.
+The LP algorithm is selected by openTEPES (file `openTEPES_ProblemSolvingTuning.py`), as shown in the figure; green boxes denote the barrier method.
 
 ```{image} ../img/SolverMethod.png
 :alt: LP algorithm selected by openTEPES for each problem type and solver interface
@@ -99,16 +92,15 @@ green boxes denote the barrier method.
 :width: 100%
 ```
 
-* `gurobi`, `gurobi_direct`, `cplex` and `gams` use the barrier method for every problem (`Method=2` for Gurobi, `LPMethod=4` for CPLEX).
-* `appsi_gurobi` and `gurobi_persistent` use the barrier method for the first solve of a model instance and the automatic method (`Method=-1`) for every later
-  solve of the same instance, i.e., the later periods and scenarios of an operation problem and the iterations of the sector Benders decomposition.
-* With `highs`, HiGHS selects the algorithm itself; the remaining solvers use their default settings.
-* After a mixed-integer (MIP) solve, the integer and investment variables are fixed, and the resulting LP is re-solved with the automatic method to obtain the
-  dual variables (`Method=-1` for Gurobi, `LPMethod=0` for CPLEX).
+* `gurobi`, `gurobi_direct`, `cplex` and `gams`: barrier method for every problem (`Method=2` for Gurobi, `LPMethod=4` for CPLEX).
+* `appsi_gurobi` and `gurobi_persistent`: barrier method for the first solve of an instance, and automatic method (`Method=-1`) for the later solves of the same
+  instance, i.e., the later periods and scenarios of an operation problem and the iterations of the sector Benders decomposition.
+* `highs` and the remaining solvers: default settings of the solver.
+* After a mixed-integer (MIP) solve, the LP with the integer and investment variables fixed is re-solved with the automatic method to obtain the dual variables
+  (`Method=-1` for Gurobi, `LPMethod=0` for CPLEX).
 
-The barrier method yields reproducible dual variables, i.e., the same duals whenever the same problem is solved. In contrast, for an LP the automatic method of
-Gurobi runs the barrier and simplex methods concurrently and returns the first solution found. On a degenerate LP the dual solution is not unique; hence, the
-duals depend on the method that finishes first and may change from one solve to the next.
+The barrier method yields the same dual variables at every solve of the same problem. The automatic method of Gurobi runs the barrier and simplex methods
+concurrently and returns the first solution; on a degenerate LP, whose duals are not unique, the duals may therefore change from one solve to the next.
 
-The option `--crossover 0` omits the crossover step after a Gurobi barrier solve. The solution time decreases; however, at degenerate points some duals differ
-from those of a basic solution.
+The option `--crossover 0` omits the crossover after a Gurobi barrier solve, which reduces the solution time; at degenerate points, some duals then differ from
+those of a basic solution.
