@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1185 1450" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1185 1465" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L0,6 L9,3 z" fill="#444"/>
@@ -24,7 +24,7 @@
     </style>
   </defs>
 
-  <rect width="1140" height="1450" fill="#fafafa"/>
+  <rect width="1140" height="1465" fill="#fafafa"/>
 
   <!-- Header -->
   <text x="570" y="32" text-anchor="middle" class="title">openTEPES layered architecture — implemented and planned</text>
@@ -44,24 +44,24 @@
     <text x="90" y="124" text-anchor="middle" class="layer-name">Entry</text>
     <text x="90" y="142" text-anchor="middle" class="layer-note">CLI + orchestration</text>
 
-    <rect x="180" y="93" width="155" height="48" rx="8" fill="#fff" stroke="#4a5a8a" stroke-width="1.2"/>
-    <text x="257" y="112" text-anchor="middle" class="mod">cli.py</text>
-    <text x="257" y="128" text-anchor="middle" class="mod-sub">argparse + dispatch</text>
+    <rect x="180" y="93" width="155" height="48" rx="8" fill="#d4efdf" stroke="#4a5a8a" stroke-width="1.2"/>
+    <text x="257" y="112" text-anchor="middle" class="mod">Main.py</text>
+    <text x="257" y="128" text-anchor="middle" class="mod-sub">command line + prompts</text>
 
     <text x="355" y="120" class="arrow-lbl">▶</text>
 
-    <rect x="375" y="93" width="155" height="48" rx="8" fill="#fff" stroke="#4a5a8a" stroke-width="1.2"/>
-    <text x="452" y="112" text-anchor="middle" class="mod">run.py</text>
-    <text x="452" y="128" text-anchor="middle" class="mod-sub">single-solve pipeline</text>
+    <rect x="375" y="93" width="155" height="48" rx="8" fill="#d4efdf" stroke="#4a5a8a" stroke-width="1.2"/>
+    <text x="452" y="112" text-anchor="middle" class="mod">openTEPES.py</text>
+    <text x="452" y="128" text-anchor="middle" class="mod-sub">openTEPES_run · one case</text>
 
     <text x="550" y="120" class="arrow-lblP">▶ sweep</text>
 
     <rect x="610" y="93" width="170" height="48" rx="8" fill="#d4efdf" stroke="#4a5a8a" stroke-width="1.2"/>
-    <text x="695" y="112" text-anchor="middle" class="mod">runner.py</text>
-    <text x="695" y="128" text-anchor="middle" class="mod-sub">parallel sweep orchestrator</text>
+    <text x="695" y="112" text-anchor="middle" class="mod">Runner.py</text>
+    <text x="695" y="128" text-anchor="middle" class="mod-sub">serial · multiprocessing · joblib</text>
 
     <rect x="800" y="93" width="305" height="48" rx="8" fill="#f6effa" stroke="#7a4a8a" stroke-width="1.0" stroke-dasharray="3 3"/>
-    <text x="952" y="111" text-anchor="middle" class="mod-flag">backends: multiprocessing · joblib</text>
+    <text x="952" y="111" text-anchor="middle" class="mod-flag">further backends</text>
     <text x="952" y="127" text-anchor="middle" class="mod-flag">slurm · dask · mpi · ray</text>
   </g>
 
@@ -78,35 +78,34 @@
     <text x="90" y="279" text-anchor="middle" class="layer-note">no pyomo — pure</text>
     <text x="90" y="292" text-anchor="middle" class="layer-note">pandas / SQL</text>
 
-    <rect x="175" y="225" width="140" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="245" y="247" text-anchor="middle" class="mod">InputSchema.py</text>
-    <text x="245" y="263" text-anchor="middle" class="mod-sub">TABLE_SPECS</text>
-    <text x="245" y="277" text-anchor="middle" class="mod-sub">column and type specs</text>
-
-    <rect x="325" y="225" width="140" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="395" y="247" text-anchor="middle" class="mod">InputSource.py</text>
-    <text x="395" y="263" text-anchor="middle" class="mod-sub">InputSource ABC</text>
-    <text x="395" y="277" text-anchor="middle" class="mod-sub">open_source() · shapes</text>
-
-    <rect x="475" y="225" width="140" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="545" y="247" text-anchor="middle" class="mod">InputCSVSource.py</text>
-    <text x="545" y="263" text-anchor="middle" class="mod-sub">CSVSource</text>
-    <text x="545" y="277" text-anchor="middle" class="mod-sub">historical backend</text>
-
-    <rect x="625" y="225" width="150" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="700" y="247" text-anchor="middle" class="mod">InputDuckDBSource.py</text>
-    <text x="700" y="263" text-anchor="middle" class="mod-sub">DuckDBSource</text>
-    <text x="700" y="277" text-anchor="middle" class="mod-sub">streaming SQL backend</text>
-
-    <rect x="785" y="225" width="155" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="862" y="246" text-anchor="middle" class="mod">cases.py</text>
-    <text x="862" y="261" text-anchor="middle" class="mod-flag">★ sweep-enabling</text>
-    <text x="862" y="275" text-anchor="middle" class="mod-sub">Case = baseline + overlay</text>
-
-    <rect x="950" y="225" width="155" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2" stroke-dasharray="4 3"/>
-    <text x="1027" y="247" text-anchor="middle" class="mod">parquet_source.py</text>
-    <text x="1027" y="263" text-anchor="middle" class="mod-sub" font-style="italic">future</text>
-    <text x="1027" y="277" text-anchor="middle" class="mod-sub" font-style="italic">same InputSource interface</text>
+    <rect x="175.0" y="225" width="125" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="237.5" y="247" text-anchor="middle" class="mod" style="font-size:11px">…Schema.py</text>
+    <text x="237.5" y="263" text-anchor="middle" class="mod-sub">TABLE_SPECS</text>
+    <text x="237.5" y="277" text-anchor="middle" class="mod-sub">column and type specs</text>
+    <rect x="309.2" y="225" width="125" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="371.7" y="247" text-anchor="middle" class="mod" style="font-size:11px">…Source.py</text>
+    <text x="371.7" y="263" text-anchor="middle" class="mod-sub">InputSource ABC</text>
+    <text x="371.7" y="277" text-anchor="middle" class="mod-sub">open_source() · shapes</text>
+    <rect x="443.4" y="225" width="125" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="505.9" y="247" text-anchor="middle" class="mod" style="font-size:11px">…CSVSource.py</text>
+    <text x="505.9" y="263" text-anchor="middle" class="mod-sub">CSVSource</text>
+    <text x="505.9" y="277" text-anchor="middle" class="mod-sub">historical backend</text>
+    <rect x="577.6" y="225" width="125" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="640.1" y="247" text-anchor="middle" class="mod" style="font-size:11px">…DuckDBSource.py</text>
+    <text x="640.1" y="263" text-anchor="middle" class="mod-sub">DuckDBSource</text>
+    <text x="640.1" y="277" text-anchor="middle" class="mod-sub">streaming SQL backend</text>
+    <rect x="711.8" y="225" width="125" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="774.3" y="247" text-anchor="middle" class="mod" style="font-size:11px">…InMemorySource.py</text>
+    <text x="774.3" y="263" text-anchor="middle" class="mod-flag">★ Mode B</text>
+    <text x="774.3" y="277" text-anchor="middle" class="mod-sub">baseline in RAM + overlay</text>
+    <rect x="846.0" y="225" width="125" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="908.5" y="247" text-anchor="middle" class="mod" style="font-size:11px">Cases.py</text>
+    <text x="908.5" y="263" text-anchor="middle" class="mod-flag">★ sweep-enabling</text>
+    <text x="908.5" y="277" text-anchor="middle" class="mod-sub">one case of a sweep</text>
+    <rect x="980.2" y="225" width="125" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="1042.7" y="247" text-anchor="middle" class="mod" style="font-size:11px">parquet_source.py</text>
+    <text x="1042.7" y="263" text-anchor="middle" class="mod-sub" font-style="italic">future</text>
+    <text x="1042.7" y="277" text-anchor="middle" class="mod-sub" font-style="italic">same interface</text>
   </g>
 
   <!-- arrow 2 -->
@@ -260,7 +259,7 @@
     <text x="907" y="862" text-anchor="middle" class="mod-sub">L-shaped decomp</text>
 
     <rect x="978" y="827" width="128" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="1042" y="844" text-anchor="middle" class="mod">resolve.py</text>
+    <text x="1042" y="844" text-anchor="middle" class="mod">…Resolve.py</text>
     <text x="1042" y="860" text-anchor="middle" class="mod-flag">★ hot-swap (Mode C)</text>
   </g>
 
@@ -279,8 +278,8 @@
     <text x="90" y="988" text-anchor="middle" class="layer-name">Results</text>
     <text x="90" y="1004" text-anchor="middle" class="layer-note">openTEPES_Output</text>
     <text x="90" y="1016" text-anchor="middle" class="layer-note">Results*.py</text>
-    <text x="90" y="1033" text-anchor="middle" class="layer-note">13 flat concern</text>
-    <text x="90" y="1046" text-anchor="middle" class="layer-note">modules (split done)</text>
+    <text x="90" y="1033" text-anchor="middle" class="layer-note">12 modules, one per</text>
+    <text x="90" y="1046" text-anchor="middle" class="layer-note">concern, + ResultAggregate</text>
     <text x="247" y="962" text-anchor="middle" class="sector-tag">RAW · INVEST</text>
     <text x="391" y="962" text-anchor="middle" class="sector-tag">DISPATCH</text>
     <text x="535" y="962" text-anchor="middle" class="sector-tag">NETWORKS</text>
@@ -323,12 +322,11 @@
     <rect x="754" y="1062" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="823" y="1080" text-anchor="middle" class="mod">…Sink.py</text>
     <text x="823" y="1094" text-anchor="middle" class="mod-sub">DuckDB / CSV result sink</text>
-    <rect x="466" y="1108" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="535" y="1126" text-anchor="middle" class="mod">AC</text>
-    <text x="535" y="1140" text-anchor="middle" class="mod-sub">voltages · Q · in …Network.py</text>
+    <text x="535" y="1126" text-anchor="middle" class="mod-sub" font-style="italic">AC voltages and reactive</text>
+    <text x="535" y="1140" text-anchor="middle" class="mod-sub" font-style="italic">power: in …Network.py</text>
     <text x="535" y="1166" text-anchor="middle" class="mod-flag">▲ Hydrogen + Heat split from sector-coupling (PR #128)</text>
     <rect x="898" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.5"/>
-    <text x="967" y="988" text-anchor="middle" class="mod">aggregate.py</text>
+    <text x="967" y="988" text-anchor="middle" class="mod" style="font-size:12px">ResultAggregate.py</text>
     <text x="967" y="1002" text-anchor="middle" class="mod-flag">★ merge sweep outputs</text>
     <rect x="898" y="1016" width="138" height="40" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2" stroke-dasharray="4 3"/>
     <text x="967" y="1034" text-anchor="middle" class="mod">mcda.py</text>
@@ -340,17 +338,9 @@
     <rect x="20" y="1195" width="1100" height="80" rx="10" fill="#f3f3f3" stroke="#999" stroke-width="1.2" stroke-dasharray="5 4"/>
     <text x="50" y="1218" class="sector-tag">TESTS &amp; OUTPUTS</text>
 
-    <rect x="180" y="1222" width="160" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
-    <text x="260" y="1240" text-anchor="middle" class="mod">tests/parity</text>
-    <text x="260" y="1255" text-anchor="middle" class="mod-sub">CSV ↔ DuckDB</text>
-
-    <rect x="355" y="1222" width="160" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
-    <text x="435" y="1240" text-anchor="middle" class="mod">tests/e2e</text>
-    <text x="435" y="1255" text-anchor="middle" class="mod-sub">9n · 9n_PTDF · sSEP</text>
-
-    <rect x="530" y="1222" width="160" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
-    <text x="610" y="1240" text-anchor="middle" class="mod">tests/sweep</text>
-    <text x="610" y="1255" text-anchor="middle" class="mod-sub">runner integration</text>
+    <rect x="180" y="1222" width="510" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
+    <text x="435" y="1240" text-anchor="middle" class="mod">tests/</text>
+    <text x="435" y="1255" text-anchor="middle" class="mod-sub">33 test files in one folder · unit tests, and solved cases under the solve marker · CSV ↔ DuckDB parity · runner</text>
 
     <rect x="705" y="1222" width="195" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
     <text x="802" y="1240" text-anchor="middle" class="mod">CSV + DuckDB</text>
@@ -367,14 +357,13 @@
     <rect x="20" y="1290" width="140" height="125" rx="10" fill="#7a4a8a"/>
     <text x="90" y="1320" text-anchor="middle" class="layer-tag">SWEEP MODES</text>
     <text x="90" y="1341" text-anchor="middle" class="layer-name">parallel</text>
-    <text x="90" y="1361" text-anchor="middle" class="layer-note">runner.py</text>
-    <text x="90" y="1374" text-anchor="middle" class="layer-note">orchestrates</text>
-    <text x="90" y="1387" text-anchor="middle" class="layer-note">all three modes</text>
+    <text x="90" y="1361" text-anchor="middle" class="layer-note">Runner.py: A and B</text>
+    <text x="90" y="1374" text-anchor="middle" class="layer-note">…Resolve.py: C</text>
 
     <!-- Mode A -->
     <rect x="180" y="1303" width="295" height="100" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.4"/>
     <text x="327" y="1322" text-anchor="middle" class="mod">A · pre-build sweep</text>
-    <text x="327" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 2 (io/)</text>
+    <text x="327" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 2</text>
     <text x="327" y="1354" text-anchor="middle" class="mod-sub">each worker reads its own perturbed source,</text>
     <text x="327" y="1368" text-anchor="middle" class="mod-sub">builds its own model, solves independently</text>
     <text x="327" y="1383" text-anchor="middle" class="mod-sub">cost: full I/O + build + solve per worker</text>
@@ -383,7 +372,7 @@
     <!-- Mode B -->
     <rect x="485" y="1303" width="305" height="100" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.4"/>
     <text x="637" y="1322" text-anchor="middle" class="mod">B · in-memory overlay</text>
-    <text x="637" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 3 (model/)</text>
+    <text x="637" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 3</text>
     <text x="637" y="1354" text-anchor="middle" class="mod-sub">shared baseline DataFrames in RAM;</text>
     <text x="637" y="1368" text-anchor="middle" class="mod-sub">each worker applies its own overlay dict</text>
     <text x="637" y="1383" text-anchor="middle" class="mod-sub">cost: build + solve per worker (no re-I/O)</text>
@@ -392,12 +381,13 @@
     <!-- Mode C -->
     <rect x="800" y="1303" width="305" height="100" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.4"/>
     <text x="952" y="1322" text-anchor="middle" class="mod">C · post-build hot-swap</text>
-    <text x="952" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 5 (solver/)</text>
+    <text x="952" y="1337" text-anchor="middle" class="mod-flag">cases diverge at LAYER 5</text>
     <text x="952" y="1354" text-anchor="middle" class="mod-sub">one built model, Param.store_values() +</text>
-    <text x="952" y="1368" text-anchor="middle" class="mod-sub">re-solve under fork() copy-on-write</text>
+    <text x="952" y="1368" text-anchor="middle" class="mod-sub">re-solve per overlay, in one process</text>
     <text x="952" y="1383" text-anchor="middle" class="mod-sub">cost: solve only</text>
-    <text x="952" y="1397" text-anchor="middle" class="mod-sub">needs: mutable=True · Unix fork · warm start</text>
+    <text x="952" y="1397" text-anchor="middle" class="mod-sub">needs: mutable=True · warm start optional</text>
   </g>
 
-  <text x="570" y="1437" text-anchor="middle" class="footer">One box, one module. Green = implemented, white = planned (names indicative). A new sector adds modules in Layers 4 and 6 and an entry in openTEPES_InputSchema.py. ★ marks what the sweep modes need.</text>
+  <text x="570" y="1437" text-anchor="middle" class="footer">One box, one module; module names omit the prefix openTEPES_, and … stands for the prefix of the layer.</text>
+  <text x="570" y="1453" text-anchor="middle" class="footer">Green = implemented, white = planned (names indicative). A new sector adds modules in Layers 4 and 6 and an entry in openTEPES_InputSchema.py. ★ marks what the sweep modes need.</text>
 </svg>
