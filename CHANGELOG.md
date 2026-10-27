@@ -1,6 +1,6 @@
 # Change Log
 
-## [4.19.0rc] - 2026-10-27 Unreleased in PyPI
+## [4.19.0] - 2026-10-27
 
 - [CHANGED] creation of NameplateMaxPowerElec and NameplateMaxPowerHeat from RatedMaxPowerElec and RatedMaxPowerHeat, respectively, to avoid the division
   by (1 - EFOR). The existing firm capacity of a generating unit is the sum of its nameplate capacity times its availability.

@@ -880,6 +880,6 @@ def main():
     return model
 
 if __name__ == '__main__':
-    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.0rc - October 27, 2026' + RESET)
+    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.0 - October 27, 2026' + RESET)
     print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
     model = main()
