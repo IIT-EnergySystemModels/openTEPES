@@ -7,11 +7,9 @@ openTEPES documentation master file, created by Andres Ramos
 The **openTEPES** model can be solved using different solution methods, depending on the size of the problem and the available computational resources. The
 solution method comprises the decomposition of the problem and the solver settings.
 
-## Decomposition
-
 ### Complete problem
 
-The optimization problem can be solved directly using a commercial solver (e.g., Gurobi, CPLEX) or an open-source solver (e.g., CBC, GLPK). This method is
+The optimization problem can be solved directly using a commercial solver (e.g., Gurobi, CPLEX) or an open-source solver (e.g., HiGHS, CBC, GLPK). This method is
 suitable for small to medium-sized problems. As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows**. For a
 mixed-integer linear optimization problem, the requirements are much higher, and they depend on the number of binary variables and the number of constraints
 that include them.
@@ -22,14 +20,14 @@ See also some Benders decomposition publications applied to TEP:
 
 * S. Lumbreras, A. Ramos "How to Solve the Transmission Expansion Planning (TEP) Problem Faster: Acceleration Techniques Applied to Benders Decomposition" IET
   Generation, Transmission & Distribution 10: 2351-2359, Jul 2016 [10.1049/iet-gtd.2015.1075](https://dx.doi.org/10.1049/iet-gtd.2015.1075)
-
 * S. Lumbreras, A. Ramos "Transmission Expansion Planning using an Efficient Version of Benders’ Decomposition. A Case Study" IEEE PowerTech. Grenoble, France.
   June 2013 [10.1109/PTC.2013.6652091](https://dx.doi.org/10.1109/PTC.2013.6652091)
 
 It solves the complete model, decomposed by the stage Benders decomposition method (file `openTEPES_ProblemSolvingStageDecomposition`). The master problem
-determines the investment decisions and the subproblem the operation decisions. The subproblem is solved by stages (e.g., weeks or months). The duration of the
-stage (weekly —168 h—, monthly —672 h—, or quarterly —2184 h—) is chosen based on what makes sense from a system operation point of view. This value must be
-larger than or equal to the shortest duration of any storage type (e.g., weekly).
+determines the investment decisions and the subproblem the operation decisions. The subproblem is solved by stages (e.g., weeks or months). The definition of
+a stage is done in the file `oT_Data_Duration` by assigning each time step to a stage. The duration of the
+stage (weekly —168 h—, monthly —672 h—, quarterly —2184 h—, or semester —4368 h—) is chosen based on what makes sense from a system operation point of view.
+This value must be larger than or equal to the shortest duration of any storage type (e.g., weekly).
 
 Inventory levels of ESS at the end of every stage are fixed for the decomposition, i.e., consecutive stages are not tied to each other.
 
@@ -52,13 +50,17 @@ It solves the electric sector and the hydrogen sector separately, using the Bend
 The solver name (the `SolverName` argument of `openTEPES_run`, or the solver entered at the `openTEPES_Main` prompt) also selects the interface between Pyomo
 and the solver.
 
-**Non-persistent interface (default).** `gurobi`, `gurobi_direct`, `cplex`, `highs`, `gams`, `glpk`. Pyomo exports the complete model at every solve to a new
-solver object (`SolverFactory(SolverName)`). This interface is available for every solver; the default is `highs`.
+**Non-persistent interface (default).** `gurobi`, `cplex`, `highs`, `gams`, `glpk`. Pyomo exports the complete model at every solve to a new
+solver object (`SolverFactory(SolverName)`). This interface is available for every solver; the default solver is `highs`. The solver connection is done
+by an LP file written to disk and the problem is not kept in memory. For `gurobi_direct` the solver connection is done by writing the problem in memory, but
+the problem is not kept in memory.
 
-**Persistent interface (Gurobi only).** `appsi_gurobi` (APPSI, `pyomo.contrib.appsi`) or `gurobi_persistent` (the earlier interface). The solver instance is
-attached to the model once (`set_instance`); later solves transfer only the modifications: variable bounds and, for `appsi_gurobi`, parameters and constraints.
+**Persistent interface.** `appsi_gurobi`, `appsi_cplex`, `appsi_highs`, (APPSI, `pyomo.contrib.appsi`) or `gurobi_persistent`, `cplex_persistent`
+(the earlier interface). The solver instance is attached to the model once (`set_instance`); later solves transfer only the modifications: variable bounds and,
+for `appsi_gurobi`, parameters and constraints.
 Gurobi can restart from the previous basis when the same instance is re-solved with small changes, as in the sector Benders decomposition. Between stages the
 constraints change, and the gain comes from avoiding the export of the model, not from the basis.
+For these, the solver connection is done by writing the problem in memory, and it is also kept in memory.
 
 **Relevance for large cases.** A case involves many solves: one per `(period, scenario, stage)`, an LP re-solve with the integer and investment decisions fixed
 to obtain the dual variables (LMPs), and the iterations of the Benders decompositions. For a large model solved with Gurobi, the persistent interface avoids the
@@ -93,8 +95,8 @@ The LP algorithm is selected by openTEPES (file `openTEPES_ProblemSolvingTuning.
 ```
 
 * `gurobi`, `gurobi_direct`, `cplex` and `gams`: barrier method for every problem (`Method=2` for Gurobi, `LPMethod=4` for CPLEX).
-* `appsi_gurobi` and `gurobi_persistent`: barrier method for the first solve of an instance, and automatic method (`Method=-1`) for the later solves of the same
-  instance, i.e., the later periods and scenarios of an operation problem and the iterations of the sector Benders decomposition.
+* `appsi_gurobi` and `gurobi_persistent`: barrier method for the first solve of an instance, and automatic method (`Method=-1`) for the latter solves of 
+  the same instance, i.e., the later periods and scenarios of an operation problem and the iterations of the sector Benders decomposition.
 * `highs` and the remaining solvers: default settings of the solver.
 * After a mixed-integer (MIP) solve, the LP with the integer and investment variables fixed is re-solved with the automatic method to obtain the dual variables
   (`Method=-1` for Gurobi, `LPMethod=0` for CPLEX).
