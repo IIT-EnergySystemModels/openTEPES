@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 25, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2026
 """
 
 import time
@@ -558,11 +558,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pElecGenPeriodFin']           = dfs['dfGeneration']  ['FinalPeriod'               ]                                                             # final   period                               [year]
     par['pAvailability']               = dfs['dfGeneration']  ['Availability'              ]                                                             # unit availability for adequacy               [p.u.]
     par['pEFOR']                       = dfs['dfGeneration']  ['EFOR'                      ]                                                             # EFOR                                         [p.u.]
-    par['pRatedMinPowerElec']          = dfs['dfGeneration']  ['MinimumPower'              ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated minimum electric power                 [GW]
-    par['pRatedMaxPowerElec']          = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated maximum electric power                 [GW]
-    par['pNameplateMaxPowerElec']      = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3                                                      # nameplate maximum electric power, NOT derated[GW]
-    par['pRatedMinPowerHeat']          = dfs['dfGeneration']  ['MinimumPowerHeat'          ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated minimum heat     power                 [GW]
-    par['pRatedMaxPowerHeat']          = dfs['dfGeneration']  ['MaximumPowerHeat'          ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated maximum heat     power                 [GW]
+    par['pRatedMinPowerElec']          = dfs['dfGeneration']  ['MinimumPower'              ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated     minimum electric power             [GW]
+    par['pRatedMaxPowerElec']          = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated     maximum electric power             [GW]
+    par['pNameplateMaxPowerElec']      = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3                                                      # nameplate maximum electric power, NOT derated [GW]
+    par['pRatedMinPowerHeat']          = dfs['dfGeneration']  ['MinimumPowerHeat'          ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated     minimum heat     power             [GW]
+    par['pRatedMaxPowerHeat']          = dfs['dfGeneration']  ['MaximumPowerHeat'          ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated     maximum heat     power             [GW]
+    par['pNameplateMaxPowerHeat']      = dfs['dfGeneration']  ['MaximumPowerHeat'          ] * 1e-3                                                      # nameplate maximum heat     power, NOT derated [GW]
     par['pRatedLinearFuelCost']        = dfs['dfGeneration']  ['LinearTerm'                ] * 1e-3 * dfs['dfGeneration']['FuelCost']                    # fuel     term variable cost                  [MEUR/GWh]
     par['pLinearOMCost']               = dfs['dfGeneration']  ['OMVariableCost'            ] * 1e-3                                                      # O&M      term variable cost                  [MEUR/GWh]
     par['pOperReserveCost']            = dfs['dfGeneration']  ['OperReserveCost'           ] * 1e-3                                                      # operating reserve      cost                  [MEUR/GW]
@@ -581,7 +582,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     # optional factor on the investment cost of the capacity installed in each period; 1.0 where not given
     par['pGenInvestFactor']            = dfs['dfGenerationInvestmentFactor']['Factor'] if 'dfGenerationInvestmentFactor' in dfs else pd.Series(dtype='float64')
     # optional column: O&M fixed cost per rated capacity; 0.0 where not given
-    par['pGenOMFixedCost']             = (dfs['dfGeneration']['OMFixedCost'] if 'OMFixedCost' in dfs['dfGeneration'].columns else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0) * par['pRatedMaxPowerElec'] / (1.0-par['pEFOR']) # O&M fixed cost [MEUR/year] = [MEUR/GW] x rated max power [GW]
+    par['pGenOMFixedCost']             = (dfs['dfGeneration']['OMFixedCost'] if 'OMFixedCost' in dfs['dfGeneration'].columns else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0) * par['pNameplateMaxPowerElec']  # O&M fixed cost [MEUR/year] = [MEUR/GW] x rated max power [GW]
     par['pRatedMinCharge']             = dfs['dfGeneration']  ['MinimumCharge'             ] * 1e-3                                                      # rated minimum ESS charge                     [GW]
     par['pRatedMaxCharge']             = dfs['dfGeneration']  ['MaximumCharge'             ] * 1e-3                                                      # rated maximum ESS charge                     [GW]
     par['pRatedMinStorage']            = dfs['dfGeneration']  ['MinimumStorage'            ]                                                             # rated minimum ESS storage                    [GWh]

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 20, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -160,7 +160,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()):
             # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area instead of re-summing over all generators for every tuple
-            pExistingFirmCapacity = {(p, ar): sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
+            pExistingFirmCapacity = {(p, ar): sum(mTEPES.pNameplateMaxPowerElec[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
             # eAdequacyReserveMarginElec is skipped in areas without a candidate unit available in the period (openTEPES_ModelFormulationInvestment.py): len(g2a[ar]) asks for a dual that was never created
             pHasCandidateInArea   = {(p, ar): any(gc in g2a[ar] and (p,gc) in mTEPES.pgc for gc in mTEPES.gc) for p in mTEPES.p for ar in mTEPES.ar}
             sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and pHasCandidateInArea[p,ar] and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
@@ -170,7 +170,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if mTEPES.pIndHeat() and (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMarginHeat[:,:]):
             # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area
-            pExistingFirmCapacity = {(p,ar): sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
+            pExistingFirmCapacity = {(p,ar): sum(mTEPES.pNameplateMaxPowerHeat[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
             # same skip condition as eAdequacyReserveMarginHeat (openTEPES_ModelFormulationInvestment.py)
             pHasCandidateInArea   = {(p,ar): any(gc in g2a[ar] and (p,gc) in mTEPES.pgc for gc in mTEPES.gc) for p in mTEPES.p for ar in mTEPES.ar}
             sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and pHasCandidateInArea[p,ar] and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]]
@@ -783,9 +783,9 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
                 ChargeRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
         if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()):
-            pExistingFirmCapacity = {(p, ar): sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
+            pExistingFirmCapacity = {(p, ar): sum(mTEPES.pNameplateMaxPowerElec[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
             sPSSTARGC             = [(p,sc,st,ar,gc) for p,sc,st,ar,gc in mTEPES.ps*mTEPES.st*mTEPES.ar*mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc and mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
-            OutputToResRev        = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}']/mTEPES.pPeriodProb[p,sc]()*mTEPES.pRatedMaxPowerElec[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
+            OutputToResRev        = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}']/mTEPES.pPeriodProb[p,sc]()*mTEPES.pNameplateMaxPowerElec[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
             ResRev                = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
             if sPSSTARGC:
                 OutputToResRev *= 1e-3

@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -688,7 +688,7 @@ def SettingUpVariables(OptModel, mTEPES):
     nFixedVariables       += nFixedGeneratorCommits
     # thermal, ESS, and RES units ordered by increasing variable operation cost, excluding reactive generating units
     if mTEPES.tq:
-        mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.sq])
+        mTEPES.go     = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.sq])
     else:
         if mTEPES.pIndHydroTopology():
             mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__)])
@@ -1240,14 +1240,14 @@ def SettingUpVariables(OptModel, mTEPES):
         if sum(mTEPES.pLineNTCMax[:,:,:]) == 0.0:
             raise ValueError('### There is no capacity in the network. All the lines have NTC zero probably due to security factor equal to zero')
 
-        # detecting reserve margin infeasibility
+        # detecting electricity and heat reserve margin infeasibility
         for p,ar in mTEPES.p*mTEPES.ar:
-            if     sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]():
-                raise     ValueError('### Electricity reserve margin infeasibility ', p,ar, sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
+            if     sum(mTEPES.pNameplateMaxPowerElec[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]():
+                raise     ValueError('### Electricity reserve margin infeasibility ', p,ar, sum(mTEPES.pNameplateMaxPowerElec[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
 
             if mTEPES.pIndHeat():
-                if sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
-                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
+                if sum(mTEPES.pNameplateMaxPowerHeat[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
+                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pNameplateMaxPowerHeat[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
 
         for p,sc,ar in mTEPES.ps*mTEPES.ar:
             if mTEPES.pRESEnergy[p,ar]() > abs(sum(mTEPES.pDemandElec[p,sc,n,nd]()*mTEPES.pLoadLevelDuration[p,sc,n]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd)):

@@ -1,7 +1,10 @@
 # Change Log
 
-## [4.19.0rc] - 2026-10-25 Unreleased in PyPI
+## [4.19.0rc] - 2026-10-27 Unreleased in PyPI
 
+- [CHANGED] creation of NameplateMaxPowerElec and NameplateMaxPowerHeat from RatedMaxPowerElec and RatedMaxPowerHeat, respectively, to avoid the division
+  by (1 - EFOR). The existing firm capacity of a generating unit is the sum of its nameplate capacity times its availability.
+  The existing firm capacity is used to check if the adequacy reserve margin is satisfied in each area
 - [FIXED] architecture diagram (`doc/img/openTEPES_architecture.svg`) brought in line with the code: each implemented module is named
   as in the package, and the stage and sector Benders decompositions, the stage subproblems, the in-memory input source and the Mode C
   warm re-solve are added. The solver layer is grouped into decomposition and solver settings, as in `SolutionMethods.md`.

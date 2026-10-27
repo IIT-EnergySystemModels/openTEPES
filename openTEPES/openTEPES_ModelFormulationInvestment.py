@@ -231,13 +231,13 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
     if pIndLogConsole:
         print('eUninstallGenCap          ... ', len(getattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{st}')), ' rows')
 
-    pExistingFirmCapacity = {ar: sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for ar in mTEPES.ar}
+    pExistingFirmCapacity = {ar: sum(mTEPES.pNameplateMaxPowerElec[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for ar in mTEPES.ar}
 
     def eAdequacyReserveMarginElec(OptModel,ar):
         if mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and any(gc for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]) and pExistingFirmCapacity[ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]():
             return (pExistingFirmCapacity[ar] +
-                    sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerElec[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]()) for gc in mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc) +
-                    sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerElec[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]()) for gd in mTEPES.gd if gd in g2a[ar] and (p,gd) in mTEPES.pgd) >= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
+                    sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pNameplateMaxPowerElec[gc] * mTEPES.pAvailability[gc]() for gc in mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc) +
+                    sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pNameplateMaxPowerElec[gd] * mTEPES.pAvailability[gd]() for gd in mTEPES.gd if gd in g2a[ar] and (p,gd) in mTEPES.pgd) >= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
         else:
             return Constraint.Skip
     setattr(OptModel, f'eAdequacyReserveMarginElec_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eAdequacyReserveMarginElec, doc='electricity system adequacy reserve margin [p.u.]'))
@@ -290,13 +290,13 @@ def GenerationOperationHeatModelFormulationInvestment(OptModel, mTEPES, pIndLogC
     if pIndLogConsole:
         print('eInstallFHUCap            ... ', len(getattr(OptModel, f'eInstallFHUCap_{p}_{sc}_{st}')), ' rows')
 
-    pExistingFirmCapacity = {ar: sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for ar in mTEPES.ar}
+    pExistingFirmCapacity = {ar: sum(mTEPES.pNameplateMaxPowerHeat[g] * mTEPES.pAvailability[g]() for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for ar in mTEPES.ar}
 
     def eAdequacyReserveMarginHeat(OptModel,ar):
         if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and len([gc for gc in g2a[ar] if (p,gc) in mTEPES.pgc]) and pExistingFirmCapacity[ar] <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
             return (pExistingFirmCapacity[ar] +
-                    sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerHeat[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]()) for gc in mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc) +
-                    sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerHeat[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]()) for gd in mTEPES.gd if gd in g2a[ar] and (p,gd) in mTEPES.pgd) >= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
+                    sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pNameplateMaxPowerHeat[gc] * mTEPES.pAvailability[gc]() for gc in mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc) +
+                    sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pNameplateMaxPowerHeat[gd] * mTEPES.pAvailability[gd]() for gd in mTEPES.gd if gd in g2a[ar] and (p,gd) in mTEPES.pgd) >= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
         else:
             return Constraint.Skip
     setattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eAdequacyReserveMarginHeat, doc='heat system adequacy reserve margin [p.u.]'))

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 25, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
 (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
@@ -1256,11 +1256,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pTimeStep             = Param(initialize=par['pTimeStep']            , within=PositiveIntegers,    doc='Unitary time step'                                  )
     mTEPES.pEconomicBaseYear     = Param(initialize=par['pEconomicBaseYear']    , within=PositiveIntegers,    doc='Base year'                                          )
 
-    mTEPES.pReserveMargin        = Param(mTEPES.par,   initialize=par['pReserveMargin'].to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'               , mutable=True)
+    mTEPES.pReserveMargin        = Param(mTEPES.par,   initialize=par['pReserveMargin'].to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin',                mutable=True)
     mTEPES.pEmission             = Param(mTEPES.par,   initialize=par['pEmission'].to_dict()                 , within=NonNegativeReals,    doc='Maximum CO2 emission'                                )
-    mTEPES.pRESEnergy            = Param(mTEPES.par,   initialize=par['pRESEnergy'].to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                    , mutable=True)
+    mTEPES.pRESEnergy            = Param(mTEPES.par,   initialize=par['pRESEnergy'].to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy',                     mutable=True)
     mTEPES.pDemandElecPeak       = Param(mTEPES.par,   initialize=par['pDemandElecPeak'].to_dict()           , within=NonNegativeReals,    doc='Peak electric demand'                                )
-    mTEPES.pDemandElec           = Param(mTEPES.psnnd, initialize=par['pDemandElec'].to_dict()               , within=           Reals,    doc='Electric demand'                       , mutable=True)
+    mTEPES.pDemandElec           = Param(mTEPES.psnnd, initialize=par['pDemandElec'].to_dict()               , within=           Reals,    doc='Electric demand',                        mutable=True)
     mTEPES.pDemandElecPos        = Param(mTEPES.psnnd, initialize=par['pDemandElecPos'].to_dict()            , within=NonNegativeReals,    doc='Electric demand positive'                            )
     mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=par['pPeriodWeight'].to_dict()             , within=NonNegativeReals,    doc='Period weight',                          mutable=True)
     mTEPES.pDiscountedWeight     = Param(mTEPES.p,     initialize=par['pDiscountedWeight'].to_dict()         , within=NonNegativeReals,    doc='Discount factor'                                     )
@@ -1286,16 +1286,17 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pMaxStorage           = Param(mTEPES.psnes, initialize=par['pMaxStorage'].to_dict()               , within=NonNegativeReals,    doc='ESS Maximum storage capacity',           mutable=True)
     mTEPES.pMinEnergy            = Param(mTEPES.psng , initialize=par['pVariableMinEnergy'].to_dict()        , within=NonNegativeReals,    doc='Unit minimum energy demand'                          )
     mTEPES.pMaxEnergy            = Param(mTEPES.psng , initialize=par['pVariableMaxEnergy'].to_dict()        , within=NonNegativeReals,    doc='Unit maximum energy demand'                          )
-    mTEPES.pRatedMaxPowerElec    = Param(mTEPES.gg,    initialize=par['pRatedMaxPowerElec'].to_dict()        , within=NonNegativeReals,    doc='Rated maximum power'                                 )
+    mTEPES.pRatedMaxPowerElec    = Param(mTEPES.gg,    initialize=par['pRatedMaxPowerElec'].to_dict()        , within=NonNegativeReals,    doc='Rated     maximum power'                             )
+    mTEPES.pNameplateMaxPowerElec = Param(mTEPES.gg,   initialize=par['pNameplateMaxPowerElec'].to_dict()    , within=NonNegativeReals,    doc='Nameplate maximum power'                             )
     mTEPES.pRatedMaxCharge       = Param(mTEPES.gg,    initialize=par['pRatedMaxCharge'].to_dict()           , within=NonNegativeReals,    doc='Rated maximum charge'                                )
     mTEPES.pMustRun              = Param(mTEPES.gg,    initialize=par['pMustRun'].to_dict()                  , within=Binary          ,    doc='must-run unit'                                       )
     mTEPES.pInertia              = Param(mTEPES.gg,    initialize=par['pInertia'].to_dict()                  , within=NonNegativeReals,    doc='unit inertia constant'                               )
     mTEPES.pElecGenPeriodIni     = Param(mTEPES.gg,    initialize=par['pElecGenPeriodIni'].to_dict()         , within=PositiveIntegers,    doc='installation year',                                  )
     mTEPES.pElecGenPeriodFin     = Param(mTEPES.gg,    initialize=par['pElecGenPeriodFin'].to_dict()         , within=PositiveIntegers,    doc='retirement   year',                                  )
     mTEPES.pAvailability         = Param(mTEPES.gg,    initialize=par['pAvailability'].to_dict()             , within=UnitInterval    ,    doc='unit availability',                      mutable=True)
-    mTEPES.pEFOR                 = Param(mTEPES.gg,    initialize=par['pEFOR'].to_dict()                     , within=UnitInterval    ,    doc='EFOR'                                                , mutable=True)
+    mTEPES.pEFOR                 = Param(mTEPES.gg,    initialize=par['pEFOR'].to_dict()                     , within=UnitInterval    ,    doc='EFOR',                                   mutable=True)
     mTEPES.pRatedLinearVarCost   = Param(mTEPES.gg,    initialize=par['pRatedLinearVarCost'].to_dict()       , within=NonNegativeReals,    doc='Linear   variable cost'                              )
-    mTEPES.pLinearVarCost        = Param(mTEPES.psng , initialize=par['pLinearVarCost'].to_dict()            , within=NonNegativeReals,    doc='Linear   variable cost'                              , mutable=True)
+    mTEPES.pLinearVarCost        = Param(mTEPES.psng , initialize=par['pLinearVarCost'].to_dict()            , within=NonNegativeReals,    doc='Linear   variable cost',                 mutable=True)
     mTEPES.pConstantVarCost      = Param(mTEPES.psng , initialize=par['pConstantVarCost'].to_dict()          , within=NonNegativeReals,    doc='Constant variable cost'                              )
     mTEPES.pLinearOMCost         = Param(mTEPES.gg,    initialize=par['pLinearOMCost'].to_dict()             , within=NonNegativeReals,    doc='Linear   O&M      cost'                              )
     mTEPES.pOperReserveCost      = Param(mTEPES.gg,    initialize=par['pOperReserveCost'].to_dict()          , within=NonNegativeReals,    doc='Operating reserve cost'                              )
@@ -1357,7 +1358,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pMaxPowerHeat'] = filter_rows(par['pMaxPowerHeat'], mTEPES.psnch)
 
         mTEPES.pReserveMarginHeat          = Param(mTEPES.par,   initialize=par['pReserveMarginHeat'].to_dict()         , within=NonNegativeReals, doc='Adequacy reserve margin'                  )
-        mTEPES.pRatedMaxPowerHeat          = Param(mTEPES.gg,    initialize=par['pRatedMaxPowerHeat'].to_dict()         , within=NonNegativeReals, doc='Rated maximum heat'                       )
+        mTEPES.pRatedMaxPowerHeat          = Param(mTEPES.gg,    initialize=par['pRatedMaxPowerHeat'].to_dict()         , within=NonNegativeReals, doc='Rated     maximum heat'                   )
+        mTEPES.pNameplateMaxPowerHeat      = Param(mTEPES.gg,    initialize=par['pNameplateMaxPowerHeat'].to_dict()     , within=NonNegativeReals, doc='Nameplate maximum heat'                   )
         mTEPES.pMinPowerHeat               = Param(mTEPES.psnch, initialize=par['pMinPowerHeat'].to_dict()              , within=NonNegativeReals, doc='Minimum heat     power'                   )
         mTEPES.pMaxPowerHeat               = Param(mTEPES.psnch, initialize=par['pMaxPowerHeat'].to_dict()              , within=NonNegativeReals, doc='Maximum heat     power'                   )
         mTEPES.pPower2HeatRatio            = Param(mTEPES.ch,    initialize=par['pPower2HeatRatio'].to_dict()           , within=NonNegativeReals, doc='Power to heat ratio'                      )
