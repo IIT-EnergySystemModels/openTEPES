@@ -2,10 +2,12 @@
 openTEPES documentation master file, created by Andres Ramos
 ---
 
-# Solution Methods
+# Solution Methods and Solver Settings
 
 The **openTEPES** model can be solved using different solution methods, depending on the size of the problem and the available computational resources. The
 solution method comprises the decomposition of the problem and the solver settings.
+
+## Solution methods
 
 ### Complete problem
 
