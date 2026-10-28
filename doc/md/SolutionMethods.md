@@ -62,7 +62,7 @@ the problem is not kept in memory.
 for `appsi_gurobi`, parameters and constraints.
 Gurobi can restart from the previous basis when the same instance is re-solved with small changes, as in the sector Benders decomposition. Between stages the
 constraints change, and the gain comes from avoiding the export of the model, not from the basis.
-For these, the solver connection is done by writing the problem in memory, and it is also kept in memory. APPSI interface provides a more efficient way
+For these, the solver connection is done by writing the problem in memory, and it is also kept in memory. **APPSI interface** provides a more efficient way
 to interact with the solver and is **recommended**.
 
 **Relevance for large cases.** A case involves many solves: one per `(period, scenario, stage)`, an LP re-solve with the integer and investment decisions fixed
