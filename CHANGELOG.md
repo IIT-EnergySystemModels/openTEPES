@@ -1,5 +1,9 @@
 # Change Log
 
+## [4.19.1rc] - 2026-11-04
+
+- [ADDED] marginal files of the system balancing energy `oT_Result_MarginalBalancingEnergyUp` and `oT_Result_MarginalBalancingEnergyDown`.
+
 ## [4.19.0] - 2026-10-27
 
 - [CHANGED] creation of NameplateMaxPowerElec and NameplateMaxPowerHeat from RatedMaxPowerElec and RatedMaxPowerHeat, respectively, to avoid the division

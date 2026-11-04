@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 04, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -219,6 +219,42 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                     if (p,sc) in available_period_scenario:
                         chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MWh')
                         chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveDown_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+
+        # units that can provide reserve activations in this period; the lists do not depend on the area, so they are plain lists on purpose
+        nrRsrvAct = [nr for nr in mTEPES.nr if mTEPES.pIndOperReserveGen[nr] == 0 and (p, nr) in mTEPES.pnr]
+        ehRsrvAct = [eh for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0 and (p, eh) in mTEPES.peh]
+
+        #%% outputting the up   operating reserves activation marginal
+        if mTEPES.pIndReserveActivation() and sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for p,sc,n,ar in mTEPES.psn*mTEPES.ar) and len(nrRsrvAct) + len(ehRsrvAct):
+            sPSSTN        = [(p,sc,st,n) for p,sc,st,n in mTEPES.s2n if sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) and (p,sc,n) in mTEPES.psn]
+            OutputResults = pd.Series(data=[mTEPES.pDuals[f'eOperReserveUpEnergy_{p}_{sc}_{st}{n}']/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n in sPSSTN], index=pd.Index(sPSSTN))
+            OutputResults *= 1e3
+            # the activation dual is SYSTEM-wide: sPSSTN carries 4-tuples (p,sc,st,n) with no area, so there is no level_4 to spread into columns
+            OutputResults.to_frame(name='System').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='System').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).oT.write(f'{_path}/oT_Result_MarginalBalancingEnergyUp_{CaseName}.csv', sep=',')
+            if pIndPlotOutput:
+                # LinePlots expects a 4-level (p,sc,n,category) frame and a category column name; a constant 'System' level plays that role here
+                MarginalUpBalancingEnergy = OutputResults.to_frame(name='System').reset_index().assign(level_4='System').pivot_table(index=['level_0','level_1','level_3','level_4'], values='System').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
+                available_period_scenario = set(MarginalUpBalancingEnergy.index.droplevel([2,3]).unique().tolist())
+                for p,sc in mTEPES.ps:
+                    if (p,sc) in available_period_scenario:
+                        chart = LinePlots(p, sc, MarginalUpBalancingEnergy, 'System', 'LoadLevel', 'EUR/MWh')
+                        chart.save(f'{_path}/oT_Plot_MarginalBalancingEnergyUp_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+
+        #%% outputting the down operating reserves activation marginal
+        if mTEPES.pIndReserveActivation() and sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for p,sc,n,ar in mTEPES.psn*mTEPES.ar) and len(nrRsrvAct) + len(ehRsrvAct):
+            sPSSTN        = [(p,sc,st,n) for p,sc,st,n in mTEPES.s2n if sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) and (p,sc,n) in mTEPES.psn]
+            OutputResults = pd.Series(data=[mTEPES.pDuals[f'eOperReserveDwEnergy_{p}_{sc}_{st}{n}']/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n in sPSSTN], index=pd.Index(sPSSTN))
+            OutputResults *= 1e3
+            # the activation dual is SYSTEM-wide: sPSSTN carries 4-tuples (p,sc,st,n) with no area, so there is no level_4 to spread into columns
+            OutputResults.to_frame(name='System').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='System').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).oT.write(f'{_path}/oT_Result_MarginalBalancingEnergyDown_{CaseName}.csv', sep=',')
+            if pIndPlotOutput:
+                # LinePlots expects a 4-level (p,sc,n,category) frame and a category column name; a constant 'System' level plays that role here
+                MarginalDwBalancingEnergy = OutputResults.to_frame(name='System').reset_index().assign(level_4='System').pivot_table(index=['level_0','level_1','level_3','level_4'], values='System').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
+                available_period_scenario = set(MarginalDwBalancingEnergy.index.droplevel([2,3]).unique().tolist())
+                for p,sc in mTEPES.ps:
+                    if (p,sc) in available_period_scenario:
+                        chart = LinePlots(p, sc, MarginalDwBalancingEnergy, 'System', 'LoadLevel', 'EUR/MWh')
+                        chart.save(f'{_path}/oT_Plot_MarginalBalancingEnergyDown_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
         #%% outputting the system inertia marginal
         if pHasSystemInertia:

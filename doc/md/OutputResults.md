@@ -1778,6 +1778,26 @@ Period        Scenario    Load level  Area        Marginal of the downward opera
 ============  ==========  ==========  ==========  =================================================
 ```
 
+File `oT_Result_MarginalBalancingEnergyUp.csv`
+
+```{eval-rst}
+============  ==========  ==========  ================================================
+Identifier                            Description
+====================================  ================================================
+Period        Scenario    Load level  Marginal of the upward balancing energy [€/MWh]
+============  ==========  ==========  ================================================
+```
+
+File `oT_Result_MarginalBalancingEnergyDown.csv`
+
+```{eval-rst}
+============  ==========  ==========  =================================================
+Identifier                            Description
+====================================  =================================================
+Period        Scenario    Load level  Marginal of the downward balancing energy [€/MWh]
+============  ==========  ==========  =================================================
+```
+
 File `oT_Result_MarginalSystemInertia.csv`
 
 ```{eval-rst}
