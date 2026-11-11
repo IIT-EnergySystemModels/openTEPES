@@ -16,8 +16,6 @@ attrs==26.1.0
     # via
     #   jsonschema
     #   referencing
-ausankey==1.9
-    # via opentepes (pyproject.toml)
 blinker==1.9.0
     # via streamlit
 cachetools==7.1.4
@@ -73,9 +71,7 @@ kiwisolver==1.5.0
 markupsafe==3.0.3
     # via jinja2
 matplotlib==3.11.0
-    # via
-    #   opentepes (pyproject.toml)
-    #   ausankey
+    # via opentepes (pyproject.toml)
 narwhals==2.24.0
     # via
     #   altair
@@ -85,7 +81,6 @@ networkx==3.6.1
 numpy==2.4.6
     # via
     #   opentepes (pyproject.toml)
-    #   ausankey
     #   contourpy
     #   matplotlib
     #   pandas
@@ -100,7 +95,6 @@ packaging==26.2
 pandas==3.0.3
     # via
     #   opentepes (pyproject.toml)
-    #   ausankey
     #   streamlit
 pillow==12.3.0
     # via
