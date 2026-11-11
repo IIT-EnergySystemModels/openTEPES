@@ -233,8 +233,9 @@ def case_7d_binary(request, tmp_path):
     # number pins an investment decision as well as a dispatch. Before the candidate it was
     # 45085.415882683425, when the annual CO2 cap was still applied to a single week and 97 % of the
     # figure was the penalty on unserved energy, and 38573.44601930286 before the hydrogen reliability
-    # cost was given its stage weight.
-    ("sSEP",      1256.097034021233),
+    # cost was given its stage weight. 1256.097034021233 until the minimum up and down time constraints summed
+    # the full window of UpTime/DwTime load levels instead of one fewer. A tightening, so the cost rises 0.001 %.
+    ("sSEP",      1256.109040355552),
     # 9n_PTDF exercises the multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
     ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.

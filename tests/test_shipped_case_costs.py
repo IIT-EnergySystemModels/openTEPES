@@ -17,7 +17,7 @@ CASE_NAMES = ["9n", "sSEP", "9n_PTDF"]  # Add more case names as needed
 # returns the same three values to twelve significant digits, so the numbers are not solver-specific.
 EXPECTED_COSTS = {
     "9n":      238.51419065431514,
-    "sSEP":    1256.0970340212316,
+    "sSEP":    1256.109040355552,
     # 9n_PTDF exercises multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
     "9n_PTDF": 502.22274721010905,
 }
