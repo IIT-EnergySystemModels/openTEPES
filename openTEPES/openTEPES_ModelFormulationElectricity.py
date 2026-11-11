@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 11, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -904,7 +904,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     def eMinUpTime(OptModel,n,t):
         if (p,t) not in mTEPES.pg or t in mTEPES.eh or mTEPES.pMustRun[t] or mTEPES.pIndBinGenMinTime() == 0 or (mTEPES.pMinPowerElec[p,sc,n,t] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,t] == 0.0) or mTEPES.pUpTime[t] <= 1 or mTEPES.n.ord(n) <= mTEPES.pUpTime[t]:
             return Constraint.Skip
-        return sum(OptModel.vStartUp [p,sc,n2,t] for n2 in n2list[mTEPES.n.ord(n)+1-mTEPES.pUpTime[t]:mTEPES.n.ord(n)]) <=     OptModel.vCommitment[p,sc,n,t]
+        return sum(OptModel.vStartUp [p,sc,n2,t] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pUpTime[t]:mTEPES.n.ord(n)]) <=     OptModel.vCommitment[p,sc,n,t]
     setattr(OptModel, f'eMinUpTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.tr, rule=eMinUpTime  , doc='minimum up   time [p.u.]'))
 
     if pIndLogConsole:
@@ -913,7 +913,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     def eMinDownTime(OptModel,n,t):
         if (p,t) not in mTEPES.pg or t in mTEPES.eh or mTEPES.pMustRun[t] or mTEPES.pIndBinGenMinTime() == 0 or (mTEPES.pMinPowerElec[p,sc,n,t] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,t] == 0.0) or mTEPES.pDwTime[t] <= 1 or mTEPES.n.ord(n) <= mTEPES.pDwTime[t]:
             return Constraint.Skip
-        return sum(OptModel.vShutDown[p,sc,n2,t] for n2 in n2list[mTEPES.n.ord(n)+1-mTEPES.pDwTime[t]:mTEPES.n.ord(n)]) <= 1 - OptModel.vCommitment[p,sc,n,t]
+        return sum(OptModel.vShutDown[p,sc,n2,t] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pDwTime[t]:mTEPES.n.ord(n)]) <= 1 - OptModel.vCommitment[p,sc,n,t]
     setattr(OptModel, f'eMinDownTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.tr, rule=eMinDownTime, doc='minimum down time [p.u.]'))
 
     if pIndLogConsole:
@@ -922,7 +922,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     if pIndSimplexFormulation:
         def eMinStableTime(OptModel,n,nr):
             if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
-                return OptModel.vRampUpState[p,sc,n,nr] + sum(OptModel.vRampDwState[p,sc,n2,nr] for n2 in n2list[mTEPES.n.ord(n)-1-mTEPES.pStableTime[nr]:mTEPES.n.ord(n)-1]) <= 1
+                return OptModel.vRampUpState[p,sc,n,nr] + sum(OptModel.vRampDwState[p,sc,n2,nr] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-1:mTEPES.n.ord(n)-1]) <= 1
             else:
                 return Constraint.Skip
         setattr(OptModel, f'eMinStableTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
@@ -981,7 +981,7 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     def eMinSwOnState(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pSwOnTime [ni,nf,cc] <= 1 or mTEPES.n.ord(n) <= mTEPES.pSwOnTime [ni,nf,cc]:
             return Constraint.Skip
-        return sum(OptModel.vLineOnState [p,sc,n2,ni,nf,cc] for n2 in n2list[mTEPES.n.ord(n)+1-mTEPES.pSwOnTime [ni,nf,cc]:mTEPES.n.ord(n)]) <=    OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+        return sum(OptModel.vLineOnState [p,sc,n2,ni,nf,cc] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pSwOnTime [ni,nf,cc]:mTEPES.n.ord(n)]) <=    OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eMinSwOnState_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eMinSwOnState, doc='minimum switch on state [h]'))
 
     if pIndLogConsole:
@@ -990,7 +990,7 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     def eMinSwOffState(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pSwOffTime[ni,nf,cc] <= 1 or mTEPES.n.ord(n) <= mTEPES.pSwOffTime[ni,nf,cc]:
             return Constraint.Skip
-        return sum(OptModel.vLineOffState[p,sc,n2,ni,nf,cc] for n2 in n2list[mTEPES.n.ord(n)+1-mTEPES.pSwOffTime[ni,nf,cc]:mTEPES.n.ord(n)]) <= 1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+        return sum(OptModel.vLineOffState[p,sc,n2,ni,nf,cc] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pSwOffTime[ni,nf,cc]:mTEPES.n.ord(n)]) <= 1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eMinSwOffState_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eMinSwOffState, doc='minimum switch off state [h]'))
 
     if pIndLogConsole:
