@@ -71,8 +71,7 @@ kiwisolver==1.5.0
 markupsafe==3.0.3
     # via jinja2
 matplotlib==3.11.0
-    # via
-    #   opentepes (pyproject.toml)
+    # via opentepes (pyproject.toml)
 narwhals==2.24.0
     # via
     #   altair
