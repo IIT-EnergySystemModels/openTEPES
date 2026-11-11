@@ -922,28 +922,28 @@ case, {math}`\epsilon` is defined in the code as 1e-2 (of the ramp up/down limit
 \frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon (rsu^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt
 ```
 
-Minimum up time and down time of a thermal unit [p.u.] «`eMinUpTime`» «`eMinDownTime`»
+Minimum uptime and downtime of a thermal unit [p.u.] «`eMinUpTime`» «`eMinDownTime`»
 
 - D. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005.
   <https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf>
 
 ```{math}
-\sum_{n'=n+\nu-TU_t}^n su^p_{\omega n't} \leq     uc^p_{\omega nt} \quad \forall p \omega nt
+\sum_{n'=n-TU_t}^n su^p_{\omega n't} \leq     uc^p_{\omega nt} \quad \forall p \omega nt
 ```
 
 ```{math}
-\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt
+\sum_{n'=n-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt
 ```
 
 Minimum stable time of a thermal unit [p.u.] «`eMinStableTime`» In the code, you can select the simplified formulation (first) or the tight, computationally
 efficient formulation (second). With the simplified formulation, ramp-down maneuvers can no longer be split into several periods to avoid restrictions.
 
 ```{math}
-rsu^p_{\omega nt} + \sum_{n'=n-TS_t}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt
+rsu^p_{\omega nt} + \sum_{n'=n-TS_t-\nu}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt
 ```
 
 ```{math}
-rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \in [n-TS_t,n-\nu]
+rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \in [n-TS_t-\nu,n-\nu]
 ```
 
 **Reservoir operation**
@@ -1034,11 +1034,11 @@ The initial status of the lines is predefined as switched on.
 Minimum switch-on and switch-off state of a line [h] «`eMinSwOnState`» «`eMinSwOffState`»
 
 ```{math}
-\sum_{n'=n+\nu-SON_{ijc}}^n son^p_{\omega n'ijc} \leq     swt^p_{\omega nijc} \quad \forall p \omega nijc
+\sum_{n'=n-SON_{ijc}}^n son^p_{\omega n'ijc} \leq     swt^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
 ```{math}
-\sum_{n'=n+\nu-SOF_{ijc}}^n sof^p_{\omega n'ijc} \leq 1 - swt^p_{\omega nijc} \quad \forall p \omega nijc
+\sum_{n'=n-SOF_{ijc}}^n sof^p_{\omega n'ijc} \leq 1 - swt^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
 Power flow limit in transmission lines [p.u.] «`eNetCapacity1`» «`eNetCapacity2`»
