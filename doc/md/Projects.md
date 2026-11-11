@@ -6,9 +6,8 @@ openTEPES documentation master file, created by Andres Ramos
 
 The model has been used in these research projects:
 
-- [Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage 2026]
-  (https://www.iit.comillas.edu/publicacion/proyecto/en/VMEnergia_LosGuajares_2025/aplicacion-de-la-metodologia-entso-e-de-analisis-de-coste-beneficio-al-proyecto-de-la-ch-los-guajares-2026),
-  developed for **VM Energía**. October 2025 - November 2025 [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [F.
+- [Application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage 2026](https://www.iit.comillas.edu/publicacion/proyecto/en/VMEnergia_LosGuajares_2025/aplicacion-de-la-metodologia-entso-e-de-analisis-de-coste-beneficio-al-proyecto-de-la-ch-los-guajares-2026),
+  developed for **Hidroeléctrica Los Guájares**. October 2026 - November 2026 [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [F.
   Labora](https://www.iit.comillas.edu/people/flabora)
 
   > It aims to write a report on the application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage.
@@ -126,7 +125,7 @@ The model has been used in these research projects:
 
 - [Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage 2025]
   (https://www.iit.comillas.edu/publicacion/proyecto/en/VMEnergia_LosGuajares_2025/aplicacion-de-la-metodologia-entso-e-de-analisis-de-coste-beneficio-al-proyecto-de-la-ch-los-guajares-2025),
-  developed for **VM Energía**. September 2025 [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [E.
+  developed for **Hidroeléctrica Los Guájares**. September 2025 [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [E.
   Lobato](https://www.iit.comillas.edu/people/enrique)
 
   > It aims to write a report on the application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage.
@@ -225,8 +224,7 @@ The model has been used in these research projects:
   > It aims to write a report on the application of the ENTSO-E cost-benefit analysis method to Aguayo II pumped-hydro storage.
 
 - [Application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro
-  storage](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=VMEnergia_LosGuajares), developed for **VM Energía**. May 2022 - June
-  2022. [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [L.
+  storage](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=VMEnergia_LosGuajares), developed for **Hidroeléctrica Los Guájares**. May 2022 - June 2022. [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [L.
   Sigrist](https://www.iit.comillas.edu/people/lsigrist)
 
   > It aims to write a report on the application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage.
