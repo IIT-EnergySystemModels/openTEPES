@@ -72,7 +72,6 @@ They are written in **uppercase** letters.
 **General**
 ----------------------------------------------------------------------------------------
 :math:`T`           Base period (year)                                           year
-:math:`\nu`         Time step. Duration of the load levels (e.g., 1h, 2 h, 3 h)
 :math:`\delta`      Annual discount rate                                         p.u.
 :math:`WG^p`        Period (year) weight                                         p.u.
 :math:`DF^p`        Discount factor for each period (year)                       p.u.
@@ -80,15 +79,17 @@ They are written in **uppercase** letters.
 ```
 
 ```{eval-rst}
-========================  ====================================================  =======
+========================  ===================================================================  =======
 **Electricity demand**
----------------------------------------------------------------------------------------
-:math:`D^p_{\omega ni}`   Electricity demand in each node                       GW
-:math:`PD_{pa}`           Peak demand in each area                              GW
-:math:`DUR^p_{\omega n}`  Duration of each load level                           h
-:math:`CENS`              Cost of energy not served. Value of Lost Load (VoLL)  €/MWh
-========================  ====================================================  =======
+------------------------------------------------------------------------------------------------------
+:math:`D^p_{\omega ni}`   Electricity demand in each node                                       GW
+:math:`PD_{pa}`           Peak demand in each area                                              GW
+:math:`DUR^p_{\omega n}`  Time step. Duration of each load level (e.g., 0.25 h, 1h, 2 h, 3 h)   h
+:math:`CENS`              Cost of energy not served. Value of Lost Load (VoLL)                  €/MWh
+========================  ===================================================================  =======
 ```
+
+For the sake of clarity, all formulas are defined assuming a 1-hour time step. However, internally, the code is generalized to handle different time steps.
 
 ```{eval-rst}
 ========================  ==================================================================  =======
@@ -285,7 +286,7 @@ The net transfer capacity of a heat pipe can be different in each direction. How
 =========================================================  ===============================================================================  ====
 ```
 
-Used only when `IndACPowerFlow` is different from 0. The reactance :math:`X_{ijc}` and the base power :math:`S_B` are
+Used only when `IndACPowerFlow` is different from 0. The reactance {math}`X_{ijc}` and the base power {math}`S_B` are
 the ones already defined for the electricity transmission system.
 
 ## Variables
@@ -413,8 +414,8 @@ They are written in **lowercase** letters.
 ==================================================  ========================================================  =====
 ```
 
-Used only when `IndACPowerFlow` is different from 0. The voltage angle :math:`\theta^p_{\omega ni}`, the active power
-flow :math:`f^p_{\omega nijc}` and the half ohmic losses :math:`l^p_{\omega nijc}` are the ones already defined for
+Used only when `IndACPowerFlow` is different from 0. The voltage angle {math}`\theta^p_{\omega ni}`, the active power
+flow {math}`f^p_{\omega nijc}` and the half ohmic losses {math}`l^p_{\omega nijc}` are the ones already defined for
 the electricity transmission system.
 
 ## Equations
@@ -677,11 +678,11 @@ ESS energy inventory (only for load levels that are multiples of 1, 24, 168 h de
 «`eESSInventory`»
 
 ```{math}
-i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (EI^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in EE
+i^p_{\omega,n-\tau_e,e} + \sum_{n' = n-\tau_e}^n DUR^p_{\omega n'} (EI^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in EE
 ```
 
 ```{math}
-i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (ei^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
+i^p_{\omega,n-\tau_e,e} + \sum_{n' = n-\tau_e}^n DUR^p_{\omega n'} (ei^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
 ```
 
 The initial inventory of the ESS candidates divided by their initial storage {math}`I^p_{\omega e}` is equal to the final inventory divided by their initial
@@ -701,25 +702,25 @@ The initial inventory of the ESS candidates divided by their initial storage {ma
 Maximum shift time of stored energy [GWh]. It is intended to be applied to demand-side management or data center flexibility «`eMaxShiftTime`»
 
 ```{math}
-DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne
+DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n}^{n+ST_e} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne
 ```
 
 ESS outflows (only for load levels that are multiples of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as {math}`n|\rho_e`) must
 be satisfied [GWh] «`eEnergyOutflows`»
 
 ```{math}
-\sum_{n' = n-\frac{\rho_e}{\nu}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e
+\sum_{n' = n-\rho_e}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e
 ```
 
 Maximum and minimum energy production (only for load levels that are multiples of 24, 168, 672, 8736 h depending on the unit energy type, represented as
 {math}`n|\sigma_g`) must be satisfied [GWh] «`eMaximumEnergy`» «`eMinimumEnergy`»
 
 ```{math}
-\sum_{n' = n-\frac{\sigma_g}{\nu}}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n|\sigma_g
+\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n|\sigma_g
 ```
 
 ```{math}
-\sum_{n' = n-\frac{\sigma_g}{\nu}}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n|\sigma_g
+\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n|\sigma_g
 ```
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «`eMaxOutput2ndBlock`» «`eMinOutput2ndBlock`»
@@ -734,7 +735,7 @@ Maximum and minimum output of the second block of a committed unit (all except t
   28 (4): 4897-4908, Nov 2013. [10.1109/TPWRS.2013.2251373](https://doi.org/10.1109/TPWRS.2013.2251373)
 
 ```{math}
-\frac{p^p_{\omega ng} + ur^p_{\omega ng} + urr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} - su^p_{\omega ng} - sd^p_{\omega,n+\nu,g} \quad \forall p \omega ng
+\frac{p^p_{\omega ng} + ur^p_{\omega ng} + urr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} - su^p_{\omega ng} - sd^p_{\omega,n+1,g} \quad \forall p \omega ng
 ```
 
 ```{math}
@@ -819,7 +820,7 @@ Incompatibility between charge and outflow use of an ESS [p.u.] «`eChargeOutflo
 Logical relation between commitment, startup, and shutdown status of a committed unit (all except the VRES units) [p.u.] «`eUCStrShut`»
 
 ```{math}
-uc^p_{\omega ng} - uc^p_{\omega,n-\nu,g} = su^p_{\omega ng} - sd^p_{\omega ng} \quad \forall p \omega ng
+uc^p_{\omega ng} - uc^p_{\omega,n-1,g} = su^p_{\omega ng} - sd^p_{\omega ng} \quad \forall p \omega ng
 ```
 
 Logical relation between stable, ramp up, and ramp down states (generating units with stable time) [p.u.] «`eStableStates`»
@@ -879,21 +880,21 @@ Maximum ramp up and ramp down for the second block of a non-renewable (thermal, 
   2016. [10.1007/s10107-015-0919-9](https://doi.org/10.1007/s10107-015-0919-9)
 
 ```{math}
-\frac{- p^p_{\omega,n-\nu,g} - dr^p_{\omega,n-\nu,g} + p^p_{\omega ng} + ur^p_{\omega ng}}{DUR^p_{\omega n} RU_g} \leq   uc^p_{\omega ng}      - su^p_{\omega ng} \quad \forall p \omega ng
+\frac{- p^p_{\omega,n-1,g} - dr^p_{\omega,n-1,g} + p^p_{\omega ng} + ur^p_{\omega ng}}{DUR^p_{\omega n} RU_g} \leq   uc^p_{\omega ng}      - su^p_{\omega ng} \quad \forall p \omega ng
 ```
 
 ```{math}
-\frac{- p^p_{\omega,n-\nu,g} - ur^p_{\omega,n-\nu,g} + p^p_{\omega ng} + dr^p_{\omega ng}}{DUR^p_{\omega n} RD_g} \geq - uc^p_{\omega,n-\nu,g} + sd^p_{\omega ng} \quad \forall p \omega ng
+\frac{- p^p_{\omega,n-1,g} - ur^p_{\omega,n-1,g} + p^p_{\omega ng} + dr^p_{\omega ng}}{DUR^p_{\omega n} RD_g} \geq - uc^p_{\omega,n-1,g} + sd^p_{\omega ng} \quad \forall p \omega ng
 ```
 
 Maximum ramp down and ramp up for the charge of an ESS [p.u.] «`eRampUpCharge`» «`eRampDwCharge`»
 
 ```{math}
-\frac{- c^p_{\omega,n-\nu,e} - ur'^p_{\omega,n-\nu,e} + c^p_{\omega ne} + dr'^p_{\omega ne}}{DUR^p_{\omega n} RD_e} \leq   1 \quad \forall p \omega ne
+\frac{- c^p_{\omega,n-1,e} - ur'^p_{\omega,n-1,e} + c^p_{\omega ne} + dr'^p_{\omega ne}}{DUR^p_{\omega n} RD_e} \leq   1 \quad \forall p \omega ne
 ```
 
 ```{math}
-\frac{- c^p_{\omega,n-\nu,e} + dr'^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur'^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne
+\frac{- c^p_{\omega,n-1,e} + dr'^p_{\omega,n-1,e} + c^p_{\omega ne} - ur'^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne
 ```
 
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «`eRampUpState`»
@@ -904,22 +905,22 @@ up/down limit).
   [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
 
 ```{math}
-\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \cdot rsd^p_{\omega nt} \quad \forall p \omega nt
+\frac{- p^p_{\omega,n-1,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \cdot rsd^p_{\omega nt} \quad \forall p \omega nt
 ```
 
 ```{math}
-\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon \cdot rsu^p_{\omega nt} \quad \forall p \omega nt
+\frac{  p^p_{\omega,n-1,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon \cdot rsu^p_{\omega nt} \quad \forall p \omega nt
 ```
 
 The model can also consider a dead band, which means that ramps below a certain threshold in p.u. set by {math}`\epsilon` should not be restricted. In this
 case, {math}`\epsilon` is defined in the code as 1e-2 (of the ramp up/down limit).
 
 ```{math}
-\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon (rsd^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt
+\frac{- p^p_{\omega,n-1,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon (rsd^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt
 ```
 
 ```{math}
-\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon (rsu^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt
+\frac{  p^p_{\omega,n-1,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon (rsu^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt
 ```
 
 Minimum uptime and downtime of a thermal unit [p.u.] «`eMinUpTime`» «`eMinDownTime`»
@@ -939,11 +940,11 @@ Minimum stable time of a thermal unit [p.u.] «`eMinStableTime`» In the code, y
 efficient formulation (second). With the simplified formulation, ramp-down maneuvers can no longer be split into several periods to avoid restrictions.
 
 ```{math}
-rsu^p_{\omega nt} + \sum_{n'=n-TS_t-\nu}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt
+rsu^p_{\omega nt} + \sum_{n'=n-TS_t-1}^{n-1} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt
 ```
 
 ```{math}
-rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \in [n-TS_t-\nu,n-\nu]
+rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \in [n-TS_t-1,n-1]
 ```
 
 **Reservoir operation**
@@ -988,14 +989,14 @@ Water volume for each hydro reservoir (only for load levels that are multiples o
 {math}`n|\tau_{e'}`) \[hm{sup}`3`\] «`eHydroInventory`»
 
 ```{math}
-i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +
+i'^p_{\omega,n-\tau_e',e'} + \sum_{n' = n-\tau_e'}^n DUR^p_{\omega n'} (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +
 ```
 ```{math}
 + \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in ER
 ```
 
 ```{math}
-i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +
+i'^p_{\omega,n-\tau_e',e'} + \sum_{n' = n-\tau_e'}^n DUR^p_{\omega n'} (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +
 ```
 ```{math}
 + \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in CR
@@ -1012,7 +1013,7 @@ Hydro outflows (only for load levels that are multiples of 1, 24, 168, 672, and 
 must be satisfied \[m{sup}`3`/s\] «`eHydroOutflows`»
 
 ```{math}
-\sum_{n' = n-\frac{\rho_e'}{\nu}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'
+\sum_{n' = n-\rho_e'}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'
 ```
 
 **Electricity network operation**
@@ -1026,7 +1027,7 @@ swt^p_{\omega nijc} \leq ict^p_{ijc} \quad \forall p \omega nijc, ijc \in CL
 Logical relation between switching state, switch-on, and switch-off status of a line [p.u.] «`eSWOnOff`»
 
 ```{math}
-swt^p_{\omega nijc} - swt^p_{\omega,n-\nu,ijc} = son^p_{\omega nijc} - sof^p_{\omega nijc} \quad \forall p \omega nijc
+swt^p_{\omega nijc} - swt^p_{\omega,n-1,ijc} = son^p_{\omega nijc} - sof^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
 The initial status of the lines is predefined as switched on.
@@ -1090,12 +1091,12 @@ f^p_{\omega nijc} = \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'} \quad \forall p 
 ```
 
 **AC optimal power flow**. Replaces the DC branch flow equation when `IndACPowerFlow` is different from 0. The value
-selects the formulation: 1 branch flow, 2 bus injection in :math:`W` space, 3 bus injection in rectangular coordinates.
+selects the formulation: 1 branch flow, 2 bus injection in {math}`W` space, 3 bus injection in rectangular coordinates.
 
 
 ```{image} ../img/ac_branch_model.png
 :alt: Single-line diagram of one AC branch. Two busbars carry the squared voltage magnitude and the angle; between them a tap changer, the series resistance and reactance, and half the charging susceptance to ground at each end. Sending and receiving flows are marked at their own ends.
-:width: 100%
+:width: 60%
 :align: center
 ```
 
@@ -1105,8 +1106,8 @@ Reactive power balance [Gvar] «`eBalanceReact`»
 \sum_{g \in i} qg^p_{\omega ng} + \sum_{s \in i} qs^p_{\omega ns} + w^p_{\omega ni} S_B \sum_{ijc \in i} \frac{BC_{ijc}}{2} + qns^{+p}_{\omega ni} - qns^{-p}_{\omega ni} - \sum_{ijc} q^p_{\omega nijc} + \sum_{jic} q'^p_{\omega njic} = QD^p_{\omega ni} \quad \forall p \omega ni
 ```
 
-:math:`qns^{+}` is reactive power not supplied and :math:`qns^{-}` reactive power not absorbed. The charging of a
-switchable or candidate line enters at :math:`V^{nom}` rather than at :math:`w^p_{\omega ni}`, which is the one
+{math}`qns^{+}` is reactive power not supplied and {math}`qns^{-}` reactive power not absorbed. The charging of a
+switchable or candidate line enters at {math}`V^{nom}` rather than at {math}`w^p_{\omega ni}`, which is the one
 approximation in this balance: the exact term multiplies the voltage by the commitment decision.
 
 Voltage drop along a line in service [p.u.] «`eVoltageDropUp`» «`eVoltageDropLo`»
@@ -1131,7 +1132,7 @@ Thermal limit, released out of service [p.u.] «`eCurrentLimit`»
 cu^p_{\omega nijc} \leq \left( \frac{\overline{S}_{ijc}}{S_B \underline{V}_i T_{ijc}} \right)^2 swt^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
-The limit is on the current, so the apparent power admitted is :math:`\overline{S}_{ijc} \overline{V}_i / \underline{V}_i`.
+The limit is on the current, so the apparent power admitted is {math}`\frac{\overline{S}_{ijc} \overline{V}_i}{\underline{V}_i}`.
 
 Ohmic losses [GW] «`eLineLossesAC`»
 
@@ -1154,8 +1155,8 @@ Angle difference band [rad] «`eAngleBandUp`» «`eAngleBandLo`»
 \underline{\theta}_{ijc} \leq \theta^p_{\omega ni} - \theta^p_{\omega nj} \leq \overline{\theta}_{ijc} \quad \forall p \omega nijc
 ```
 
-**Bus injection formulations**. The voltage products :math:`W_{ij}=V_i V_j^*` replace the current. With
-`IndACPowerFlow` = 2 their parts are variables; with 3 they are formed from :math:`vr` and :math:`vm` and the model is
+**Bus injection formulations**. The voltage products {math}`W_{ij}=V_i V_j^*` replace the current. With
+`IndACPowerFlow` = 2 their parts are variables; with 3 they are formed from {math}`vr` and {math}`vm` and the model is
 the exact non-convex problem.
 
 Line flows [GW, Gvar] «`eBIMFlowP`» «`eBIMFlowQ`» «`eBIMFlowPBck`» «`eBIMFlowQBck`»
@@ -1183,7 +1184,7 @@ Apparent power limit, gated on service [GVA] «`eBIMSLimit`»
 (f^p_{\omega nijc})^2 + (q^p_{\omega nijc})^2 \leq \left( \frac{\overline{S}_{ijc}}{\underline{V}_i T_{ijc}} \right)^2 w^p_{\omega ni} \, swt^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
-Angle difference band [p.u.] «`eBIMAngleUp`» «`eBIMAngleLo`», linear because :math:`\arg(W_{ij}) = wm/wr`
+Angle difference band [p.u.] «`eBIMAngleUp`» «`eBIMAngleLo`», linear because {math}`\arg(W_{ij}) = wm/wr`
 
 ```{math}
 \tan(\underline{\theta}_{ijc}) \, wr^p_{\omega nijc} \leq wm^p_{\omega nijc} \leq \tan(\overline{\theta}_{ijc}) \, wr^p_{\omega nijc} \quad \forall p \omega nijc
@@ -1195,13 +1196,13 @@ Squared voltage magnitude, rectangular formulation only «`eVoltageSquare`»
 w^p_{\omega ni} = (vr^p_{\omega ni})^2 + (vm^p_{\omega ni})^2 \quad \forall p \omega ni
 ```
 
-Loop condition, :math:`W` space only, switched on with `IndACCycle` «`eBIMTangent`»
+Loop condition, {math}`W` space only, switched on with `IndACCycle` «`eBIMTangent`»
 
 ```{math}
 wm^p_{\omega nijc} = \tan(\theta^p_{\omega ni} - \theta^p_{\omega nj}) \, wr^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
-Nothing in :math:`W` space ties the angle around a loop, so a solution can carry flows that no set of bus angles
+Nothing in {math}`W` space ties the angle around a loop, so a solution can carry flows that no set of bus angles
 reproduces. Tying it to a node potential removes that. The tangent is non-convex and needs a non-linear solver.
 
 Reactive power capability of a generator [Gvar] «`eReactiveCapabilityUp`» «`eReactiveCapabilityLo`» «`eReactiveIdle`»
@@ -1219,7 +1220,7 @@ qs^p_{\omega ns} = BS_s \, w^p_{\omega ni} \, S_B \quad \forall p \omega ns, s \
 ```
 
 The injection follows the square of the voltage, so a bank delivers about 10% more than its nameplate at
-:math:`\overline{V}_i`. A device with a conductance also draws :math:`-GS_s w^p_{\omega ni} S_B` of active power.
+{math}`\overline{V}_i`. A device with a conductance also draws {math}`-GS_s w^p_{\omega ni} S_B` of active power.
 
 A switchable or candidate device is the same relation under a disjunction [Gvar] «`eShuntQCandUp`» «`eShuntQCandLo`»
 «`eShuntQOffUp`» «`eShuntQOffLo`»
@@ -1228,10 +1229,10 @@ A switchable or candidate device is the same relation under a disjunction [Gvar]
 | qs^p_{\omega ns} - BS_s w^p_{\omega ni} S_B | \leq M_s (1 - x), \qquad | qs^p_{\omega ns} | \leq M_s \, x \quad \forall p \omega ns
 ```
 
-with :math:`M_s = |BS_s| \overline{V}_i^2 S_B` and :math:`x` the state that applies: :math:`us^p_{\omega ns}` for a
-switchable device, :math:`ics_s` for a candidate one. A device that is both may close only once built,
-:math:`us^p_{\omega ns} \leq ics_s` «`eShuntSwitchInvest`». A bank of :math:`N` identical units is expanded into
-:math:`N` devices whose states are chained, so the count in service is its position «`eShuntStepOrder`»
+with {math}`M_s = |BS_s| \overline{V}_i^2 S_B` and {math}`x` the state that applies: {math}`us^p_{\omega ns}` for a
+switchable device, {math}`ics_s` for a candidate one. A device that is both may close only once built,
+{math}`us^p_{\omega ns} \leq ics_s` «`eShuntSwitchInvest`». A bank of {math}`N` identical units is expanded into
+{math}`N` devices whose states are chained, so the count in service is its position «`eShuntStepOrder`»
 «`eShuntBuildOrder`»
 
 ```{math}
@@ -1240,12 +1241,12 @@ us^p_{\omega n s_{k+1}} \leq us^p_{\omega n s_k} \quad \forall p \omega n k
 
 **HVDC converters**. Switched on with `IndACConverter`, which selects the model: 1 line-commutated, 2 voltage-source.
 Each terminal of a DC link then exchanges reactive power with the AC node it sits on, and that term enters the reactive
-balance above. :math:`PF^{conv}` is the converter power factor and :math:`T^{conv} = \tan(\arccos(PF^{conv}))`.
+balance above. {math}`PF^{conv}` is the converter power factor and {math}`T^{conv} = \tan(\arccos(PF^{conv}))`.
 
 
 ```{image} ../img/ac_hvdc_converter.png
 :alt: Single-line diagram of an HVDC link under both converter models. The line-commutated case draws reactive power at both terminals; the voltage-source case supplies or absorbs it independently at each. Station losses are marked at both terminals.
-:width: 100%
+:width: 60%
 :align: center
 ```
 
@@ -1256,8 +1257,8 @@ A line-commutated converter draws reactive power at BOTH terminals, in proportio
 f^p_{\omega nijc} = f^{+p}_{\omega nijc} - f^{-p}_{\omega nijc}, \qquad f^{+p}_{\omega nijc} \leq \overline{F}_{ijc} \, y^p_{\omega nijc}, \qquad f^{-p}_{\omega nijc} \leq \overline{F}_{ijc} (1 - y^p_{\omega nijc}) \quad \forall p \omega nijc
 ```
 
-with the reactive draw at each terminal equal to :math:`T^{conv} (f^{+} + f^{-})`. The flow is split into its positive
-and negative parts because the draw follows the magnitude of the active power, not its sign; :math:`y` is a binary that
+with the reactive draw at each terminal equal to {math}`T^{conv} (f^{+} + f^{-})`. The flow is split into its positive
+and negative parts because the draw follows the magnitude of the active power, not its sign; {math}`y` is a binary that
 keeps only one part non-zero.
 
 A voltage-source converter supplies or absorbs reactive power within its rating, independently at each terminal, and is
@@ -1275,19 +1276,19 @@ The station rating bounds the apparent power at each terminal «`eConvSLimit`»
 
 It is imposed as a ring of tangent lines rather than as the disc itself, so that the piecewise variant of
 `IndACModelType` remains a mixed-integer linear problem. The bound is therefore loose by
-:math:`1/\cos(\pi/n)` for :math:`n` lines, which is 3.5% at the twelve used. For a line-commutated converter the
+{math}`1/\cos(\pi/n)` for {math}`n` lines, which is 3.5% at the twelve used. For a line-commutated converter the
 reactive power is a fixed ratio of the active power, so the same limit reduces to
-:math:`|f^p_{\omega nijc}| \leq \overline{F}_{ijc} PF^{conv}` and is exact.
+{math}`|f^p_{\omega nijc}| \leq \overline{F}_{ijc} PF^{conv}` and is exact.
 
 
 ```{image} ../img/ac_converter_capability.png
 :alt: Capability chart of one converter terminal. The disc of radius equal to the rating is approximated from outside by twelve tangent lines, and a line-commutated station moves along a straight locus through the origin.
-:width: 85%
+:width: 60%
 :align: center
 ```
 
-Each terminal also carries a station loss, set by `ConverterNoLoadLoss` :math:`(L^{nl})` and `ConverterMarginalLoss`
-:math:`(L^{mg})`. The no-load part is drawn while the link is in service and the marginal part on the power the station
+Each terminal also carries a station loss, set by `ConverterNoLoadLoss` {math}`(L^{nl})` and `ConverterMarginalLoss`
+{math}`(L^{mg})`. The no-load part is drawn while the link is in service and the marginal part on the power the station
 carries, so a link is charged twice, once at each end. Both default to zero, and the terms enter the active power
 balance of the terminal node
 
@@ -1295,8 +1296,8 @@ balance of the terminal node
 L^{nl} \overline{F}_{ijc} \, sw^p_{\omega nijc} + L^{mg} \left( f^{+,p}_{\omega nijc} + f^{-,p}_{\omega nijc} \right)
 ```
 
-where :math:`f^{+}` and :math:`f^{-}` are the two non-negative halves of the link flow, so that their sum is
-:math:`|f|`. The split is made exact by the same direction binary the line-commutated model uses, and switching a loss
+where {math}`f^{+}` and {math}`f^{-}` are the two non-negative halves of the link flow, so that their sum is
+{math}`|f|`. The split is made exact by the same direction binary the line-commutated model uses, and switching a loss
 on brings that binary in even under the voltage-source model: without it the model could inflate both halves and
 discard surplus energy into a loss that does not exist.
 
@@ -1309,8 +1310,8 @@ Net position of a node [GW] «`eNetPosition`» and the line flow it implies [GW]
 np^p_{\omega ni} = \sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} - ED^p_{\omega ni}, \qquad f^p_{\omega nijc} = \sum_{k} PTDF_{ijc,k} \, np^p_{\omega nk} \quad \forall p \omega nijc
 ```
 
-With `IndPTDF` = 1 the factors are read from the case; with 2 they are computed as :math:`PTDF = B_f B^{-1}`, with
-:math:`B` built on :math:`1/X_{ijc}`, the reference node removed and the DC links left out. The computed factors are
+With `IndPTDF` = 1 the factors are read from the case; with 2 they are computed as {math}`PTDF = B_f B^{-1}`, with
+{math}`B` built on {math}`1/X_{ijc}`, the reference node removed and the DC links left out. The computed factors are
 refused when the case has candidate or switchable AC lines, because they belong to one topology. The representation is
 lossless.
 
