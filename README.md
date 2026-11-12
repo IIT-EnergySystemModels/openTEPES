@@ -198,7 +198,7 @@ Continue at [Get Started](#get-started).
 
 ## HiGHS
 
-The [HiGHS solver](https://pypi.org/project/highspy) can also be used. It can be installed using: `pip install highspy` and `pip install highspy-extras`.
+The [HiGHS solver](https://pypi.org/project/highspy) can also be used. It must be installed using both methods: `pip install highspy` and `pip install highspy-extras`.
 This solver is activated by calling the openTEPES model with the solver name 'appsi_highs'.
 
 ## Gurobi
