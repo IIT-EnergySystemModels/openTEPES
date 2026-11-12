@@ -19,6 +19,7 @@ The Gurobi, HiGHS, SCIP, and GLPK solvers can be installed as packages:
 ```
 conda install -c gurobi      gurobi
 pip   install                highspy
+pip   install                highspy-extras
 conda install -c conda-forge pyscipopt
 conda install                glpk
 ```
@@ -121,7 +122,7 @@ Continue at {ref}`get-started`.
 
 **HiGHS**
 
-The [HiGHS solver](https://pypi.org/project/highspy/) can also be used. It can be installed using: `pip install highspy`.
+The [HiGHS solver](https://pypi.org/project/highspy/) can also be used. It can be installed using: `pip install highspy` and `pip install highspy-extras`.
 
 **Gurobi**
 

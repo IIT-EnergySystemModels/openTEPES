@@ -178,7 +178,7 @@ have an existing Python installation, you can also download the required package
 2. **Packages and Solver**:
 
    1. Launch a new Anaconda prompt (or terminal in any IDE)
-   2. [HiGHS](https://ergo-code.github.io/HiGHS/dev/installation/#Precompiled-Binaries) is our recommendation if you want a free and open-source solver.
+   2. [HiGHS](https://pypi.org/project/highspy) is our recommendation if you want a free and open-source solver.
    3. Install openTEPES dependencies:
 
    > 1. via pip: `pip install openTEPES`
@@ -198,8 +198,7 @@ Continue at [Get Started](#get-started).
 
 ## HiGHS
 
-The [HiGHS solver](https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started) can also be used. It can be installed using: `pip install
-highspy`.
+The [HiGHS solver](https://pypi.org/project/highspy) can also be used. It can be installed using: `pip install highspy` and `pip install highspy-extras`.
 This solver is activated by calling the openTEPES model with the solver name 'appsi_highs'.
 
 ## Gurobi

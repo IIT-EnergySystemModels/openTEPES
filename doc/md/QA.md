@@ -18,7 +18,7 @@ openTEPES documentation master file, created by Andres Ramos
 
   > [Gurobi](https://www.gurobi.com/products/gurobi-optimizer/) because there is a license that is free of charge for academic use
   >
-  > [HiGHS](https://ergo-code.github.io/HiGHS/dev/installation/#Precompiled-Binaries) as a free solver
+  > [HiGHS](https://pypi.org/project/highspy/) as a free solver
   >
   > [GAMS/CPLEX](https://www.gams.com/) for those institutions that have the corresponding licenses
 
