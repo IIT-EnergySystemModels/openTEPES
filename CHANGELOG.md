@@ -4,6 +4,8 @@
 
 - [FIXED] removed +1 in the lower index of the sum for the generator min up/down time and min line switch on/off state equations.
 - [ADDED] marginal files of the system balancing energy `oT_Result_MarginalBalancingEnergyUp` and `oT_Result_MarginalBalancingEnergyDown`.
+- [CHANGED] CI installs HiGHS 1.16.0 with `highspy-extras`. Without the extras, HiGHS cannot run the HiPO interior-point solver and
+  falls back to the dual simplex, so the solve tests did not exercise the `hipo` option.
 
 ## [4.19.0] - 2026-10-27
 
