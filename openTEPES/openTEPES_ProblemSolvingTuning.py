@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 21, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 12, 2026
 
 openTEPES.openTEPES_ProblemSolvingTuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
 
@@ -112,7 +112,7 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int, mTE
 
     if SolverName == "highs":
         Solver.options["log_file"]                = FileName
-        Solver.options["solver"]                  = "choose"
+        Solver.options["solver"]                  = "hipo"
         Solver.options["simplex_strategy"]        = 1
         Solver.options["run_crossover"]           = "on"
         Solver.options["mip_rel_gap"]             = 0.01
