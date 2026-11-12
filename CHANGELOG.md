@@ -6,6 +6,8 @@
 - [ADDED] marginal files of the system balancing energy `oT_Result_MarginalBalancingEnergyUp` and `oT_Result_MarginalBalancingEnergyDown`.
 - [CHANGED] CI installs HiGHS 1.16.0 with `highspy-extras`. Without the extras, HiGHS cannot run the HiPO interior-point solver and
   falls back to the dual simplex, so the solve tests did not exercise the `hipo` option.
+- [FIXED] `tests/test_shipped_case_costs.py` edits a private copy of each case instead of the shipped files. Under parallel
+  test runs, another test could copy `cases/9n` while it was being rewritten and read an empty `oT_Data_RESEnergy_9n.csv`.
 
 ## [4.19.0] - 2026-10-27
 
