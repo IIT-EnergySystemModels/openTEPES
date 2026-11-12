@@ -97,7 +97,7 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           python-version: ${{ matrix.python-version }}
-          extra: pytest-timeout pytest-xdist "highspy==1.15.1"
+          extra: pytest-timeout pytest-xdist "highspy==1.16.0" "highspy-extras==1.16.0"
 
       - name: Report which solvers this runner has
         shell: bash
@@ -146,7 +146,7 @@ jobs:
         run: |
           conda install -y -c conda-forge ipopt
           uv pip install --system -r requirements.lock
-          uv pip install --system pytest pytest-timeout pytest-xdist "highspy==1.15.1"
+          uv pip install --system pytest pytest-timeout pytest-xdist "highspy==1.16.0" "highspy-extras==1.16.0"
           pip install -e .
 
       - name: Report which solvers this runner has
@@ -177,7 +177,7 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           python-version: "3.12"
-          extra: pytest-timeout pytest-xdist "highspy==1.15.1"
+          extra: pytest-timeout pytest-xdist "highspy==1.16.0" "highspy-extras==1.16.0"
 
       - name: Pin pandas to the 2.x floor
         shell: bash

@@ -27,7 +27,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install .
-        pip install pytest "highspy==1.15.1"
+        pip install pytest "highspy==1.16.0" "highspy-extras==1.16.0"
 
     - name: Run tests
       run: |
