@@ -1,4 +1,5 @@
 import os
+import shutil
 import pyomo.environ as pyo
 import pytest
 import numpy as np
@@ -22,15 +23,16 @@ EXPECTED_COSTS = {
     "9n_PTDF": 502.22274721010905,
 }
 
-def setup_test_case(case_name):
+def setup_test_case(case_name, tmp_path):
     """
-    Set up the test case by modifying the necessary CSV files and preparing input data.
-    Returns the data required for running openTEPES.
+    Copy the case into ``tmp_path``, modify the copy and return the data required for running openTEPES.
+    The shipped case is never edited, so tests running in parallel can copy it safely.
     """
+    src = os.path.abspath(os.path.join(os.path.dirname(__file__), "../openTEPES/cases", case_name))
+    shutil.copytree(src, os.path.join(str(tmp_path), case_name),
+                    ignore=shutil.ignore_patterns("openTEPES_*", "oT_Result_*", "oT_Plot_*", "*.html"))
     data = dict(
-        DirName=os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../openTEPES/cases")
-        ),
+        DirName=str(tmp_path),
         CaseName=case_name,
         SolverName="highs",  # HiGHS is the solver CI carries
         pIndLogConsole=0,
@@ -83,7 +85,7 @@ def modify_and_save_csv(df, column_name, start_row, file_path, idx):
 
 
 @pytest.mark.solve
-def test_openTEPES_run():
+def test_openTEPES_run(tmp_path):
     """
     Test function for running openTEPES with the modified test case.
     Asserts the run was successful.
@@ -91,7 +93,7 @@ def test_openTEPES_run():
     print("Starting the openTEPES run...")  # Added print for console feedback
     for case_name in CASE_NAMES:
         print(f'Running test for {case_name}...')
-        for case_data in setup_test_case(case_name):
+        for case_data in setup_test_case(case_name, tmp_path):
             mTEPES = openTEPES_run(**case_data)
 
             assert mTEPES is not None, f"{case_name} failed: mTEPES is None."
@@ -102,7 +104,8 @@ def test_openTEPES_run():
 
 # Run the test function
 if __name__ == "__main__":
+    import tempfile
     print("Running the test...")
-    test_openTEPES_run()
+    test_openTEPES_run(tempfile.mkdtemp())
     print("Test complete.")
 
