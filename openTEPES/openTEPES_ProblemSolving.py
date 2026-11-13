@@ -21,6 +21,7 @@ import re
 import time
 
 import pyomo.environ as pyo
+from pyomo.contrib.solver.common.util import NoFeasibleSolutionError
 from pyomo.environ import Suffix
 from pyomo.opt import TerminationCondition
 from pyomo.util.infeasible import log_infeasible_constraints
@@ -46,6 +47,28 @@ except ImportError:
 _DUALS_UNAVAILABLE = re.compile(r"Unable to retrieve attribute '(Pi|QCPi)'")
 
 
+def _solve_with_hipo_fallback(Solver, OptModel, **kwargs):
+    """Solve, and if HiGHS's HiPO method returns no solution, solve again and let HiGHS choose the method.
+
+    HiPO, the interior point method of HiGHS 1.16, sometimes stops with "Internal error: NaN detected" on small LPs.
+    HiGHS then reports a solve error and Pyomo raises NoFeasibleSolutionError. This happened now and then on the
+    PTDF test in CI. The model itself is fine, so the stage is solved again with the "choose" method. A truly
+    infeasible model fails the second solve as well, and that error is raised.
+    """
+    try:
+        return Solver.solve(OptModel, **kwargs)
+    except NoFeasibleSolutionError:
+        # Pyomo's HiGHS options object does not return set values through .get(), so test membership and index it
+        if 'solver' not in Solver.options or Solver.options['solver'] != 'hipo':
+            raise
+        print('### WARNING: HiGHS (HiPO) returned no solution. Solving again and letting HiGHS choose the method.')
+        Solver.options['solver'] = 'choose'
+        try:
+            return Solver.solve(OptModel, **kwargs)
+        finally:
+            Solver.options['solver'] = 'hipo'
+
+
 def _solve_without_duals_if_unavailable(Solver, OptModel, **kwargs):
     """Solve, and if the solver finds an optimum but cannot return its duals, solve again without asking for them.
 
@@ -58,7 +81,7 @@ def _solve_without_duals_if_unavailable(Solver, OptModel, **kwargs):
     writer already handles because the AC restoration pass and an unresolved MIP end the same way.
     """
     try:
-        return Solver.solve(OptModel, **kwargs)
+        return _solve_with_hipo_fallback(Solver, OptModel, **kwargs)
     except Exception as e:
         if not (_DUALS_UNAVAILABLE.search(str(e)) and hasattr(OptModel, 'dual')):
             raise
