@@ -530,9 +530,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
             par['pDuration'].iloc[range(n, n_levels, par['pTimeStep'])] = 0
 
         for p,sc,n in par['pDuration'].index:
-            if par['pPeriodWeight'][p] == 0.0:
+            if par['pPeriodWeight'][p]    == 0.0:
                 par['pDuration'].loc[p,sc,n] = 0
-            if par['pScenProb'][p,sc] == 0.0:
+            if par['pScenProb'][p,sc]     == 0.0:
                 par['pDuration'].loc[p,sc,n] = 0
 
     # remove load levels with duration 0 to determine min and max values correctly
@@ -1226,8 +1226,8 @@ def ConfigureACData(mTEPES, dfs, par):
     mTEPES.pVMaxBus          = Param(mTEPES.nd,    initialize=par['pVMaxBus']                   , within=NonNegativeReals, doc='Tightened maximum voltage magnitude [p.u.]'           )
     # The buses whose deviation from a voltage setpoint is penalized. The reference bus is left out: its voltage is fixed at VNom, so its distance from a setpoint is a
     # constant and pricing it adds a column the solver can do nothing with.
-    mTEPES.ndv               = Set(doc='bus with a penalized voltage setpoint deviation', initialize=[nd for nd in mTEPES.nd if nd in par['pVSetBus'] and nd != mTEPES.rf.first()])
-    mTEPES.pVSetBus          = Param(mTEPES.ndv,   initialize={nd: par['pVSetBus'][nd] for nd in mTEPES.ndv}, within=NonNegativeReals, doc='Voltage setpoint [p.u.]'       )
+    mTEPES.ndv               = Set(initialize=[nd for nd in mTEPES.nd if nd in par['pVSetBus'] and nd != mTEPES.rf.first()], doc='bus with a penalized voltage setpoint deviation')
+    mTEPES.pVSetBus          = Param(mTEPES.ndv,   initialize={nd: par['pVSetBus'][nd] for nd in mTEPES.ndv}, within=NonNegativeReals, doc='Voltage setpoint [p.u.]')
 
     mTEPES.pVMin             = Param(initialize=par['pVMin']        , within=NonNegativeReals, doc='Minimum voltage magnitude [p.u.]')
     mTEPES.pVNom             = Param(initialize=par['pVNom']        , within=NonNegativeReals, doc='Nominal voltage magnitude [p.u.]')
