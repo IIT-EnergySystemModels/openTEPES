@@ -585,7 +585,7 @@ second stage) in the case of two stages, each with 4368 hours.
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) >0 is considered a non-renewable unit. If the unit has no operation cost
 and its maximum storage =0, it is considered a renewable unit. If its maximum storage is >0, with or without operation cost, it is regarded as an ESS.
 
-A very small variable O&M cost for the ESS (not below 0.01 €/MWh; otherwise the model converts it to 0) can prevent it from pumping with avoided curtailment (at
+A very small variable O&M cost for the ESS (not below €0.01/MWh; otherwise the model converts it to 0) can prevent it from pumping with avoided curtailment (at
 no cost) and then discharging as spillage.
 
 The startup cost of a generating unit refers to the expenses incurred when bringing a power generation unit online, from an idle state to a point where it can
@@ -925,11 +925,11 @@ cost above the exact optimum, so it no longer bounds it.
 The RTS cases use 1e-6: the relaxed cost stays below the exact optimum and the cone is loose on about 0.4% of
 branch-hours, which `IndACRestore` resolves. Closing the cone there instead would take 1e-4 and the bound would be lost.
 
-`IndACRestore = 1` re-solves the network at the exact equations after the solve and adds nothing to the objective, so
+`IndACRestore = 1` re-solves the network at the exact equations after solving and adds nothing to the objective, so
 `EpsilonCurrent` may be kept small and the restoration pass used for a physical operating point. A case that sets
 nothing keeps the previous default.
 
-The price steers the solve and is not part of the reported system cost; it is reported beside it.
+The price steers the optimization run and is not part of the reported system cost; it is reported beside it.
 
 ### The thermal limit of an AC branch
 

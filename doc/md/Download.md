@@ -83,7 +83,7 @@ The **openTEPES** code is provided under the [GNU Affero General Public License]
 The source code can be downloaded from [GitHub](https://github.com/IIT-EnergySystemModels/openTEPES) or installed with
 [pip](https://pypi.org/project/openTEPES/).
 
-This model is a work in progress and will be updated accordingly. If you want to subscribe to **openTEPES** model updates, send an email to
+This model is a work in progress and will be updated accordingly. If you want to subscribe to **openTEPES** model updates, email
 [andres.ramos@comillas.edu](mailto:andres.ramos@comillas.edu).
 
 (installation)=

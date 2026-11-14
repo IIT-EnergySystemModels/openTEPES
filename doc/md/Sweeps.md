@@ -110,7 +110,7 @@ values on every `solve`, so `store_values` takes effect with no extra call. Pass
 not build on overlay *k−1*. An empty overlay `{}` re-solves the baseline; `restore=True` (default) restores the baseline at the end.
 `overlay_scaled(model, name, factor)` builds a scale-factor overlay for one Param.
 
-`resolve` returns one dict per overlay with the solver termination condition and the total system cost (`None` if the solve was not optimal). It solves one
+`resolve` returns one dict per overlay with the solver termination condition and the total system cost (`None` if the optimization run did not reach optimality). It solves one
 overlay at a time; to run a large Monte-Carlo in parallel, wrap `resolve` in your own worker pool.
 
 ## Collecting sweep results
