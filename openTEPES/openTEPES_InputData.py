@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 11, 2026
 """
 
 import time
@@ -558,6 +558,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pElecGenPeriodFin']           = dfs['dfGeneration']  ['FinalPeriod'               ]                                                             # final   period                               [year]
     par['pAvailability']               = dfs['dfGeneration']  ['Availability'              ]                                                             # unit availability for adequacy               [p.u.]
     par['pEFOR']                       = dfs['dfGeneration']  ['EFOR'                      ]                                                             # EFOR                                         [p.u.]
+
+    # if EFOR = 1.0, the generator would be unavailable, and then EFOR is set to 0.0
+    par['pEFOR'] = par['pEFOR'].where(par['pEFOR'] != 1.0, 0.0)
+
     par['pRatedMinPowerElec']          = dfs['dfGeneration']  ['MinimumPower'              ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated     minimum electric power             [GW]
     par['pRatedMaxPowerElec']          = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3 * (1.0-par['pEFOR'])                                 # rated     maximum electric power             [GW]
     par['pNameplateMaxPowerElec']      = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3                                                      # nameplate maximum electric power, NOT derated [GW]
@@ -732,15 +736,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     return dfs, par
 
 
-# ======================================================================================================================
+# =====================================================================================================================================
 # AC input data
-# ======================================================================================================================
+# =====================================================================================================================================
 # Everything the AC formulations need from the case files, and the bound tightening that runs before the variables are
-# declared. Read by ReadACInputData below; ConfigureACData is called later by openTEPES_DataConfiguration, which imports
-# it from here.
+# declared. Read by ReadACInputData below; ConfigureACData is called later by openTEPES_DataConfiguration, which imports it from here.
 
-# Bound tightening limits. The sweep stops at MAX_SWEEPS or when the largest change falls below TOLERANCE; MAX_ANGLE is the widest angle the
-# arcsine can return and is the cap when the thermal limit implies no bound at all.
+# Bound tightening limits. The sweep stops at MAX_SWEEPS or when the largest change falls below TOLERANCE; MAX_ANGLE is the widest angle
+# the arcsine can return and is the cap when the thermal limit implies no bound at all.
 MAX_ANGLE  = math.pi / 2
 MAX_SWEEPS = 20
 TOLERANCE  = 1e-6
