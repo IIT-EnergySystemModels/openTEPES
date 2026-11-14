@@ -49,3 +49,21 @@ def test_gurobi_persistent_reuses_the_basis_on_a_re_solve(ncall, method):
     solver = _Persistent()
     apply_solver_options(solver, "gurobi_persistent", "unused.log", ncall)
     assert solver.params["Method"] == method
+
+
+@pytest.mark.parametrize("value", [None, "", "  "])
+def test_highs_uses_hipo_by_default(monkeypatch, value):
+    if value is None:
+        monkeypatch.delenv("OTEPES_HIGHS_SOLVER", raising=False)
+    else:
+        monkeypatch.setenv("OTEPES_HIGHS_SOLVER", value)
+    solver = _Options()
+    apply_solver_options(solver, "highs", "unused.log", 1)
+    assert solver.options["solver"] == "hipo"
+
+
+def test_the_highs_method_can_be_set_from_the_environment(monkeypatch):
+    monkeypatch.setenv("OTEPES_HIGHS_SOLVER", "choose")
+    solver = _Options()
+    apply_solver_options(solver, "highs", "unused.log", 1)
+    assert solver.options["solver"] == "choose"

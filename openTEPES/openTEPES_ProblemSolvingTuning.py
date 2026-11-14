@@ -48,6 +48,14 @@ def _crossover() -> int:
         return -1
 
 
+def _highs_solver() -> str:
+    """HiGHS ``solver`` option from ``OTEPES_HIGHS_SOLVER`` when set, else ``"hipo"``.
+    HiPO in highspy 1.16.0 sometimes crashes the Python process on Windows (heap corruption or access violation).
+    A crash cannot be caught, so the Windows CI job sets this to ``"choose"``.
+    """
+    return os.environ.get("OTEPES_HIGHS_SOLVER", "").strip() or "hipo"
+
+
 def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int, mTEPES=None):
     """Apply initial-solve options to ``Solver`` based on ``SolverName``. Returns a GAMS ``solver_options`` set
     if applicable; ``None`` otherwise (for Gurobi/CPLEX/HiGHS the options are set on ``Solver.options``)."""
@@ -112,7 +120,7 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int, mTE
 
     if SolverName == "highs":
         Solver.options["log_file"]                = FileName
-        Solver.options["solver"]                  = "hipo"
+        Solver.options["solver"]                  = _highs_solver()
         Solver.options["simplex_strategy"]        = 1
         Solver.options["run_crossover"]           = "on"
         Solver.options["mip_rel_gap"]             = 0.01

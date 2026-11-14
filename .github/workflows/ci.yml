@@ -105,8 +105,13 @@ jobs:
           python -c "from pyomo.environ import SolverFactory; \
           print({n: SolverFactory(n).available(exception_flag=False) for n in ('appsi_highs','ipopt','gurobi')})"
 
+      # HiPO in highspy 1.16.0 sometimes crashes the test process on Windows, with heap corruption or an access
+      # violation inside the solve (RTS-GMLC and RTS-GMLC_Oper, 3 of 6 attempts). A crash cannot be caught in Python,
+      # so Windows lets HiGHS choose the method. macOS and Linux keep testing HiPO.
       - name: Run solve tests (per-test timeout guards a stuck solver)
         shell: bash
+        env:
+          OTEPES_HIGHS_SOLVER: ${{ matrix.os == 'windows-latest' && 'choose' || '' }}
         run: pytest -vv -m solve -n auto --timeout=1800 tests/
 
   # The same suite with ipopt. HiGHS cannot express a non-linear constraint, so without ipopt the
