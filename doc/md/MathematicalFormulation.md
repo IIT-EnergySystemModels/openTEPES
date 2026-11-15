@@ -41,8 +41,11 @@ Here we present the mathematical formulation of the optimization problem solved 
 :math:`e`                Energy Storage System (ESS)
 :math:`h`                Hydropower or pumped-storage hydro plant (associated with a reservoir modeled in water units)
 :math:`e',e''`           Reservoir (natural water inflows in m\ :sup:`3`/s and volume in hm\ :sup:`3`)
+:math:`rs`               Reservoir, alias of :math:`e'` used in the hydropower operating reserve constraints
 :math:`h \in up(e')`     Hydro or pumped-storage hydropower plant :math:`h` upstream of reservoir :math:`e'`
 :math:`h \in dw(e')`     Hydro or pumped-storage hydropower plant :math:`h` downstream of reservoir :math:`e'`
+:math:`rs \in up(h)`     Reservoir :math:`rs` upstream of hydro or pumped-storage hydropower plant :math:`h`
+:math:`rs \in dw(h)`     Reservoir :math:`rs` downstream of hydro or pumped-storage hydropower plant :math:`h`
 :math:`e'' \in up(e')`   Reservoir :math:`e''` upstream of reservoir :math:`e'`
 :math:`i, j`             Node
 :math:`s`                Bus shunt device (reactor or capacitor bank). Each device is connected to a node :math:`s \in i`
@@ -59,7 +62,8 @@ Here we present the mathematical formulation of the optimization problem solved 
 :math:`EE, CE`           Set of existing and candidate ESS
 :math:`ER, CR`           Set of existing and candidate reservoirs
 :math:`EL, CL`           Set of existing and non-switchable, and candidate and switchable electric transmission lines
-:math:`EP, CP`           Set of existing and candidate pipelines
+:math:`EH, CH`           Set of existing and candidate hydrogen pipelines
+:math:`EP, CP`           Set of existing and candidate heat pipes
 =======================  ===============================================================================================
 ```
 
@@ -105,6 +109,7 @@ For the sake of clarity, all formulas are defined assuming a 1-hour time step. H
 **Heat demand**
 ----------------------------------------------------------------------------------------
 :math:`DHt^p_{\omega ni}`  Heat demand in each node                              GW
+:math:`PDHt_{pa}`          Peak heat demand in each area                         GW
 :math:`CHtNS`              Cost of heat not served                               €/MWh
 =========================  ====================================================  =======
 ```
@@ -196,16 +201,16 @@ For the sake of clarity, all formulas are defined assuming a 1-hour time step. H
 :math:`TS_t`                                                       Minimum stable time of a thermal unit                                                                                     h
 :math:`ST_e`                                                       Maximum shift time of an ESS unit (in particular, for demand-side management or data center flexibility)                  h
 :math:`CSU_g, CSD_g`                                               Startup and shutdown cost of a committed unit                                                                             M€
-:math:`\tau_e`                                                     Storage cycle of the ESS (e.g., 1, 24, 168, 8736 h -for daily, weekly, monthly, yearly-)                                  h
-:math:`\rho_e`                                                     Outflow cycle of the ESS (e.g., 1, 24, 168, 8736 h -for hourly, daily, weekly, monthly, yearly-)                          h
-:math:`\sigma_g`                                                   Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
+:math:`\tau_e`                                                     Storage cycle of the ESS (e.g., 1, 24, 168, 672 h —for daily, weekly, monthly, yearly—)                                   h
+:math:`\rho_e`                                                     Outflow cycle of the ESS (e.g., 1, 24, 168, 672, 8736 h —for hourly, daily, weekly, monthly, yearly—)                     h
+:math:`\sigma_g`                                                   Energy cycle of the unit (e.g., 24, 168, 672, 8736 h —for daily, weekly, monthly, yearly—)                                h
 :math:`GI_g`                                                       Generator inertia                                                                                                         s
 :math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro plant or charge/discharge of a battery          p.u.
 :math:`PF_h`                                                       Production function from water inflows to electricity                                                                     kWh/m\ :sup:`3`
 :math:`PF'_e`                                                      Production function from electricity to hydrogen of an electrolyzer                                                       kWh/kgH2
 :math:`PF''_e`                                                     Production function from electricity to heat of a heat pump or an electrical heater                                       kWh/kWh
 :math:`PF'''_e`                                                    Production function from H2 to heat of a boiler using H2                                                                  kgH2/kWh
-:math:`PH''_g`                                                     Power to heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
+:math:`PH''_g`                                                     Power-to-heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
 :math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                    GWh
 :math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                                GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum power produced by a unit in a defined interval                                                        GW
@@ -345,8 +350,8 @@ They are written in **lowercase** letters.
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`     Commitment, startup, and shutdown of a generation unit per load level                               {0,1}
 :math:`rss^p_{\omega nt}, rsu^p_{\omega nt}, rsd^p_{\omega nt}`  Stable, ramp up, and ramp down states of a generation unit with minimum stable time per load level  {0,1}
 :math:`uc'^p_{\omega g}, uc'^p_{\omega ng}`                      Maximum commitment of a generation unit for all the load levels or for each load level.
-                                                                 If any generator in an exclusion group is an installation/retirement candidate, it is assumed
-                                                                 exclusivity per period :math:`uc'^p_{\omega g}`. When all mutually exclusive generators exist,
+                                                                 If any generator in an exclusion group is an installation/retirement candidate, exclusivity is
+                                                                 assumed per period :math:`uc'^p_{\omega g}`. When all mutually exclusive generators exist,
                                                                  it is assumed that the exclusivity is per load level :math:`uc'^p_{\omega ng}`.                     {0,1}
 ===============================================================  ==================================================================================================  ======
 ```
@@ -370,7 +375,7 @@ They are written in **lowercase** letters.
 **Electricity transmission system**
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 :math:`ict^p_{ijc}`                                                       Candidate transmission installed or not                                      {0,1}
-:math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on, and switch-off of a transmission electric line   {0,1}
+:math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on, and switch-off of an electric transmission line  {0,1}
 :math:`f^p_{\omega nijc}`                                                 Power flow through an electric transmission line                             GW
 :math:`l^p_{\omega nijc}`                                                 Half ohmic losses of an electric transmission line                           GW
 :math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                                      rad
@@ -415,7 +420,7 @@ They are written in **lowercase** letters.
 ```
 
 Used only when `IndACPowerFlow` is different from 0. The voltage angle {math}`\theta^p_{\omega ni}`, the active power
-flow {math}`f^p_{\omega nijc}` and the half ohmic losses {math}`l^p_{\omega nijc}` are the ones already defined for
+flow {math}`f^p_{\omega nijc}`, and the half ohmic losses {math}`l^p_{\omega nijc}` are the ones already defined for
 the electricity transmission system.
 
 ## Equations
@@ -550,7 +555,7 @@ Adequacy electricity system reserve margin [p.u.] «`eAdequacyReserveMarginElec`
 Adequacy heat system reserve margin [p.u.] «`eAdequacyReserveMarginHeat`»
 
 ```{math}
-\sum_{g \in a, EB} \overline{GH}_g A_g + \sum_{g \in a, CB} icg^p_g \overline{GH}_g A_g \geq PD_{pa} RMH_{pa} \quad \forall pa
+\sum_{g \in a, EB} \overline{GH}_g A_g + \sum_{g \in a, CB} icg^p_g \overline{GH}_g A_g \geq PDHt_{pa} RMH_{pa} \quad \forall pa
 ```
 
 Maximum CO2 emission per period, scenario, and area [MtCO2] «`eMaxSystemEmission`»
@@ -647,16 +652,16 @@ VRES units (i.e., those with linear variable cost equal to 0 and no storage capa
 Operating reserves from ESS can only be provided if enough energy is available for production [GWh] «`eReserveUpIfEnergy`»
 
 ```{math}
-\frac{(p^p_{\omega ne} + ur^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'}} \leq i^p_{\omega ne} - \underline{I}^p_{\omega ne} \quad \forall p \omega ne
+\frac{(p^p_{\omega ne} + ur^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e}} \leq i^p_{\omega ne} - \underline{I}^p_{\omega ne} \quad \forall p \omega ne
 ```
 
 or if there is enough storage capacity left for charging [GWh] «`eESSReserveDwIfEnergy`»
 
 ```{math}
-(c^p_{\omega ne} + dr'^p_{\omega ne} + \underline{GC}^p_{\omega ne}) DUR^p_{\omega n} \sqrt{EF_e'} \leq \overline{I}^p_{\omega ne} - i^p_{\omega ne} \quad \forall p \omega ne
+(c^p_{\omega ne} + dr'^p_{\omega ne} + \underline{GC}^p_{\omega ne}) DUR^p_{\omega n} \sqrt{EF_e} \leq \overline{I}^p_{\omega ne} - i^p_{\omega ne} \quad \forall p \omega ne
 ```
 
-Maximum and minimum relative inventory of ESS candidates (only for load levels that are multiples of 1, 24, 168, 8736 h depending on the ESS storage type,
+Maximum and minimum relative inventory of ESS candidates (only for load levels that are multiples of 1, 24, 168, 672 h depending on the ESS storage type,
 represented as {math}`n|\tau_e`) constrained by the ESS commitment decision times the maximum capacity [p.u.] «`eMaxInventory2Comm`» «`eMinInventory2Comm`»
 
 ```{math}
@@ -667,7 +672,7 @@ represented as {math}`n|\tau_e`) constrained by the ESS commitment decision time
 \frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
 ```
 
-Energy inflows of ESS candidates (only for load levels that are multiples of 1, 24, 168, 8736 h, depending on the ESS storage type, represented as
+Energy inflows of ESS candidates (only for load levels that are multiples of 1, 24, 168, 672 h, depending on the ESS storage type, represented as
 {math}`n|\tau_e`) constrained by the ESS commitment decision times the energy inflows data [p.u.] «`eInflows2Comm`»
 
 ```{math}
@@ -755,7 +760,7 @@ c^p_{\omega ne} - ur'^p_{\omega ne} \geq 0 \quad \forall p \omega ne
 Maximum charge of a hydro unit [p.u.] «`eMaxCharge`»
 
 ```{math}
-\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq ucc^p_{\omega ng} \quad \forall p \omega ne
+\frac{c^p_{\omega nh} + dr'^p_{\omega nh}}{\overline{GC}^p_{\omega nh} - \underline{GC}^p_{\omega nh}} \leq ucc^p_{\omega nh} \quad \forall p \omega nh
 ```
 
 Incompatibility between charge and discharge of a non-hydropower ESS, including the activation energy in the worst direction, and of a hydro unit [p.u.]
@@ -802,13 +807,13 @@ If there are operating reserve activation files, the constraint is:
 Total charge of a hydro unit [GW] «`eESSTotalCharge`»
 
 ```{math}
-\frac{gc^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} = ucc^p_{\omega ng} + \frac{c^p_{\omega nh} - URA \: ur'^p_{\omega nh} + DRA \: dr'^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} \quad \forall p \omega nh
+\frac{gc^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} = ucc^p_{\omega nh} + \frac{c^p_{\omega nh} - URA \: ur'^p_{\omega nh} + DRA \: dr'^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} \quad \forall p \omega nh
 ```
 
 If there are operating reserve activation files, the constraint is:
 
 ```{math}
-\frac{gc^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} = ucc^p_{\omega ng} + \frac{c^p_{\omega nh} - ura'^p_{\omega nh} + dra'^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} \quad \forall p \omega nh
+\frac{gc^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} = ucc^p_{\omega nh} + \frac{c^p_{\omega nh} - ura'^p_{\omega nh} + dra'^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} \quad \forall p \omega nh
 ```
 
 Incompatibility between charge and outflow use of an ESS [p.u.] «`eChargeOutflows`»
@@ -835,7 +840,7 @@ Maximum commitment of a committable unit (all except the VRES units) for all the
 uc^p_{\omega ng} \leq uc'^p_{\omega g} \quad \forall p \omega ng
 ```
 
-Maximum commitment of a committable unit (all except the VRES units) for all the load levels [p.u.] «`eMaxCommitmentConsYearly`»
+Maximum consumption commitment of a reversible hydro unit for all the load levels [p.u.] «`eMaxCommitmentConsYearly`»
 
 ```{math}
 ucc^p_{\omega ng} \leq ucc'^p_{\omega g} \quad \forall p \omega ng
@@ -936,7 +941,7 @@ Minimum uptime and downtime of a thermal unit [p.u.] «`eMinUpTime`» «`eMinDow
 \sum_{n'=n-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt
 ```
 
-Minimum stable time of a thermal unit [p.u.] «`eMinStableTime`» In the code, you can select the simplified formulation (first) or the tight, computationally
+Minimum stable time of a thermal unit [p.u.] «`eMinStableTime`». In the code, you can select the simplified formulation (first) or the tight, computationally
 efficient formulation (second). With the simplified formulation, ramp-down maneuvers can no longer be split into several periods to avoid restrictions.
 
 ```{math}
@@ -949,7 +954,7 @@ rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \i
 
 **Reservoir operation**
 
-Maximum and minimum relative volume of reservoir candidates (only for load levels that are multiples of 1, 24, 168, 8736 h depending on the reservoir volume
+Maximum and minimum relative volume of reservoir candidates (only for load levels that are multiples of 1, 24, 168, 672 h depending on the reservoir volume
 type, represented as {math}`n|\tau_{e'}`) constrained by the hydro commitment decision times the maximum capacity [p.u.] «`eMaxVolume2Comm`» «`eMinVolume2Comm`»
 
 ```{math}
@@ -960,46 +965,46 @@ type, represented as {math}`n|\tau_{e'}`) constrained by the hydro commitment de
 \frac{i'^p_{\omega ne'}}{\underline{I'}^p_{\omega ne'}} \geq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR
 ```
 
-Operating reserves from a hydropower plant can only be provided if enough water is available for turbining at the upstream reservoirs [GW]
+Operating reserves from a hydropower plant can only be provided if enough water is available for turbining at the upstream reservoirs [p.u.]
 «`eTrbReserveUpIfUpstream`»
 
 ```{math}
-\frac{p^p_{\omega nh} + ur^p_{\omega nh}}{\underline{GP}^p_{\omega nh}} + uc^p_{\omega nh} \leq \frac{\sum_{rs \in up(h)}  (v^p_{\omega nrs} - \underline{I}^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\frac{p^p_{\omega nh} + ur^p_{\omega nh}}{\underline{GP}^p_{\omega nh}} + uc^p_{\omega nh} \leq \frac{\sum_{rs \in up(h)}  (i'^p_{\omega nrs} - \underline{I'}^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n} \underline{GP}^p_{\omega nh}} \quad \forall p \omega nh
 ```
 
 and if there is enough spare volume to store the water downstream «`eTrbReserveUpIfDownstream`»
 
 ```{math}
-\frac{p^p_{\omega nh} + ur^p_{\omega nh}}{\underline{GP}^p_{\omega nh}} + uc^p_{\omega nh} \leq \frac{\sum_{rs \in dw(h)}  (\overline{I}^p_{\omega nrs} - v^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\frac{p^p_{\omega nh} + ur^p_{\omega nh}}{\underline{GP}^p_{\omega nh}} + uc^p_{\omega nh} \leq \frac{\sum_{rs \in dw(h)}  (\overline{I'}^p_{\omega nrs} - i'^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n} \underline{GP}^p_{\omega nh}} \quad \forall p \omega nh
 ```
 
-Operating reserves while pumping can only be provided if there is enough available water downstream to pump «`ePmpReserveDwIfDownstream`»
+Operating reserves while pumping can only be provided if there is enough water available in the reservoirs the pump draws from «`ePmpReserveDwIfDownstream`»
 
 ```{math}
-\left(\frac{c^p_{\omega nh} + dr^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} + ucc^p_{\omega nh}\right) \cdot EF_h \leq \frac{\sum_{rs \in dw(h)} (v^p_{\omega nrs} - \underline{I}^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\left(\frac{c^p_{\omega nh} + dr^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} + ucc^p_{\omega nh}\right) \cdot EF_h \leq \frac{\sum_{rs \in up(h)} (i'^p_{\omega nrs} - \underline{I'}^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n} \underline{GC}^p_{\omega nh}} \quad \forall p \omega nh
 ```
 
-and if there is enough spare volume to store the water upstream «`ePmpReserveDwIfUpstream`»
+and if there is enough spare volume in the reservoirs into which the pump delivers the water «`ePmpReserveDwIfUpstream`»
 
 ```{math}
-\left(\frac{c^p_{\omega nh} + dr^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} + ucc^p_{\omega nh}\right) \cdot EF_h \leq \frac{\sum_{rs \in up(h)}  (\overline{I}^p_{\omega nrs} - v^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\left(\frac{c^p_{\omega nh} + dr^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} + ucc^p_{\omega nh}\right) \cdot EF_h \leq \frac{\sum_{rs \in dw(h)}  (\overline{I'}^p_{\omega nrs} - i'^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n} \underline{GC}^p_{\omega nh}} \quad \forall p \omega nh
 ```
 
-Water volume for each hydro reservoir (only for load levels that are multiples of 1, 24, 168 h, depending on the reservoir storage type, represented as
+Water volume for each hydro reservoir (only for load levels that are multiples of 1, 24, 168, 672 h, depending on the reservoir storage type, represented as
 {math}`n|\tau_{e'}`) \[hm{sup}`3`\] «`eHydroInventory`»
 
 ```{math}
 i'^p_{\omega,n-\tau_e',e'} + \sum_{n' = n-\tau_e'}^n DUR^p_{\omega n'} (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +
 ```
 ```{math}
-+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in ER
++ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(e')} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in ER
 ```
 
 ```{math}
 i'^p_{\omega,n-\tau_e',e'} + \sum_{n' = n-\tau_e'}^n DUR^p_{\omega n'} (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +
 ```
 ```{math}
-+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in CR
++ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(e')} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in CR
 ```
 
 The initial volume of the hydro reservoir divided by its initial volume {math}`I^p_{\omega e'}` is equal to the final volume divided by its initial volume
@@ -1009,8 +1014,8 @@ The initial volume of the hydro reservoir divided by its initial volume {math}`I
 \frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CR
 ```
 
-Hydro outflows (only for load levels that are multiples of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as {math}`n|\rho_e`)
-must be satisfied \[m{sup}`3`/s\] «`eHydroOutflows`»
+Hydro outflows (only for load levels that are multiples of 1, 24, 168, 672, and 8736 h, depending on the reservoir outflow cycle, represented as
+{math}`n|\rho_{e'}`) must be satisfied \[m{sup}`3`/s\] «`eHydroOutflows`»
 
 ```{math}
 \sum_{n' = n-\rho_e'}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'
@@ -1065,14 +1070,15 @@ Half ohmic losses are linearly approximated as a function of the power flow [GW]
 l^p_{\omega nijc} \geq - \frac{L_{ijc}}{2} f^p_{\omega nijc}, \quad l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
-**Cycle constraints** for AC existing lines with DC optimal power flow formulation [rad] «`eCycleKirchhoff2ndLawCnd1`» «`eCycleKirchhoff2ndLawCnd2`». To
-activate these constraints, you must set `pIndCycleFlow = 1` in the `openTEPES.py` module. It usually improves the computational performance of the model. See
+**Cycle constraints** for existing AC lines with DC optimal power flow formulation [rad] «`eCycleKirchhoff2ndLawCnd1`» «`eCycleKirchhoff2ndLawCnd2`». To
+activate these constraints, you must set the `IndCycleFlow` option to 1 in the `oT_Data_Option.csv` file. It usually improves the computational performance of the
+model. See
 the cycle constraints for the AC power flow formulation in the following reference:
 
 - E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable
   Energy, Grids and Networks, May 2024. [10.1016/j.segan.2024.101413](https://doi.org/10.1016/j.segan.2024.101413)
 
-Kirchhoff's second law is replaced by a cycle power flow formulation for cycles with only AC existing lines [rad]
+Kirchhoff's second law is replaced by a cycle power flow formulation for cycles with only existing AC lines [rad]
 
 ```{math}
 \sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B} = 0 \quad \forall p \omega n,cy, cy \in CY
@@ -1084,11 +1090,20 @@ and disjunctive constraints for cycles with some AC candidate lines [rad]
 -1+ict_{i'j'c'}  \leq \frac{\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B}}{\overline{\theta}'_{cy,i'j'c'}} \leq 1-ict_{i'j'c'} \quad \forall p \omega n,cy,i'j'c', cy \in CY, i'j'c' \in CLC
 ```
 
-Flows in AC existing parallel circuits are inversely proportional to their reactances [GW] «`eFlowParallelCandidate1`» «`eFlowParallelCandidate2`»
+Flows in existing AC parallel circuits are inversely proportional to their reactances [GW] «`eFlowParallelCandidate1`» «`eFlowParallelCandidate2`»
 
 ```{math}
 f^p_{\omega nijc} = \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in EL
 ```
+
+and disjunctive constraints ensure that flows in AC candidate parallel circuits are inversely proportional to their reactances [p.u.]
+
+```{math}
+-1+ict_{ijc'} \leq \frac{f^p_{\omega nijc} - \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'}}{\overline{F}^p_{\omega nijc}} \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in CL
+```
+
+Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with
+binary AC investment decisions.
 
 **AC optimal power flow**. Replaces the DC branch flow equation when `IndACPowerFlow` is different from 0. The value
 selects the formulation: 1 branch flow, 2 bus injection in {math}`W` space, 3 bus injection in rectangular coordinates.
@@ -1122,8 +1137,8 @@ Definition of the line current [p.u.] «`eCurrentSOC`»
 (f^p_{\omega nijc})^2 + (q^p_{\omega nijc})^2 \leq w^p_{\omega ni} T^2_{ijc} cu^p_{\omega nijc} S_B^2 \quad \forall p \omega nijc
 ```
 
-The only relaxed constraint of the formulation. As an equality it is the exact definition; as written it is a rotated
-second-order cone and the model is convex. `IndACModelType` selects the cone (0), a piecewise linear staircase that
+This is the only relaxed constraint of the formulation. As an equality it is the exact definition; as written it is a rotated
+second-order cone and the model is convex. `IndACModelType` selects the cone (0), a piecewise-linear staircase that
 keeps the problem a MILP (1), or the equality, which needs a non-linear solver (2).
 
 Thermal limit, released out of service [p.u.] «`eCurrentLimit`»
@@ -1293,7 +1308,7 @@ carries, so a link is charged twice, once at each end. Both default to zero, and
 balance of the terminal node
 
 ```{math}
-L^{nl} \overline{F}_{ijc} \, sw^p_{\omega nijc} + L^{mg} \left( f^{+,p}_{\omega nijc} + f^{-,p}_{\omega nijc} \right)
+L^{nl} \overline{F}_{ijc} \, swt^p_{\omega nijc} + L^{mg} \left( f^{+,p}_{\omega nijc} + f^{-,p}_{\omega nijc} \right)
 ```
 
 where {math}`f^{+}` and {math}`f^{-}` are the two non-negative halves of the link flow, so that their sum is
@@ -1307,22 +1322,13 @@ be combined with the AC formulations, which already determine the flows.
 Net position of a node [GW] «`eNetPosition`» and the line flow it implies [GW] «`eFlowBasedCalcu1`» «`eFlowBasedCalcu2`»
 
 ```{math}
-np^p_{\omega ni} = \sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} - ED^p_{\omega ni}, \qquad f^p_{\omega nijc} = \sum_{k} PTDF_{ijc,k} \, np^p_{\omega nk} \quad \forall p \omega nijc
+np^p_{\omega ni} = \sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} - D^p_{\omega ni}, \qquad f^p_{\omega nijc} = \sum_{k} PTDF_{ijc,k} \, np^p_{\omega nk} \quad \forall p \omega nijc
 ```
 
 With `IndPTDF` = 1 the factors are read from the case; with 2 they are computed as {math}`PTDF = B_f B^{-1}`, with
 {math}`B` built on {math}`1/X_{ijc}`, the reference node removed and the DC links left out. The computed factors are
 refused when the case has candidate or switchable AC lines, because they belong to one topology. The representation is
 lossless.
-
-and disjunctive constraints ensure that flows in AC candidate parallel circuits are inversely proportional to their reactances [p.u.]
-
-```{math}
--1+ict_{ijc'} \leq \frac{f^p_{\omega nijc} - \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'}}{\overline{F}^p_{\omega nijc}} \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in CL
-```
-
-Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with
-binary AC investment decisions.
 
 **Hydrogen network operation**
 
@@ -1380,7 +1386,7 @@ It is based on the flow-based approach presented in:
 The approach is based on the following equations [GW] [p.u.] «`eNetPosition`», «`eFlowBasedCalcu1`», and «`eFlowBasedCalcu2`»:
 
 ```{math}
-f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'})  \quad \forall p \omega n, ijc, i', ijc' \in EL
+f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'})  \quad \forall p \omega n, ijc \in EL
 ```
 
 ```{math}
@@ -1482,7 +1488,7 @@ Voltage angle of the reference node fixed to 0 for each scenario, period, and lo
 **Bounds on hydrogen network variables** [tH2/h]
 
 ```{math}
-- \overline{FH}_{ijc} \leq fh^p_{\omega nijc} \leq \overline{FH}_{ijc} \quad \forall p \omega nijc, ijc \in EP
+- \overline{FH}_{ijc} \leq fh^p_{\omega nijc} \leq \overline{FH}_{ijc} \quad \forall p \omega nijc, ijc \in EH
 ```
 
 **Bounds on heat network variables** [GW]

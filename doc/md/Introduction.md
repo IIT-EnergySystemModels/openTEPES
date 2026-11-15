@@ -27,7 +27,7 @@ It automatically determines optimal expansion plans that satisfy multiple criter
   several consecutive hours (bi-hourly or tri-hourly resolution, depending on the hourly or quarter-hour definition) to reduce the computational burden without
   sacrificing accuracy. The model can be run with a single period (year) or several periods (years) to analyze the system's evolution. The time definition also
   allows for specifying disconnected representative periods (e.g., days or weeks) to evaluate system operation. The period (year) must be expressed
-  in 8736 hours because several model features representing system operation are based on weeks (168 hours) or lunar months (4 weeks, i.e., 672 hours)
+  in 8736 hours because several model features representing system operation are based on weeks (168 hours) or lunar months (4 weeks, i.e., 672 hours).
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The
   model considers stochastic medium-term annual uncertainties (scenarios) related to the system operation. These **operational scenarios** are associated with
@@ -52,7 +52,8 @@ If these data are unavailable, it runs using an energy-based representation of t
 
 It also includes a **Power-to-Hydrogen (P2H2)** representation, with hydrogen demand satisfied by electrolyzer-produced hydrogen (electricity consumed to
 produce hydrogen) and a hydrogen network to distribute it, and a **Power-to-Heat (P2H)** representation, with heat demand satisfied by heat pumps or electric
-heaters (which consume electricity), and a heat network to distribute the heat. If hydrogen and heat are excluded, the model runs with only the other energy carriers.
+heaters (which consume electricity), and a heat network to distribute the heat.
+If hydrogen and heat are excluded, the model runs with only the other energy carriers.
 
 The main results of the model can be structured into these topics:
 
@@ -61,7 +62,7 @@ The main results of the model can be structured into these topics:
   pumped-hydro storage, RES); RES curtailment; electric line, hydrogen pipeline, and heat pipe flows; line ohmic losses; node voltage angles; upward and
   downward operating reserves; upward and downward ramp reserves; ESS inventory levels; hydro reservoir volumes; and power, hydrogen, and heat not served
 - **Emissions**: CO2 emissions by unit
-- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, water volume value
+- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, and water volume value
 - **Economic**: operation, emission, and reliability costs and revenues from operation, operating reserves, and ramp reserves
 - **Flexibility**: flexibility provided by demand, by the different generation and consumption technologies, and by power not served
 

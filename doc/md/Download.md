@@ -52,10 +52,10 @@ Here are the input files for:
 - the same [9-node case with two electrolyzers](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_ELZ), which models them as
   the documented Electrolyzer (ELZ) unit type: storage with electric energy outflows, so the hydrogen demand is expressed as the electricity they must draw
   and the hydrogen carrier itself stays off,
-- the same [9-node case solved with AC power flow](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_AC), which adds bus voltages, reactive demand and shunt devices, and solves the network exactly
-  instead of by the DC approximation,
+- the same [9-node case solved with AC power flow](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_AC), which adds
+  bus voltages, reactive demand, and shunt devices, and solves the network exactly instead of by the DC approximation,
 - the same [9-node case with the hydrogen carrier on](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9nH2), which carries the
-  whole chain as separate units: an electrolyser, a storage cavern, and a hydrogen-fired turbine that draws its fuel from the hydrogen balance, against a
+  whole chain as separate units: an electrolyzer, a storage cavern, and a hydrogen-fired turbine that draws its fuel from the hydrogen balance, against a
   hydrogen demand at one node. Use this one to see the hydrogen balance itself, rather than the electricity a producer must draw,
 - the same [9-node hydrogen case with no hydrogen demand](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9nH2x), which keeps
   those three units and removes the demand, so hydrogen can only be stored and burned back for electricity, and raises every thermal variable cost tenfold,
@@ -105,7 +105,7 @@ download the required packages on your own.
 
 2. **Packages and Solver**:
 
-   1. Launch a new Anaconda prompt (or a terminal in any IDE)
+   1. Launch a new Anaconda prompt (or a terminal in any IDE).
    2. [HiGHS](https://pypi.org/project/highspy/) is our recommendation if you want a free and open-source solver.
    3. Install openTEPES via pip by running `pip install openTEPES`
 
@@ -122,7 +122,8 @@ Continue at {ref}`get-started`.
 
 **HiGHS**
 
-The [HiGHS solver](https://pypi.org/project/highspy/) can also be used. It must be installed using both methods: `pip install highspy` and `pip install highspy-extras`.
+The [HiGHS solver](https://pypi.org/project/highspy/) can also be used. It must be installed with both commands: `pip install highspy` and
+`pip install highspy-extras`.
 
 **Gurobi**
 
@@ -136,13 +137,13 @@ internet domain if you are installing an academic license).
 **GLPK**
 
 An easy option to install is the free and open-source [GLPK solver](https://www.gnu.org/software/glpk/). However, it can be very slow for large-scale problems.
-It can be installed using: `conda install glpk`.
+It can be installed using `conda install glpk`.
 
 **CBC**
 
 The [CBC solver](https://github.com/coin-or/Cbc) is another free and open-source solver. For Windows users, the easiest way to install the CBC solver is to
 download the binaries from this [site](https://www.coin-or.org/download/binary/Cbc/) and copy the *cbc.exe* file into the "bin" directory of the Anaconda or
-Miniconda environment, which is on the PATH. Under Linux, it can be installed using: `conda install -c conda-forge coincbc`.
+Miniconda environment, which is on the PATH. Under Linux, it can be installed using `conda install -c conda-forge coincbc`.
 
 **Mosek**
 
@@ -171,8 +172,7 @@ Users
 If you are not planning on developing, please follow the instructions in {ref}`installation`.
 
 Once installation is complete, openTEPES can be executed in test mode from a command prompt. In the directory of your choice, run the `openTEPES_Main` command
-by typing the following in the command prompt (Windows) or terminal (Linux); depending on your default Python version, you might need to call `python3` instead
-of `python`:
+by typing the following in the command prompt (Windows) or terminal (Linux):
 
 > `openTEPES_Main`
 
@@ -182,8 +182,8 @@ You will then be asked for five parameters (case, dir, solver, results, and cons
 
 After this, in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n) or
 [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP) case to create a new case of your choice, keeping the current
-format of the CSV files. You can then run `openTEPES_Main` properly by entering the new case and the directory of your choice. Note that the solver is **glpk**
-by default, but it can be changed to any other solver that Pyomo supports (e.g., gurobi, highs).
+format of the CSV files. You can then run `openTEPES_Main` properly by entering the new case and the directory of your choice. Note that the solver is **highs**
+by default, but it can be changed to any other solver that Pyomo supports (e.g., gurobi, glpk).
 
 Then, the **results** are written to the folder named after the case. The results contain plots and summary spreadsheets for multiple optimized energy
 scenarios, periods, and load levels, as well as the investment decisions.

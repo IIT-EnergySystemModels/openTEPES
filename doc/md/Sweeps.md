@@ -4,8 +4,8 @@ openTEPES documentation master file, created by Andres Ramos
 
 # Multiple runs
 
-Many studies run the same model over many related cases — scenario ensembles, demand or fuel-cost scans, Monte-Carlo samples. **openTEPES** offers three modes
-for this, trading set-up cost for reuse, all driven by one orchestrator (`openTEPES_Runner.run`). A single-case run reproduces a direct `openTEPES_run`.
+Many studies run the same model over many related cases — scenario ensembles, demand or fuel-cost scans, Monte Carlo samples. **openTEPES** offers three modes
+for this, trading setup cost for reuse, all driven by one orchestrator (`openTEPES_Runner.run`). A single-case run reproduces a direct `openTEPES_run`.
 
 The code calls a set of related runs a *sweep*: `openTEPES_Runner` is the sweep runner, the three modes below are the sweep modes A/B/C, and the merged output
 tables are named `oT_Sweep_*`.
@@ -56,11 +56,11 @@ When every case starts from one baseline, re-reading the input for each is waste
 the input I/O once and only rebuilds and solves per case.
 
 **How the baseline is shared.** The runner calls `InMemorySource.materialize(open_source(path))` once per distinct baseline, holding every input table in RAM as
-a DataFrame. Each case gets a cheap clone via `with_overlay(...)` that shares those frames. Under the `multiprocessing` backend on Unix the workers are forked,
-so they see the baseline through copy-on-write — no extra memory, no re-read. On Windows the baseline is pickled once per task instead (still no CSV re-read,
+a DataFrame. Each case gets a cheap clone via `with_overlay(...)` that shares those frames. Under the `multiprocessing` backend on Unix, the workers are forked,
+so they see the baseline through copy-on-write — no extra memory, no re-read. On Windows, the baseline is pickled once per task instead (still no CSV re-read,
 just without the copy-on-write saving). Mode B needs a distinct `out_path` per case, since the cases share the baseline directory.
 
-**The overlay** maps a data-table stem (e.g. `"Demand"`) to one of:
+**The overlay** maps a data-table stem (e.g., `"Demand"`) to one of:
 
 - a **number** — multiply every numeric value of that table (a uniform scale, `1.10` for +10%);
 - a **`df -> df` callable** — any transform of the baseline frame;
@@ -110,8 +110,9 @@ values on every `solve`, so `store_values` takes effect with no extra call. Pass
 not build on overlay *k−1*. An empty overlay `{}` re-solves the baseline; `restore=True` (default) restores the baseline at the end.
 `overlay_scaled(model, name, factor)` builds a scale-factor overlay for one Param.
 
-`resolve` returns one dict per overlay with the solver termination condition and the total system cost (`None` if the optimization run did not reach optimality). It solves one
-overlay at a time; to run a large Monte-Carlo in parallel, wrap `resolve` in your own worker pool.
+`resolve` returns one dict per overlay with the solver termination condition and the total system cost (`None` if the optimization run did not
+reach optimality). It solves one
+overlay at a time; to run a large Monte Carlo in parallel, wrap `resolve` in your own worker pool.
 
 ## Collecting sweep results
 

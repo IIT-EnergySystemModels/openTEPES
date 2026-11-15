@@ -7,13 +7,14 @@ openTEPES documentation master file, created by Andres Ramos
 The model has been used in these research projects:
 
 - [Application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage 2026](https://www.iit.comillas.edu/publicacion/proyecto/en/VMEnergia_LosGuajares_2025/aplicacion-de-la-metodologia-entso-e-de-analisis-de-coste-beneficio-al-proyecto-de-la-ch-los-guajares-2026),
-  developed for **Hidroeléctrica Los Guájares**. October 2026 - November 2026 [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [F.
+  developed for **Hidroeléctrica Los Guájares**. October 2026 - November 2026. [A. Ramos](https://www.iit.comillas.edu/people/aramos),
+  [L. Olmos](https://www.iit.comillas.edu/people/olmos), [F.
   Labora](https://www.iit.comillas.edu/people/flabora)
 
   > It aims to write a report on the application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage.
 
 - [A Decision-Support Framework for No-Regret Investments under Uncertainties in the Nordic Resource Adequacy Assessment](https://zenodo.org/records/21475927),
-  developed for **Nordic Energy Systems Programme**. October 2025 - July 2026. [E.F. Alvarez](https://www.ri.se/en/person/erik-alvarez)
+  developed for the **Nordic Energy Systems Programme**. October 2025 - July 2026. [E.F. Alvarez](https://www.ri.se/en/person/erik-alvarez)
 
   > It aims to build a decision-support framework to identify no-regret investments that remain effective across 12 scenarios for 2035.
 
@@ -24,13 +25,14 @@ The model has been used in these research projects:
   Troncia](https://www.iit.comillas.edu/people/mtroncia), [M.A. Ruiz](https://www.iit.comillas.edu/people/maruiz),  [J.F.
   Gutiérrez](https://www.iit.comillas.edu/people/jgutierrez), [D. Scarfiello](https://www.iit.comillas.edu/people/dscarfiello), [M.A. Ríos-Ocampo](https://www.iit.comillas.edu/people/marios), [E.C. Ormeño](https://www.iit.comillas.edu/people/eormeno)
 
-  > The aim of this study is to demonstrate, with quantitative evidence, that it is possible to accelerate the decarbonization of the economy by increasing
-  > electricity demand, and it is expected to have a lower cost impact on consumers, through a more intensive use of existing grid assets via flexibility mechanisms. 
+  > It aims to demonstrate, with quantitative evidence, that it is possible to accelerate the decarbonization of the economy by increasing
+  > electricity demand, with a lower expected cost impact on consumers, through a more intensive use of existing grid assets via flexibility mechanisms.
 
 - [Application of the ENTSO-E cost-benefit analysis methodology to various storage hydro plant projects](https://www.iit.comillas.edu/publicacion/proyecto/en/IBD_CBA_2026/Aplicaci%c3%b3n_de_la_metodolog%c3%ada_ENTSO-E_de_an%c3%a1lisis_de_coste-beneficio_a_los_proyectos_de_varias_centrales_de_bombeo),
   developed for **Iberdrola**. September 2026 - December 2026. [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [F. Labora](https://www.iit.comillas.edu/people/flabora)
 
-  > It aims to write a report on the application of a cost-benefit analysis of the project involving several storage hydropower plants, in accordance with the ENTSO-E cost-benefit analysis methodology for 2026.
+  > It aims to write a report on the application of a cost-benefit analysis to the project involving several storage hydropower plants,
+  > in accordance with the ENTSO-E cost-benefit analysis methodology for 2026.
 
 - [Quantitative Framework for Forecasting PV Capture Prices and Evaluating Low-Price Risk in the Iberian Electricity
   Market](https://www.iit.comillas.edu/publicacion/proyecto/en/Everest2025/Quantitative_Framework_for_Forecasting_PV_Capture_Prices_and_Evaluating_Low-Price_Risk_in_the_Iberian_Electricity_Market),
@@ -45,8 +47,7 @@ The model has been used in these research projects:
   research](https://www.iit.comillas.edu/publicacion/proyecto/es/EPRI_openTEPES/Open-source_modeling_for_electric_company_resource_planning_research), developed
   for **Electric Power Research Institute (EPRI)**. March 2025 - December 2025. [A. Ramos](https://www.iit.comillas.edu/people/aramos)
 
-  > The objective of this project is to better understand the existing functionalities of openTEPES, as well as to explore additional capabilities of interest
-  to
+  > It aims to better understand the existing functionalities of openTEPES, as well as to explore additional capabilities of interest to
   > EPRI that could be relevant for future studies.
   > These include energy storage, integrated energy systems considering gas, heat, and electric coupled networks, and hydro systems modeling, among others.
 
@@ -95,7 +96,7 @@ The model has been used in these research projects:
   Labora](https://www.iit.comillas.edu/people/flabora)
 
 ```{image} ../img/ColabPP.jpg
-:alt: Logo of the Spanish Public-Private Collaboration funding programme
+:alt: Logo of the Spanish Public-Private Collaboration funding program
 :align: center
 :scale: 30%
 ```
@@ -123,9 +124,10 @@ The model has been used in these research projects:
 :scale: 40%
 ```
 
-- [Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage 2025]
-  (https://www.iit.comillas.edu/publicacion/proyecto/en/VMEnergia_LosGuajares_2025/aplicacion-de-la-metodologia-entso-e-de-analisis-de-coste-beneficio-al-proyecto-de-la-ch-los-guajares-2025),
-  developed for **Hidroeléctrica Los Guájares**. September 2025 [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [E.
+- [Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage
+  2025](https://www.iit.comillas.edu/publicacion/proyecto/en/VMEnergia_LosGuajares_2025/aplicacion-de-la-metodologia-entso-e-de-analisis-de-coste-beneficio-al-proyecto-de-la-ch-los-guajares-2025),
+  developed for **Hidroeléctrica Los Guájares**. September 2025. [A. Ramos](https://www.iit.comillas.edu/people/aramos),
+  [L. Olmos](https://www.iit.comillas.edu/people/olmos), [E.
   Lobato](https://www.iit.comillas.edu/people/enrique)
 
   > It aims to write a report on the application of the ENTSO-E cost-benefit analysis method to Los Guájares pumped-hydro storage.
@@ -165,7 +167,7 @@ The model has been used in these research projects:
   system](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=ProTermosolar_Presentacion), developed for **ProTermosolar**. March
   2023. [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Sigrist](https://www.iit.comillas.edu/people/lsigrist)
 
-  > It aims to write a presentation on the quantitative analysis of the technical and economic impact of solar thermal in the operation of the Spanish
+  > It aims to write a presentation on the quantitative analysis of the technical and economic impact of solar thermal on the operation of the Spanish
   > peninsular system.
 
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and
@@ -179,7 +181,7 @@ The model has been used in these research projects:
   > ([Resumen Proyecto AVANHID](https://pascua.iit.comillas.edu/aramos/papers/AVANHID.pdf))
 
 ```{image} ../img/ColabPP.jpg
-:alt: Logo of the Spanish Public-Private Collaboration funding programme
+:alt: Logo of the Spanish Public-Private Collaboration funding program
 :align: center
 :scale: 30%
 ```
@@ -193,7 +195,7 @@ The model has been used in these research projects:
   Valarezo](https://www.iit.comillas.edu/people/ovalarezo), [M. Mohammed](https://www.iit.comillas.edu/people/mmohammed)
 
 ```{image} ../img/ColabPP.jpg
-:alt: Logo of the Spanish Public-Private Collaboration funding programme
+:alt: Logo of the Spanish Public-Private Collaboration funding program
 :align: center
 :scale: 30%
 ```

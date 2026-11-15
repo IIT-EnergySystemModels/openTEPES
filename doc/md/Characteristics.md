@@ -41,12 +41,12 @@ openTEPES documentation master file, created by Andres Ramos
 - **AC optimal power flow (ACOPF)** representation of the electric network, off by default and switched on with `IndACPowerFlow`
 
   > AC optimal power flow: models voltage magnitudes and reactive power as well as active power, so the network is
-  > represented by the full AC equations rather than a linear approximation. openTEPES offers three formulations of it,
-  > a branch flow model and two bus-injection models, and writes the branch current definition as a second-order cone, a
-  > piecewise-linear staircase or the exact non-linear equation. Adds reactive demand, generator reactive capability,
+  > represented by the full AC equations rather than a linear approximation. openTEPES offers three formulations of it—a branch
+  > flow model and two bus-injection models—and writes the branch current definition as a second-order cone, a
+  > piecewise-linear staircase, or the exact non-linear equation. It also adds reactive demand, generator reactive capability,
   > synchronous condensers, bus shunts including switchable and stepped banks, and HVDC converter models.
   > See the AC sections of [Input Data](InputData.md) and [Mathematical Formulation](MathematicalFormulation.md), and
-  > the bundled `9n_AC`, `RTS-GMLC_AC` and `RTS-GMLC_AC_Oper` cases.
+  > the bundled `9n_AC`, `RTS-GMLC_AC`, and `RTS-GMLC_AC_Oper` cases.
 
 - **Energy storage systems (ESS)**, including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and electrolyzers
 
@@ -81,7 +81,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 - **Multiple runs** of the same model over many related cases
 
-  > A single runner drives scenario ensembles and sensitivity studies in three sweep modes, trading set-up cost for reuse: re-read the input per case, re-use
+  > A single runner drives scenario ensembles and sensitivity studies in three sweep modes, trading setup cost for reuse: re-read the input per case, reuse
   one in-memory baseline through an overlay, or re-solve one built model. See {doc}`Sweeps`.
 
 - **Benders decomposition** for transmission expansion (experimental)

@@ -6,7 +6,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 ## How can I install it?
 
-- openTEPES has been tested for use in Microsoft Windows, Ubuntu (a Linux distribution), and macOS **operating systems**
+- openTEPES has been tested for use on Microsoft Windows, Ubuntu (a Linux distribution), and macOS **operating systems**
 
 - The **installation** documentation can be found at
 
@@ -114,8 +114,8 @@ On analyzing **output results**:
 - Make sure the problem-solving process has been successfully completed, reaching optimality (the console log and the solver log file provide information on
   this).
 
-- If the problem-solving process has not produced an optimal solution, check if the system conditions defined within the input data files are too tight, i.e.,
-  the system may not have been provided with large enough flexibility for the model to find the optimal problem solution. If this is the case, some problem
+- If the problem-solving process has not produced an optimal solution, check whether the system conditions defined within the input data files are too tight,
+  i.e., the system may not have been provided with enough flexibility for the model to find the optimal problem solution. If this is the case, some problem
   constraints could/should be relaxed to allow the model to compute an optimal solution.
 
 - Check the level of the overall system variables in the output **energy balance files** (e.g., `oT_Result_BalanceEnergyPerArea`,

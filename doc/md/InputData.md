@@ -56,7 +56,7 @@ The `Yes`/`No` option flags below also accept an integer `1` (or `1.0`) in place
 | DSR     | Demand-Side Response (e.g., interruptibility)                                                                                                                                                                                              |
 | EB      | Electric Boiler (Power to Heat: consumes electricity to produce heat)                                                                                                                                                                      |
 | EHU     | Electrical Heating Unit (Power to Heat: consumes electricity to produce heat, e.g., heat pump, electric boiler)                                                                                                                            |
-| EFOR    | Equivalent Forced Outage Rate (probability that a generating unit will be unavailable due to forced outages during a given period). If 1.0, changed to 0.0                                                                                  |
+| EFOR    | Equivalent Forced Outage Rate (probability that a generating unit will be unavailable due to forced outages during a given period). If 1.0, changed to 0.0                                                                                 |
 | ELCC    | Effective Load-Carrying Capability. Amount of additional load that the power system can serve with the inclusion of the resource, while maintaining the same level of system reliability                                                   |
 | ELZ     | Electrolyzer (Power to Hydrogen: consumes electricity to produce hydrogen)                                                                                                                                                                 |
 | ENS     | Energy Not Served                                                                                                                                                                                                                          |
@@ -73,7 +73,7 @@ The `Yes`/`No` option flags below also accept an integer `1` (or `1.0`) in place
 | HTNS    | Heat Not Served                                                                                                                                                                                                                            |
 | IRP     | Integrated Resource Planning                                                                                                                                                                                                               |
 | LCOE    | Levelized Cost of Electricity                                                                                                                                                                                                              |
-| mFRR    | Manual Frequency Restoration Reserve (a.k.a. tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable within 12.5 minutes and has a minimum duration of 5 minutes                               |
+| mFRR    | Manual Frequency Restoration Reserve (a.k.a. tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable within 12.5 minutes and has a minimum duration of 5 minutes                              |
 | NTC     | Net Transfer Capacity (maximum power transfer between two nodes, zones, areas, or regions, considering the network constraints)                                                                                                            |
 | OCGT    | Open Cycle Gas Turbine                                                                                                                                                                                                                     |
 | PHS     | Pumped-Hydro Storage                                                                                                                                                                                                                       |
@@ -86,7 +86,7 @@ The `Yes`/`No` option flags below also accept an integer `1` (or `1.0`) in place
 | TTC     | Total Transfer Capacity (maximum amount of electric power that can be transferred over the transmission network between two areas under ideal operating conditions, while maintaining system security as defined by operational standards) |
 | VoLL    | Value of Lost Load (maximum amount of money that a customer is willing to pay to avoid an interruption of 1 kWh of electricity supply). Common values are between 1000 and 10000 €/MWh                                                     |
 | VRE     | Variable Renewable Energy                                                                                                                                                                                                                  |
-| VRES    | Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. They do not contribute to the operating reserves)                                                                                               |
+| VRES    | Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. They do not contribute to the operating reserves)                                                                                          |
 
 ## Dictionaries. Sets
 
@@ -99,14 +99,14 @@ The dictionaries include all the possible elements of the corresponding sets in 
 | `oT_Dict_Scenario.csv`   | Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100, CY2025 to CY2030)                                                                                                                                                                                                                                                           |
 | `oT_Dict_Stage.csv`      | Stage                                                                                                                                                                                                                                                                                                                                           |
 | `oT_Dict_LoadLevel.csv`  | Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, if it is in datetime format). Load levels with duration 0 are ignored. 8736 load levels must represent the period (year).                                                                                                                                                       |
-| `oT_Dict_Generation.csv` | Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, data center flexibility, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-) |
+| `oT_Dict_Generation.csv` | Generation units (thermal —nuclear, CCGT, OCGT, coal—, ESS —storage hydro modeled in energy or water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand-side management DSM, data center flexibility, alkaline water electrolyzer AWE, solar thermal— and VRES —wind onshore and offshore, solar PV, run-of-the-river hydro—) |
 | `oT_Dict_Technology.csv` | Generation technologies. The technology order is used in the temporal result plot.                                                                                                                                                                                                                                                              |
 | `oT_Dict_Storage.csv`    | ESS storage type (daily \<12 h, weekly \<40 h, monthly >60 h).                                                                                                                                                                                                                                                                                  |
-| `oT_Dict_Node.csv`       | Nodes. A node belongs to a defined zone. All the nodes must have different names. Nodes can be physical or virtual (e.g., for representing the conventional industrial, commercial, and residential demands, EV demand, and H2 demand).                                                                                                        |
-| `oT_Dict_Zone.csv`       | Zones. A zone belongs to a defined area. All the zones must have different names.                                                                                                                                                                                                                                                              |
-| `oT_Dict_Area.csv`       | Areas. An area belongs to a defined region. All the areas must have different names. Long-term adequacy, inertia, and operating reserves are associated with areas.                                                                                                                                                                            |
-| `oT_Dict_Region.csv`     | Regions (e.g., Continental South West Europe which includes Spain, France, and Portugal). All the regions must have different names.                                                                                                                                                                                                           |
-| `oT_Dict_Circuit.csv`    | Circuits (e.g., ac1, ac2 for AC lines, dc1 for DC lines). All the circuits must have different names.                                                                                                                                                                                                                                          |
+| `oT_Dict_Node.csv`       | Nodes. A node belongs to a defined zone. All the nodes must have different names. Nodes can be physical or virtual (e.g., for representing the conventional industrial, commercial, and residential demands, EV demand, and H2 demand).                                                                                                         |
+| `oT_Dict_Zone.csv`       | Zones. A zone belongs to a defined area. All the zones must have different names.                                                                                                                                                                                                                                                               |
+| `oT_Dict_Area.csv`       | Areas. An area belongs to a defined region. All the areas must have different names. Long-term adequacy, inertia, and operating reserves are associated with areas.                                                                                                                                                                             |
+| `oT_Dict_Region.csv`     | Regions (e.g., Continental South West Europe, which includes Spain, France, and Portugal). All the regions must have different names.                                                                                                                                                                                                           |
+| `oT_Dict_Circuit.csv`    | Circuits (e.g., ac1, ac2 for AC lines, dc1 for DC lines). All the circuits must have different names.                                                                                                                                                                                                                                           |
 | `oT_Dict_Line.csv`       | Line type (AC, DC)                                                                                                                                                                                                                                                                                                                              |
 
 Assignment of nodes to zones, zones to areas, and areas to regions.
@@ -181,7 +181,7 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndBinGenOperat         | Indicator of binary generation operation decisions                                                    | {0 continuous, 1 binary}                            |
 | IndBinGenRamps          | Indicator of whether to consider the up/down ramp constraints                                         | {0 no ramps, 1 ramp constraints}                    |
 | IndBinGenMinTime        | Indicator of whether to consider the min up/down time constraints                                     | {0 no min time constraints, 1 min time constraints} |
-| IndBinSingleNode        | Indicator of single node case study                                                                   | {0 network, 1 single node}                          |
+| IndBinSingleNode        | Indicator of single-node case study                                                                   | {0 network, 1 single node}                          |
 | IndBinLineCommit        | Indicator of binary transmission switching decisions                                                  | {0 continuous, 1 binary}                            |
 | IndBinNetLosses         | Indicator of network losses                                                                           | {0 lossless, 1 ohmic losses}                        |
 | IndACPowerFlow          | Indicator of the AC optimal power flow and its formulation                                            | {0 DC, 1 branch flow, 2 bus injection W space, 3 bus injection rectangular} |
@@ -191,7 +191,7 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndACConverter          | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
 | IndACApparentPowerLimit | Indicator of the apparent power limit at both ends of an AC branch (only used when IndACPowerFlow is 1). See "The thermal limit of an AC branch" below | {0 current limit only, 1 current and apparent power} |
 | IndACRestoreWarmStart   | Indicator of the starting point of the AC recovery step (only used when IndACRestore is 1)            | {0 ipopt defaults, 1 close to the relaxed solution} |
-| IndACConeStart          | Indicator of the starting point of the rectangular model (only used when IndACPowerFlow is 3): the W-space cone of the stage is solved first, its cost is reported as a lower bound and the model starts from its rank-one projection, or from an AC power flow solved from that projection with the cone's dispatch, so that the power balance holds at the start | {0 flat profile, 1 the W-space cone, 2 a power flow from the cone} |
+| IndACConeStart          | Indicator of the starting point of the rectangular model (only used when IndACPowerFlow is 3): the W-space cone of the stage is solved first, its cost is reported as a lower bound, and the model starts from its rank-one projection, or from an AC power flow solved from that projection with the cone's dispatch, so that the power balance holds at the start | {0 flat profile, 1 the W-space cone, 2 a power flow from the cone} |
 | IndBinShuntSwitch       | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
 | IndPTDF                 | Indicator of the flow-based market coupling method and where its factors come from                    | {0 off, 1 read from the case, 2 computed from the reactances} |
 | IndCycleFlow            | Indicator of the cycle flow formulation of Kirchhoff's second law (DC only)                           | {0 per branch, 1 per cycle}                         |
@@ -199,18 +199,18 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndSectorDecomposition  | Indicator of Benders decomposition by sector                                                          | {0 one problem, 1 by sector}                        |
 | IndSequentialSolving    | Indicator of how the stages are solved                                                                | {0 in parallel, 1 sequentially through an LP file, 2 sequentially in memory, 3 by sensitivity analysis} |
 
-The last four options say how the problem is **solved** rather than what is modelled. They were fixed in the code until
+The last four options say how the problem is **solved** rather than what is modeled. They were fixed in the code until
 version 4.18.18 and could not be selected from a case; the defaults above are the values that were in force then, so a
 case that says nothing behaves as it always did.
 
 All the indicators belong in `oT_Data_Option`. `oT_Data_Parameter` holds the numeric scalars. An indicator placed in the
-parameter file is still honoured, and the run says so, but the next reader of the case will look for it in the option
+parameter file is still honored, and the run says so, but the next reader of the case will look for it in the option
 file and not find it.
 
 If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are none, all the scenarios with a
 probability >0 are solved sequentially (assuming a probability of 1), and the periods are given a weight of 1.
 
-If you select the single node option (IndBinSingleNode takes value 1), the line capacity constraints are relaxed (i.e., flows can exceed these capacities), but
+If you select the single-node option (IndBinSingleNode takes value 1), the line capacity constraints are relaxed (i.e., flows can exceed these capacities), but
 line flows are obtained and presented in the result files. The line losses are considered 0.
 
 ## Parameters
@@ -221,7 +221,7 @@ A description of the system parameters included in the file `oT_Data_Parameter.c
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | ENSCost             | Cost of energy not served (ENS). Cost of load curtailment. Value of Lost Load (VoLL)                                                                                                                                                                            | €/MWh  |
 | HNSCost             | Cost of hydrogen not served (HNS)                                                                                                                                                                                                                               | €/kgH2 |
-| H2ExcCost           | Cost of hydrogen in excess of the balance. Optional; absent, it is half of HNSCost. Like HNSCost this is a penalty on a slack variable, not a disposal or export price, so the default is far above the cost of producing the hydrogen                            | €/kgH2 |
+| H2ExcCost           | Cost of hydrogen in excess of the balance. Optional; if absent, it is half of HNSCost. Like HNSCost, this is a penalty on a slack variable, not a disposal or export price, so the default is far above the cost of producing the hydrogen                      | €/kgH2 |
 | HTNSCost            | Cost of heat not served (HTNS)                                                                                                                                                                                                                                  | €/MWh  |
 | CO2Cost             | Cost of CO2 emissions                                                                                                                                                                                                                                           | €/tCO2 |
 | UpReserveActivation | Upward reserve activation (proportion of upward operating reserve deployed to produce energy, e.g., 0.15)                                                                                                                                                       | p.u.   |
@@ -233,14 +233,14 @@ A description of the system parameters included in the file `oT_Data_Parameter.c
 | TimeStep            | Number of time steps grouped together. If the duration is 1 h and the time step is 2, two consecutive hours are grouped into one load level for the optimization problem. If the duration is 0.25 h and the time step is 4, the load level represents one hour. |        |
 | EconomicBaseYear    | Base year for economic parameters affected by the discount rate                                                                                                                                                                                                 | year   |
 | AnnualDiscountRate  | Annual discount rate                                                                                                                                                                                                                                            | p.u.   |
-| VMin, VNom, VMax    | Minimum, nominal and maximum voltage magnitude of a node. Used only when IndACPowerFlow is different from 0                                                                                                                                                      | p.u.   |
-| CapacitivePF        | Capacitive power factor limit of a generator, i.e. the most reactive power it may supply relative to its active output. Used only when IndACPowerFlow is different from 0                                                                                        | p.u.   |
-| InductivePF         | Inductive power factor limit of a generator, i.e. the most reactive power it may absorb relative to its active output. Used only when IndACPowerFlow is different from 0                                                                                         | p.u.   |
+| VMin, VNom, VMax    | Minimum, nominal, and maximum voltage magnitude of a node. Used only when IndACPowerFlow is different from 0                                                                                                                                                    | p.u.   |
+| CapacitivePF        | Capacitive power factor limit of a generator, i.e., the most reactive power it may supply relative to its active output. Used only when IndACPowerFlow is different from 0                                                                                      | p.u.   |
+| InductivePF         | Inductive power factor limit of a generator, i.e., the most reactive power it may absorb relative to its active output. Used only when IndACPowerFlow is different from 0                                                                                       | p.u.   |
 | ConverterPF         | Power factor of an HVDC converter station. Used only when IndACConverter is different from 0                                                                                                                                                                     | p.u.   |
 | ConverterNoLoadLoss   | No-load loss of one HVDC converter station, as a fraction of the link rating. Paid at each terminal while the link is in service. Used only when IndACConverter is different from 0. A modern station is about 0.001                                                       | p.u.   |
 | ConverterMarginalLoss | Marginal loss of one HVDC converter station, as a fraction of the power it carries. Paid at each terminal, either direction. Used only when IndACConverter is different from 0. A voltage-source station is about 0.010, a line-commutated one about 0.007                | p.u.   |
 | EpsilonCurrent      | Price on the AC branch current. See "The price on the branch current" below. Used only when IndACPowerFlow is 1                                                                                                                                                  | p.u.   |
-| VoltageDeviationCost| Penalty on the deviation of a bus voltage from its setpoint, VSet in oT_Data_BusVoltage. See "The penalty on the voltage setpoint deviation" below. Zero, the default, adds no penalty. Used only when IndACPowerFlow is different from 0                        | EUR/p.u./h |
+| VoltageDeviationCost| Penalty on the deviation of a bus voltage from its setpoint, VSet in oT_Data_BusVoltage. See "The penalty on the voltage setpoint deviation" below. Zero, the default, adds no penalty. Used only when IndACPowerFlow is different from 0                        | €/p.u./h   |
 
 A time step greater than one hour is a convenient way to reduce the number of load levels in the time scope. The moving average of the demand, upward/downward
 operating reserves, variable generation/consumption/storage, and ESS energy inflows/outflows over the time step load levels is assigned to active load levels
@@ -287,8 +287,8 @@ A description of the data included in the file `oT_Data_Stage.csv` follows:
 | Stage      | Weight | Weight of each stage |
 
 This weight defines equivalent (representative) periods (e.g., one representative week with a weight of 52 or four representative weeks, each with a weight of
-13). Stages are not mathematically connected, i.e., no constraints link the operation at different consecutive stages. Therefore, the storage type cannot exceed
-the duration of the stage (i.e., if the stage lasts for 168 hours, the storage type can only be hourly or daily). If there are no investment decisions or the
+13). Stages are not mathematically connected, i.e., no constraints link the operation at different consecutive stages. Therefore, the storage type is limited by
+the duration of the stage (i.e., if the stage lasts for 168 hours, the storage type can be up to monthly). If there are no investment decisions or the
 investment decisions are ignored, all the periods, scenarios, and stages are solved independently.
 
 ## Adequacy reserve margin
@@ -367,12 +367,12 @@ Period      Scenario        LoadLevel  Duration    Duration of the load level. L
 It is a simple way to use isolated snapshots, representative days, or just the first three months instead of all the hours of a year to simplify the
 optimization problem. **All the load levels whose duration is different from 0 must have the same duration.** The duration is not intended to change for the
 load levels of a stage. Usually, the duration is 1 hour (0.25 h if inputting data in quarters of an hour) or 0 if you do not want to use the load levels for
-some hours of the year. The parameter time step must be used to collapse consecutive load levels into one for the optimization problem.
+some hours of the year. The time step parameter must be used to collapse consecutive load levels into one for the optimization problem.
 
 The stage duration, as the sum of the duration of all the load levels, must be larger than or equal to the shortest duration of any storage type, any outflow
 type, or any energy type (all given in the generation data), and a multiple of it. Consecutive stages are not connected, i.e., no constraints link the operation
-at different stages. Consequently, the storage type cannot exceed the duration of the stage (i.e., if the stage lasts for 168 hours, the storage type can only
-be hourly or daily). Therefore, the objective function value with several stages will be slightly higher than in the case of a single stage.
+at different stages. Consequently, the storage type is limited by the duration of the stage (i.e., if the stage lasts for 168 hours, the storage type can
+be up to monthly). Therefore, the objective function value with several stages will be slightly higher than in the case of a single stage.
 
 The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for hour 8736 in the case of
 a single stage or for hours 4368 and 4369 (end of the first stage and beginning of the second stage) in the case of two stages, each with 4368 hours.
@@ -408,7 +408,7 @@ Period      Scenario        LoadLevel   Area    System inertia of the area for e
 Given that the system inertia depends on the area, defining an area as a country can be sensible. The system inertia can impose a minimum synchronous power and,
 consequently, force the commitment of at least some rotating units. Each generating unit can contribute to the system inertia. The system inertia is the sum of
 the inertia of all the committed units in the area. Given that the system inertia is a function of the committed units, it is necessary to define binary
-commitment decisions for the generating units. Review that the indicator IndBinGenOperat = 1 and the column BinaryCommitment = Yes in the generating units
+commitment decisions for the generating units. Check that the indicator IndBinGenOperat = 1 and the column BinaryCommitment = Yes in the generating units
 that contribute to the system inertia.
 
 Internally, all the values below 1e-5 times the maximum system electricity demand of each area will be converted into 0 by the model.
@@ -481,9 +481,9 @@ A description of the data included for each (electricity and heat) generating un
 | BinaryCommitment           | Binary unit commitment decision                                                                                                                                                                                                                                                                                        | Yes/No                             |
 | NoOperatingReserve         | No contribution to operating reserve. Yes, if the unit does not contribute to the operating reserve                                                                                                                                                                                                                    | Yes/No                             |
 | OutflowsIncompatibility    | Outflows are incompatible with the charging process (e.g., electric vehicle). This is not the case for an electrolyzer                                                                                                                                                                                                 | Yes/No                             |
-| StorageType                | Represents the time period (hour, day, week, month, year) over which the requirement that aggregate electricity production must equal aggregate consumption is enforced. If empty, Hourly by default. The state of charge is recorded one period more frequently than the declared type: Weekly is recorded daily, Monthly weekly, and Yearly monthly. The recording interval must not exceed the stage duration, which requires stages of at least 24 h, 168 h and 672 h respectively. Declarations exceeding this limit are rejected, as a cycle that cannot complete within a stage yields an empty constraint set, relaxing the problem and understating system cost                                                                                                                   | Hourly/Daily/Weekly/Monthly/Yearly |
-| OutflowsType               | Represents the time period (hour, day, week, month, year) over which the specified amount of energy must be consumed/withdrawn from the storage unit. If empty, Hourly by default As for StorageType, the period must not exceed the stage duration, though it is taken at face value here rather than one period shorter: stages of at least 168 h, 672 h and 8736 h are required for Weekly, Monthly and Yearly respectively. | Hourly/Daily/Weekly/Monthly/Yearly |
-| EnergyType                 | Represents the time period (hour, day, week, month, year) over which the specified max/min amount of energy is to be produced by the unit. If empty, Hourly by default As for StorageType, the period must not exceed the stage duration, though it is taken at face value here rather than one period shorter: stages of at least 168 h, 672 h and 8736 h are required for Weekly, Monthly and Yearly respectively. | Hourly/Daily/Weekly/Monthly/Yearly |
+| StorageType                | Represents the time period (hour, day, week, month, year) over which the requirement that aggregate electricity production must equal aggregate consumption is enforced. If empty, Hourly by default. The state of charge is recorded one period more frequently than the declared type: Weekly is recorded daily, Monthly weekly, and Yearly monthly. The recording interval must not exceed the stage duration, which requires stages of at least 24 h, 168 h, and 672 h, respectively. Declarations exceeding this limit are rejected, as a cycle that cannot complete within a stage yields an empty constraint set, relaxing the problem and understating system cost                                                                                                                   | Hourly/Daily/Weekly/Monthly/Yearly |
+| OutflowsType               | Represents the time period (hour, day, week, month, year) over which the specified amount of energy must be consumed/withdrawn from the storage unit. If empty, Hourly by default. As for StorageType, the period must not exceed the stage duration, though it is taken at face value here rather than one period shorter: stages of at least 168 h, 672 h, and 8736 h are required for Weekly, Monthly, and Yearly, respectively. | Hourly/Daily/Weekly/Monthly/Yearly |
+| EnergyType                 | Represents the time period (hour, day, week, month, year) over which the specified max/min amount of energy is to be produced by the unit. If empty, Hourly by default. As for StorageType, the period must not exceed the stage duration, though it is taken at face value here rather than one period shorter: stages of at least 168 h, 672 h, and 8736 h are required for Weekly, Monthly, and Yearly, respectively. | Hourly/Daily/Weekly/Monthly/Yearly |
 | EnergyNeutrality           | Requires the unit to exchange no net electricity with the system over its EnergyType period, after round-trip losses, so that it shifts energy within each period without displacing energy between them. Delivering E takes E/Efficiency from the system, so the requirement is met when output equals Efficiency times consumption. If empty, not required                                                                                                                                                     | Yes/No                             |
 | MustRun                    | Must-run unit                                                                                                                                                                                                                                                                                                          | Yes/No                             |
 | InitialPeriod              | Initial period (year) when the unit is installed or can be installed, if it is a candidate                                                                                                                                                                                                                             | Year                               |
@@ -492,8 +492,8 @@ A description of the data included for each (electricity and heat) generating un
 | MinimumPower               | Minimum power output of electricity (i.e., minimum stable load in the case of a thermal power plant)                                                                                                                                                                                                                   | MW                                 |
 | MaximumPowerHeat           | Maximum heat output (heat produced by a CHP, at its maximum electric power, or by a fuel heater, which does not produce electric power)                                                                                                                                                                                | MW                                 |
 | MinimumPowerHeat           | Minimum heat output (heat produced by a CHP, at its minimum electric power, or by a fuel heater, which does not produce electric power)                                                                                                                                                                                | MW                                 |
-| MaximumReactivePower       | Maximum reactive power output (discharge for ESS units) (not used in this version)                                                                                                                                                                                                                                     | MW                                 |
-| MinimumReactivePower       | Minimum reactive power output (not used in this version)                                                                                                                                                                                                                                                               | MW                                 |
+| MaximumReactivePower       | Maximum reactive power output (discharge for ESS units) (not used in this version)                                                                                                                                                                                                                                     | Mvar                               |
+| MinimumReactivePower       | Minimum reactive power output (not used in this version)                                                                                                                                                                                                                                                               | Mvar                               |
 | MaximumCharge              | Maximum consumption/charge level when the ESS unit is storing energy                                                                                                                                                                                                                                                   | MW                                 |
 | MinimumCharge              | Minimum consumption/charge level when the ESS unit is storing energy                                                                                                                                                                                                                                                   | MW                                 |
 | InitialStorage             | Initial amount of energy stored at the first instant of the time scope                                                                                                                                                                                                                                                 | GWh                                |
@@ -503,15 +503,15 @@ A description of the data included for each (electricity and heat) generating un
 | ProductionFunctionHydro    | Production function from water inflows (denominator) to electricity (numerator) (only used for hydropower plants modeled with water units and basin topology)                                                                                                                                                          | kWh/m{sup}`3`                      |
 | ProductionFunctionH2       | Production function from electricity (numerator) to hydrogen (denominator) (only used for electrolyzers)                                                                                                                                                                                                               | kWh/kgH2                           |
 | ProductionFunctionHeat     | Production function from electricity (numerator) to heat (denominator) (only used for heat pumps or electric boilers)                                                                                                                                                                                                  | kWh/kWh                            |
-| ProductionFunctionH2ToHeat | Production function from hydrogen (numerator) to heat (denominator) (only used for hydrogen heater, which produces heat by burning hydrogen)                                                                                                                                                                           | kgH2/kWh                           |
-| ProductionFunctionH2ToPower | Production function from hydrogen (numerator) to power (denominator) (only used for a hydrogen-fired generator, which produces electricity by burning hydrogen) Note the unit: unlike ProductionFunctionH2ToHeat, which is read in kgH2/kWh, this one is read in grams and is not rescaled                            | gH2/kWh                            |
+| ProductionFunctionH2ToHeat | Production function from hydrogen (numerator) to heat (denominator) (only used for hydrogen heaters, which produce heat by burning hydrogen)                                                                                                                                                                           | kgH2/kWh                           |
+| ProductionFunctionH2ToPower | Production function from hydrogen (numerator) to power (denominator) (only used for a hydrogen-fired generator, which produces electricity by burning hydrogen). Note the unit: unlike ProductionFunctionH2ToHeat, which is read in kgH2/kWh, this one is read in grams and is not rescaled                           | gH2/kWh                            |
 | MaximumProductionH2        | Maximum hydrogen produced without consuming electricity, by a reformer or an import terminal. A unit with this >0 forms the hydrogen source set                                                                                                                                                                        | tH2/h                              |
-| ProductionCostH2           | Cost of that hydrogen, carrying fuel, variable O&M and the carbon price together Note the unit: unlike HNSCost and H2ExcCost, which are read in €/kgH2, this one is read in M€/tH2 and is not rescaled                                                                                                                 | M€/tH2                             |
+| ProductionCostH2           | Cost of that hydrogen, carrying fuel, variable O&M, and the carbon price together. Note the unit: unlike HNSCost and H2ExcCost, which are read in €/kgH2, this one is read in M€/tH2 and is not rescaled                                                                                                               | M€/tH2                             |
 | ProductionEmissionH2       | CO2 released per tonne of that hydrogen. Reported only: it is not charged in the objective and enters no emission limit                                                                                                                                                                                                | tCO2/tH2                           |
-| MaximumStorageH2           | Maximum hydrogen a store can hold, e.g. a salt cavern. A unit with this >0 forms the hydrogen storage set                                                                                                                                                                                                              | tH2                                |
+| MaximumStorageH2           | Maximum hydrogen a store can hold, e.g., a salt cavern. A unit with this >0 forms the hydrogen storage set                                                                                                                                                                                                             | tH2                                |
 | MaximumChargeH2            | Maximum rate at which that store can be filled                                                                                                                                                                                                                                                                         | tH2/h                              |
 | InitialStorageH2           | Hydrogen held at the first load level. The store returns to this level at the end of the horizon                                                                                                                                                                                                                       | tH2                                |
-| StorageTypeH2              | Storage cycle of the hydrogen store: hourly, daily, weekly, monthly or yearly                                                                                                                                                                                                                                          |                                    |
+| StorageTypeH2              | Storage cycle of the hydrogen store: hourly, daily, weekly, monthly, or yearly                                                                                                                                                                                                                                         |                                    |
 | Availability               | Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit (CC) or Firm Capacity Equivalent (FCE) or Effective Load-Carrying Capability (ELCC))                                                                                                                               | p.u.                               |
 | Inertia                    | Unit inertia constant                                                                                                                                                                                                                                                                                                  | s                                  |
 | EFOR                       | Equivalent Forced Outage Rate (probability that a generating unit will be unavailable due to forced outages during a given period)                                                                                                                                                                                     | p.u.                               |
@@ -529,9 +529,9 @@ A description of the data included for each (electricity and heat) generating un
 | StartUpCost                | Startup cost                                                                                                                                                                                                                                                                                                           | M€                                 |
 | ShutDownCost               | Shutdown cost                                                                                                                                                                                                                                                                                                          | M€                                 |
 | CO2EmissionRate            | CO2 emission rate. It can be negative for units absorbing CO2 emissions, such as biomass                                                                                                                                                                                                                               | tCO2/MWh                           |
-| OMFixedCost                | Fixed O&M -FOM- cost (optional column, if not introduced it is considered 0). It will be added to the annualized capital investment cost and subtracted from the annualized retirement cost                                                                                                                            | M€/GW*yr                           |
-| FixedInvestmentCost        | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost. FOM cost can be included here or in the OMFixedCost column                                                                                                                                                                                            | M€                                 |
-| FixedRetirementCost        | Overnight retirement (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                                                                                                                                                                        | M€                                 |
+| OMFixedCost                | Fixed O&M —FOM— cost (optional column; if not entered, it is considered 0). It will be added to the annualized capital investment cost and subtracted from the annualized retirement cost                                                                                                                              | M€/GW*yr                           |
+| FixedInvestmentCost        | Overnight investment (capital —CAPEX— and fixed O&M —FOM—) cost. FOM cost can be included here or in the OMFixedCost column                                                                                                                                                                                            | M€                                 |
+| FixedRetirementCost        | Overnight retirement (capital —CAPEX— and fixed O&M —FOM—) cost                                                                                                                                                                                                                                                        | M€                                 |
 | FixedChargeRate            | Fixed-charge rate to annualize the overnight investment cost. Proportion of annual payment to return the overnight investment cost                                                                                                                                                                                     | p.u.                               |
 | StorageInvestment          | Storage capacity and energy inflows are proportional to the investment decision. For example, in a battery with 4 h duration, the storage capacity will be proportional to the power invested. In a candidate reservoir, the size is usually predetermined and cannot be made proportional to the investment decision. | Yes/No                             |
 | BinaryInvestment           | Binary unit investment decision                                                                                                                                                                                                                                                                                        | Yes/No                             |
@@ -556,9 +556,9 @@ The main characteristics that define each type of generator are the following:
 | Data center flexibility             | ESS with MaximumCharge >0 and MaximumStorage >0 (usually, StorageType daily)                                                   | *es*     |
 | Electric vehicle (EV)               | ESS with electric energy outflows                                                                                              | *es*     |
 | Electrolyzer (ELZ)                  | ESS with electric energy outflows and ProductionFunctionH2 >0 and ProductionFunctionHeat =0 and ProductionFunctionHydro =0     | *el*     |
-| Hydrogen-fired generator (H2P)       | It has ProductionFunctionH2ToPower >0                                                                                         | *h2p*    |
-| Hydrogen storage                     | It has MaximumStorageH2 >0. Scoped to any unit, not only generators                                                           | *hs*     |
-| Hydrogen source                      | It has MaximumProductionH2 >0. Scoped to any unit, not only generators                                                        | *sr*     |
+| Hydrogen-fired generator (H2P)      | It has ProductionFunctionH2ToPower >0                                                                                          | *h2p*    |
+| Hydrogen storage                    | It has MaximumStorageH2 >0. Scoped to any unit, not only generators                                                            | *hs*     |
+| Hydrogen source                     | It has MaximumProductionH2 >0. Scoped to any unit, not only generators                                                         | *sr*     |
 | Heat pump or electric boiler        | ESS with ProductionFunctionHeat >0 and ProductionFunctionH2 =0 and ProductionFunctionHydro =0                                  | *hp*     |
 | CHP or fuel heating unit            | It has RatedMaxPowerElec >0 and RatedMaxPowerHeat >0 and ProductionFunctionHeat =0                                             | *ch*     |
 | Fuel heating unit, fuel boiler      | It has RatedMaxPowerElec =0 and RatedMaxPowerHeat >0 and ProductionFunctionHeat =0                                             | *bo*     |
@@ -574,9 +574,9 @@ at the end of every day, monthly storage type is assessed at the end of every we
 energy consumed must be equal to the sum of outflows daily). The contribution of EVs and electrolyzers to the system flexibility can be analyzed by changing the
 outflows type (from hourly to daily or weekly or monthly or yearly). *Energy type* represents when the minimum or maximum energy to be produced by a unit must
 be satisfied (for daily energy type at the end of every day, i.e., the sum of the energy generated by the unit must be lower/greater than the sum of max/min
-energy for every day). The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by
-the outflows type), and the energy period (determined by the energy type) (only if outflows or energy power values have been introduced). It can be one time
-step, day, week, or month, but it cannot exceed the stage duration. For example, if the stage lasts 168 hours, the storage cycle can only be hourly or daily.
+energy for every day). The *storage cycle* is the minimum of the inventory assessment period (defined by the storage type), the outflows period (defined by
+the outflows type), and the energy period (determined by the energy type) (only if outflows or energy power values have been entered). It can be one time
+step, day, week, or month, but it cannot exceed the stage duration. For example, if the stage lasts 168 hours, the storage cycle can be up to weekly.
 
 The initial storage of the ESSs is also fixed at the beginning and end of each stage, only if the initial inventory lies between the storage limits. For
 example, the initial storage level is set for hour 8736 in the case of a single stage or for hours 4368 and 4369 (end of the first stage and beginning of the
@@ -610,7 +610,7 @@ yearly, so only one can be committed during the whole period. When all mutually 
 the exclusivity is hourly, and which generator is committed can change at every load level.
 
 A generator can be restricted to providing reserves only while generating or only while consuming. The NoOperatingReserve entry accepts two inputs separated by
-a "|". The first value corresponds to operating reserves while generating, and the second is operating reserves while consuming power. If only one value is
+a "|". The first value corresponds to operating reserves while generating, and the second to operating reserves while consuming power. If only one value is
 entered, both values are considered the same. If no value is entered, both values are considered "No".
 
 If the lower and upper bounds of investment/retirement decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid
@@ -618,10 +618,10 @@ investment or retirement on a candidate, set the corresponding upper bound (`Inv
 is internally converted to 0. A blank cell or 0 in these columns is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely
 chosen by the optimization.
 
-A hydrogen source, a reformer or an import terminal, is a unit with MaximumProductionH2 above zero. It makes hydrogen at ProductionCostH2 without drawing
+A hydrogen source (a reformer or an import terminal) is a unit with MaximumProductionH2 above zero. It makes hydrogen at ProductionCostH2 without drawing
 electricity, so the earlier workaround of an isolated electricity network feeding an electrolyzer is no longer needed.
 
-The hydrogen subsystem is summarised below. A turbine and a boiler burn hydrogen, and they are charged for it in the hydrogen balance alone, so either one
+The hydrogen subsystem is summarized below. A turbine and a boiler burn hydrogen, and they are charged for it in the hydrogen balance alone, so either one
 switches the carrier on by itself.
 
 ```{image} ../img/HydrogenSubsystem.png
@@ -650,7 +650,8 @@ Period          Generator       Factor         Factor on the investment cost of 
 ==============  ==============  =============  ======================================================================  =====
 ```
 
-It multiplies the annualized investment cost of a candidate unit, e.g., to represent learning rates. The capacity installed in a period keeps the factor of that period in all later periods.
+It multiplies the annualized investment cost of a candidate unit, e.g., to represent learning rates.
+The capacity installed in a period keeps the factor of that period in all later periods.
 If no value is provided, the factor is 1.
 
 ## Variable maximum and minimum generation
@@ -727,8 +728,8 @@ Period      Scenario        LoadLevel   Generator  Variable emission cost       
 ==========  ==============  ==========  =========  =============================  ======
 ```
 
-Not all the generators need to be defined as columns of this file, only those with values different from 0. Values 0 or empty cells are replaced by CO2 cost
-of the file `oT_Data_Parameter.csv` or by the values of the file `oT_Data_EmissionCost.csv`.
+Not all the generators need to be defined as columns of this file, only those with values different from 0. Values 0 or empty cells are replaced by the
+CO2 cost of the file `oT_Data_Parameter.csv` or by the values of the file `oT_Data_EmissionCost.csv`.
 
 Internally, all the values below 1e-4 will be converted into 0 by the model.
 
@@ -842,7 +843,7 @@ A description of the circuit (initial node, final node, circuit) data included i
 | TTC                 | Total transfer capacity (maximum permissible thermal load) in forward direction. Static line rating                                                                                                                | MW     |
 | TTCBck              | Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating                                                                                                               | MW     |
 | SecurityFactor      | Security factor to consider approximately N-1 contingencies (e.g., common values are in the range 0.6-0.7). NTC=TTCxSecurityFactor. The security factors cannot all be 0; otherwise, there is no network capacity. | p.u.   |
-| FixedInvestmentCost | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                                                                    | M€     |
+| FixedInvestmentCost | Overnight investment (capital —CAPEX— and fixed O&M —FOM—) cost                                                                                                                                                    | M€     |
 | FixedChargeRate     | Fixed-charge rate to annualize the overnight investment cost                                                                                                                                                       | p.u.   |
 | BinaryInvestment    | Binary line/circuit investment decision                                                                                                                                                                            | Yes/No |
 | InvestmentLo        | Lower bound of investment decision                                                                                                                                                                                 | p.u.   |
@@ -909,8 +910,8 @@ trusted, and the note there explains why they are not substitutes for each other
 The AC branch current enters the model as an inequality, so nothing forces it down to the value the flows imply. A small
 price on it does, and `EpsilonCurrent` in `oT_Data_Parameter.csv` sets that price.
 
-It has to be given per case. The value that closes the cone depends on the cost scale and the loading of the case, and
-measured on a tight cone the bundled cases span three orders of magnitude:
+It has to be given per case. The value that closes the cone depends on the cost scale and the loading of the case, and,
+measured on a tight cone, the bundled cases span three orders of magnitude:
 
 | case | SBase | EpsilonCurrent | why |
 |:-----|------:|---------------:|:----|
@@ -960,7 +961,7 @@ voltage profiles within the limits have the same cost, and the solver returns on
 lower current, so that penalty drives every voltage to its upper limit.
 
 A voltage setpoint gives the objective a target. `VSet` in `oT_Data_BusVoltage.csv` gives the setpoint of a bus, and
-`VoltageDeviationCost` in `oT_Data_Parameter.csv` gives the penalty on the deviation from it, in EUR per p.u. of voltage per
+`VoltageDeviationCost` in `oT_Data_Parameter.csv` gives the penalty on the deviation from it, in € per p.u. of voltage per
 hour. The deviation is taken on the squared voltage that the model uses, and scaled so that near the setpoint it equals
 `|V - VSet|`. All terms are linear, so the relaxation remains a cone program. Like the current penalty, the deviation
 penalty affects the solution but is not part of the reported system cost; it is reported beside it as
@@ -973,17 +974,17 @@ The penalty is a soft target, and it competes with the other terms of the object
   setpoint of 1.02 p.u. reaches 1.006 p.u. on average. With `EpsilonCurrent` at zero the setpoint alone determines the
   voltage.
 - **Reactive power slack.** The slack should never be used to hold a setpoint. Keep the penalty well below the cost of the
-  reactive power a bus would need: at 1000 EUR/p.u./h a deviation of 0.01 p.u. costs 10 EUR/h, against 10000 EUR for one
+  reactive power a bus would need: at 1000 €/p.u./h a deviation of 0.01 p.u. costs 10 €/h, against 10000 € for one
   Mvar of slack at the usual `ENSCost`.
 
 On a 695-bus Nordic transmission case with all generator outputs fixed at a reference power flow solution and
-`EpsilonCurrent` at zero, setpoints at 427 regulated buses with a penalty of 1000 EUR/p.u./h reduced the median voltage
+`EpsilonCurrent` at zero, setpoints at 427 regulated buses with a penalty of 1000 €/p.u./h reduced the median voltage
 difference from the reference solution from 2.45 kV to 0.01 kV, with no reactive power slack. A penalty one hundred times
 higher gave the same result.
 
 ## Reactive power demand (optional file, AC only)
 
-The file `oT_Data_ReactiveDemand.csv` gives the reactive power demand of every node at every load level, in MVAr, with the same
+The file `oT_Data_ReactiveDemand.csv` gives the reactive power demand of every node at every load level, in Mvar, with the same
 shape as `oT_Data_Demand.csv`. It is read only when IndACPowerFlow is different from 0.
 
 The model reports the total reactive demand it read at the start of the run, so a case where the file did not arrive is
@@ -1009,20 +1010,20 @@ IndACPowerFlow is different from 0.
 | FinalPeriod         | Final period when the device is available | Year |
 | Gshb                | Shunt conductance, per unit on SBase, referred to the nominal voltage of the bus | p.u. |
 | Bshb                | Shunt susceptance, per unit on SBase, referred to the nominal voltage of the bus. Positive is a capacitor, which injects reactive power; negative is a reactor, which absorbs it | p.u. |
-| FixedInvestmentCost | Fixed investment cost. A device with a cost is a candidate; one without is existing plant | MEUR |
-| FixedChargeRate     | Fixed-charge rate to annualise the investment cost | p.u. |
+| FixedInvestmentCost | Fixed investment cost. A device with a cost is a candidate; one without is existing plant | M€   |
+| FixedChargeRate     | Fixed-charge rate to annualize the investment cost | p.u. |
 | BinaryInvestment    | Binary or continuous investment decision for this device | Yes/No |
 | InvestmentLo        | Lower bound of the investment decision | p.u. |
 | InvestmentUp        | Upper bound of the investment decision | p.u. |
-| Switchable          | Whether the device has an on/off state per load level. Without it an existing device is in service every hour of the horizon, so a bank that must be open at light load cannot be represented | Yes/No |
-| Units               | Number of identical units the device stands for. With a value above 1 the model chooses how many are in service, so a stepped bank is a count rather than a single on or off | Integer |
+| Switchable          | Whether the device has an on/off state per load level. Without it, an existing device is in service every hour of the horizon, so a bank that must be open at light load cannot be represented | Yes/No |
+| Units               | Number of identical units the device stands for. With a value above 1, the model chooses how many are in service, so a stepped bank is a count rather than a single on or off | Integer |
 
 The reactive power a device injects is `Bshb * |V|^2 * SBase`, so it varies with the voltage: at the upper voltage limit a bank
-delivers about 10% more than its nameplate. The rating at nominal voltage in MVAr is `Bshb * SBase`, with SBase in MVA. A
-device of -1.0 p.u. on a 100 MVA base is therefore a 100 MVAr reactor.
+delivers about 10% more than its nameplate. The rating at nominal voltage in Mvar is `Bshb * SBase`, with SBase in MVA. A
+device of -1.0 p.u. on a 100 MVA base is therefore a 100 Mvar reactor.
 
 Each unit of a bank carries the full susceptance of one unit, not a share of the bank. `Units = 4` with `Bshb = 0.075` on a
-1000 MVA base is four 75 MVAr steps, not four 18.75 MVAr steps.
+1000 MVA base is four 75 Mvar steps, not four 18.75 Mvar steps.
 
 ## Bus voltage limits and setpoints (optional file, AC only)
 
@@ -1059,7 +1060,7 @@ Not all the electric transmission lines need to be defined as columns of these f
 This information can be used to consider the transmission line's weather-dependent maximum capacity.
 
 To force the flow of a transmission line to be 0, a small value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be
-entered. If the user enters a minimum transmission line capacity greater than the maximum, the model lowers the minimum to match the maximum.
+entered. Each file sets the maximum TTC in its direction (forward or backward); a 0 in either file is replaced by the static TTC of the electric network file.
 
 If you want to force the flow of a transmission line to be equal to a value, enter the same value (with the opposite sign) in both files (e.g., 125 MW in
 `oT_Data_VariableTTCFrw.csv` and -125 MW in `oT_Data_VariableTTCBck.csv`) or vice versa.
@@ -1082,7 +1083,7 @@ told to carry, so it does not obey Kirchhoff's voltage law and has no place in a
 
 `IndPTDF = 2` is refused when the case has candidate or switchable AC lines. The factors belong to one topology, and a
 decision that changes the topology would leave them stale in a way nothing detects: the flows stay plausible and stop
-being right. Candidate generators, candidate storage and candidate DC links are all fine, because none of them enter the
+being right. Candidate generators, candidate storage, and candidate DC links are all fine, because none of them enter the
 susceptance matrix. A case that does change its AC topology can still use `IndPTDF = 1`, where the table is indexed by
 load level and the user says how the factors move.
 
@@ -1171,13 +1172,13 @@ A description of the data included in the file `oT_Data_Reservoir.csv` follows:
 
 | Header              | Description                                                                                          |                                    |
 | ------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| StorageType         | Reservoir storage type based on reservoir storage capacity (hourly, daily, weekly, monthly, yearly). The volume is recorded one period more frequently than the declared type, as for StorageType in the Generation table, so stages of at least 24 h, 168 h and 672 h are required for Weekly, Monthly and Yearly respectively | Hourly/Daily/Weekly/Monthly/Yearly |
-| OutflowsType        | Water outflows type based on the water extracted from the reservoir (daily, weekly, monthly, yearly). The period is taken at face value, as for OutflowsType in the Generation table, so stages of at least 168 h, 672 h and 8736 h are required for Weekly, Monthly and Yearly respectively | Daily/Weekly/Monthly/Yearly        |
+| StorageType         | Reservoir storage type based on reservoir storage capacity (hourly, daily, weekly, monthly, yearly). The volume is recorded one period more frequently than the declared type, as for StorageType in the Generation table, so stages of at least 24 h, 168 h, and 672 h are required for Weekly, Monthly, and Yearly, respectively | Hourly/Daily/Weekly/Monthly/Yearly |
+| OutflowsType        | Water outflows type based on the water extracted from the reservoir (daily, weekly, monthly, yearly). The period is taken at face value, as for OutflowsType in the Generation table, so stages of at least 168 h, 672 h, and 8736 h are required for Weekly, Monthly, and Yearly, respectively | Daily/Weekly/Monthly/Yearly        |
 | InitialStorage      | Initial volume stored at the first instant of the time scope                                         | hm{sup}`3`                         |
 | MaximumStorage      | Maximum volume that the hydro reservoir can store                                                    | hm{sup}`3`                         |
 | MinimumStorage      | Minimum volume that the hydro reservoir can store                                                    | hm{sup}`3`                         |
 | BinaryInvestment    | Binary reservoir investment decision                                                                 | Yes/No                             |
-| FixedInvestmentCost | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                      | M€                                 |
+| FixedInvestmentCost | Overnight investment (capital —CAPEX— and fixed O&M —FOM—) cost                                      | M€                                 |
 | FixedChargeRate     | Fixed-charge rate to annualize the overnight investment cost                                         | p.u.                               |
 | InitialPeriod       | Initial period (year) when the unit is installed or can be installed, if candidate                   | Year                               |
 | FinalPeriod         | Final period (year) when the unit is installed or can be installed, if candidate                     | Year                               |
@@ -1187,10 +1188,10 @@ The model always considers a month of 672 hours, i.e., 4 weeks, not calendar mon
 Daily *storage type* means the ESS inventory is assessed every time step. For the daily storage type, it is evaluated at the end of every hour; for the weekly
 storage type, it is assessed at the end of every day; for the monthly storage type, it is evaluated at the end of every week; and the yearly storage type is
 assessed at the end of every month. *Outflows type* represents the interval when the energy extracted from the storage must be satisfied (for daily outflows
-type at the end of every day, i.e., the energy consumed must equal the sum of outflows for every day). The *storage cycle* is the minimum between the inventory
+type at the end of every day, i.e., the energy consumed must equal the sum of outflows for every day). The *storage cycle* is the minimum of the inventory
 assessment period (defined by the storage type), the outflows period (determined by the outflows type), and the energy period (defined by the energy type) (only
-if outflows or energy power values have been introduced). It can be one time step, day, week, or month, but it cannot exceed the stage duration. For example, if
-the stage lasts 168 hours, the storage cycle can only be hourly or daily.
+if outflows or energy power values have been entered). It can be one time step, day, week, or month, but it cannot exceed the stage duration. For example, if
+the stage lasts 168 hours, the storage cycle can be up to weekly.
 
 The initial reservoir volume is also fixed at the beginning and end of each stage, only if the initial volume lies between the reservoir storage limits. For
 example, the initial volume is set for hour 8736 in the case of a single stage or for hours 4368 and 4369 (end of the first stage and beginning of the second
@@ -1220,8 +1221,8 @@ For example, these data can be used to define the operating guide (rule) curves 
 These input files are specifically introduced to allow a representation of the hydrogen energy vector to supply the hydrogen demand with hydrogen produced from
 electricity or by any other means through the hydrogen network. The hydrogen data are expressed in tH2 for what a store holds and in tH2/h for everything that
 flows, the same split the electricity data make between GWh and MW. However, they can easily be converted into MWh by multiplying the tH2 values by
-33.33 MWh/tH2 (the lower heating value of hydrogen). To represent the hydrogen demand in MWh instead of tH2, input it in MWh in
-the file `oT_Data_DemandHydrogen.csv` and convert it into tH2 by dividing the MWh values by 33.33 MWh/tH2.
+33.33 MWh/tH2 (the lower heating value of hydrogen). If the hydrogen demand data are available in MWh instead of tH2, divide
+the MWh values by 33.33 MWh/tH2 and enter the resulting tH2 values in the file `oT_Data_DemandHydrogen.csv`.
 
 If hydrogen is produced only from electricity, with no hydrogen flows among nodes, the hydrogen demand can be represented by the energy outflows associated with
 the unit (i.e., electrolyzer), and these hydrogen demand and network files are not needed.
@@ -1255,10 +1256,10 @@ A description of the circuit (initial node, final node, circuit) data included i
 | InitialPeriod       | Initial period (year) when the unit is installed or can be installed, if candidate                                                                                      | Year   |
 | FinalPeriod         | Final period (year) when the unit is installed or can be installed, if candidate                                                                                        | Year   |
 | Length              | Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance                                                     | km     |
-| TTC                 | Total transfer capacity (maximum permissible hydrogen flow) in forward  direction. Static pipeline rating                                                               | tH2/h  |
+| TTC                 | Total transfer capacity (maximum permissible hydrogen flow) in forward direction. Static pipeline rating                                                                | tH2/h  |
 | TTCBck              | Total transfer capacity (maximum permissible hydrogen flow) in backward direction. Static pipeline rating                                                               | tH2/h  |
 | SecurityFactor      | Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor. The security factors cannot all be 0; otherwise, there is no network capacity. | p.u.   |
-| FixedInvestmentCost | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                         | M€     |
+| FixedInvestmentCost | Overnight investment (capital —CAPEX— and fixed O&M —FOM—) cost                                                                                                         | M€     |
 | FixedChargeRate     | Fixed-charge rate to annualize the overnight investment cost                                                                                                            | p.u.   |
 | BinaryInvestment    | Binary pipeline investment decision                                                                                                                                     | Yes/No |
 | InvestmentLo        | Lower bound of investment decision                                                                                                                                      | p.u.   |
@@ -1327,7 +1328,7 @@ A description of the circuit (initial node, final node, circuit) data included i
 | TTC                 | Total transfer capacity (maximum permissible heat flow) in forward direction. Static pipeline rating                                                                    | MW     |
 | TTCBck              | Total transfer capacity (maximum permissible heat flow) in backward direction. Static pipeline rating                                                                   | MW     |
 | SecurityFactor      | Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor. The security factors cannot all be 0; otherwise, there is no network capacity. | p.u.   |
-| FixedInvestmentCost | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                         | M€     |
+| FixedInvestmentCost | Overnight investment (capital —CAPEX— and fixed O&M —FOM—) cost                                                                                                         | M€     |
 | FixedChargeRate     | Fixed-charge rate to annualize the overnight investment cost                                                                                                            | p.u.   |
 | BinaryInvestment    | Binary pipeline investment decision                                                                                                                                     | Yes/No |
 | InvestmentLo        | Lower bound of investment decision                                                                                                                                      | p.u.   |
@@ -1346,7 +1347,8 @@ interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be 
 
 # Flow-Based Market Coupling
 
-This input file is introduced explicitly to allow the flow-based market coupling method. If it is not available, the model runs with the DCOPF method.
+This input file is introduced explicitly to allow the flow-based market coupling method. If it is not available, the model runs with the
+DC optimal power flow (DCOPF) method.
 
 | File                       | Description                                |
 | -------------------------- | ------------------------------------------ |
