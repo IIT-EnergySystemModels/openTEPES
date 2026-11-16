@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 25, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 openTEPES.openTEPES_ModelFormulationObjective — total-cost objective and the per-stage operation-cost accumulation constraints.
 """
@@ -91,21 +91,38 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     pHasEmiCostN  = {n:      any(mTEPES.pEmissionVarCost[p,sc,n,g] for g in pGensP  ) for n in mTEPES.n}
     pHasEmiCostNA = {(n,ar): any(mTEPES.pEmissionVarCost[p,sc,n,g] for g in g2aP[ar]) for n in mTEPES.n for ar in mTEPES.ar}
 
+    # period-invariant prefilters and per-load-level durations/weights, evaluated once instead of once per load level inside every rule below
+    pnrP    = [nr for nr in mTEPES.nr if (p,nr) in mTEPES.pnr]
+    pnrResP = [nr for nr in pnrP      if mTEPES.pIndOperReserveGen[nr] == 0]
+    pehResP = [eh for eh in mTEPES.eh if (p,eh) in mTEPES.peh and mTEPES.pIndOperReserveCon[eh] == 0]
+    pehChrP = [eh for eh in mTEPES.eh if (p,eh) in mTEPES.peh and eh not in mTEPES.el]
+    pboP    = [bo for bo in mTEPES.bo if (p,bo) in mTEPES.pbo]
+    preP    = [re for re in mTEPES.re if (p,re) in mTEPES.pre]
+    gEmiA   = {ar: [g  for g  in g2a[ar]   if (p,g) in mTEPES.pg and g not in mTEPES.bo] for ar in mTEPES.ar}
+    re2aP   = {ar: [re for re in mTEPES.re if re in g2a[ar] and (p,re) in mTEPES.pre]    for ar in mTEPES.ar}
+    llP     = [(ni,nf,cc) for ni,nf,cc in mTEPES.ll  if (p,ni,nf,cc) in mTEPES.pll]
+    laaP    = [(ni,nf,cc) for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla]
+    pDurN   = {n: mTEPES.pLoadLevelDuration[p,sc,n]() for n in mTEPES.n}
+    pWgtN   = {n: mTEPES.pLoadLevelWeight  [p,sc,n]() for n in mTEPES.n}
+    pIndAC  = mTEPES.pIndACPowerFlow()
+    pIndLastSt   = st == mTEPES.Last_st
+    pRESEnergyAr = {ar: mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar}
+
     def eTotalGCost(OptModel,n):
-        return OptModel.vTotalGCost[p,sc,n] == (mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
-                                                                                          mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment     [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
-                                                mTEPES.pLoadLevelWeight  [p,sc,n]() * sum(mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp        [p,sc,n,nr]                                              +
-                                                                                          mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown       [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
-                                                mTEPES.pLoadLevelWeight  [p,sc,n]() * sum(mTEPES.pOperReserveCost[       nr] * OptModel.vReserveUp      [p,sc,n,nr]                                              +
-                                                                                          mTEPES.pOperReserveCost[       nr] * OptModel.vReserveDown    [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and mTEPES.pIndOperReserveGen[nr] == 0) +
-                                                mTEPES.pLoadLevelWeight  [p,sc,n]() * sum(mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp   [p,sc,n,eh]                                              +
-                                                                                          mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown [p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and mTEPES.pIndOperReserveCon[eh] == 0) +
-                                                mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearVarCost  [p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (p,bo) in mTEPES.pbo) +
-                                                mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput    [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
+        return OptModel.vTotalGCost[p,sc,n] == (pDurN[n] * sum(mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
+                                                               mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment     [p,sc,n,nr] for nr in pnrP   ) +
+                                                pWgtN[n] * sum(mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp        [p,sc,n,nr]                                              +
+                                                               mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown       [p,sc,n,nr] for nr in pnrP   ) +
+                                                pWgtN[n] * sum(mTEPES.pOperReserveCost[       nr] * OptModel.vReserveUp      [p,sc,n,nr]                                              +
+                                                               mTEPES.pOperReserveCost[       nr] * OptModel.vReserveDown    [p,sc,n,nr] for nr in pnrResP) +
+                                                pWgtN[n] * sum(mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp   [p,sc,n,eh]                                              +
+                                                               mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown [p,sc,n,eh] for eh in pehResP) +
+                                                pDurN[n] * sum(mTEPES.pLinearVarCost  [p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in pboP   ) +
+                                                pDurN[n] * sum(mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput    [p,sc,n,re] for re in preP   ) )
     setattr(OptModel, f'eTotalGCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
     def eTotalCCost(OptModel,n):
-        return OptModel.vTotalCCost    [p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum((mTEPES.pLinearVarCost[p,sc,n,eh]+pEpsilonCharge) * OptModel.vESSTotalCharge[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and eh not in mTEPES.el)
+        return OptModel.vTotalCCost    [p,sc,n] == pDurN[n] * sum((mTEPES.pLinearVarCost[p,sc,n,eh]+pEpsilonCharge) * OptModel.vESSTotalCharge[p,sc,n,eh] for eh in pehChrP)
     setattr(OptModel, f'eTotalCCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
 
     def eTotalECost(OptModel,n):
@@ -119,27 +136,30 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     def eTotalEmissionArea(OptModel,n,ar):
         if not pIndEmissionArea[ar]:
             return Constraint.Skip
-        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[g ] * OptModel.vTotalOutput    [p,sc,n,g ] for g  in g2a [ar] if (p,g) in mTEPES.pg   and g not in mTEPES.bo)    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
-                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar] if (p,bo) in mTEPES.pbo                       )))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (pDurN[n] * 1e-3 * (sum(mTEPES.pEmissionRate[g ] * OptModel.vTotalOutput    [p,sc,n,g ] for g  in gEmiA[ar])    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+                                                                          +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a [ar])))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):
         if not pHasEmiCostNA[n,ar]:
             return Constraint.Skip
-        return OptModel.vTotalECostArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * (sum(mTEPES.pEmissionVarCost[p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in nr2a[ar] if (p,nr) in mTEPES.pnr)
-                                                                                           +  sum(mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar] if (p,bo) in mTEPES.pbo)))
+        # the '(p,nr) in pnr' / '(p,bo) in pbo' re-tests are dropped: nr2a and bo2a are built above with exactly those filters
+        return OptModel.vTotalECostArea[p,sc,n,ar] == (pDurN[n] * (sum(mTEPES.pEmissionVarCost[p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in nr2a[ar])
+                                                                +  sum(mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar])))
     setattr(OptModel, f'eTotalECostArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalECostArea, doc='area emission cost [MEUR]'))
 
     def eTotalRESEnergyArea(OptModel,n,ar):
-        if mTEPES.pRESEnergy[p,ar]() == 0.0 or st != mTEPES.Last_st:
+        if pRESEnergyAr[ar] == 0.0 or not pIndLastSt:
             return Constraint.Skip
-        return OptModel.vTotalRESEnergyArea[p,sc,n,ar] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vTotalOutput[p,sc,n,re] for re in mTEPES.re if re in g2a[ar] and (p,re) in mTEPES.pre)
+        return OptModel.vTotalRESEnergyArea[p,sc,n,ar] == pDurN[n] * sum(OptModel.vTotalOutput[p,sc,n,re] for re in re2aP[ar])
     setattr(OptModel, f'eTotalRESEnergyArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))
 
+    pSkipNCost = len(mTEPES.ll) == 0 and not pIndAC
+
     def eTotalNCost(OptModel,n):
-        if len(mTEPES.ll) == 0 and not mTEPES.pIndACPowerFlow():
+        if pSkipNCost:
             return Constraint.Skip
-        pLossCost = pEpsilonLosses * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
+        pLossCost = pEpsilonLosses * pDurN[n] * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in llP)
         return OptModel.vTotalNCost[p,sc,n] == pLossCost
     setattr(OptModel, f'eTotalNCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
 
@@ -149,9 +169,9 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     # cost. Note the units: pEpsilonLosses multiplies a loss in GW, this multiplies a dimensionless per-unit current, so the two are not comparable and
     # this one's size relative to the loss it stands in for depends on pSBase.
     def eTotalNPenalty(OptModel,n):
-        if mTEPES.pIndACPowerFlow() != 1:                      # vCurr exists only under branch flow, and so does vTotalNPenalty
+        if pIndAC != 1:                                        # vCurr exists only under branch flow, and so does vTotalNPenalty
             return Constraint.Skip
-        return OptModel.vTotalNPenalty[p,sc,n] == pEpsilonCurrent * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla)
+        return OptModel.vTotalNPenalty[p,sc,n] == pEpsilonCurrent * pDurN[n] * sum(OptModel.vCurr[p,sc,n,ni,nf,cc] for ni,nf,cc in laaP)
     setattr(OptModel, f'eTotalNPenalty_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNPenalty, doc='AC current penalty, objective only [MEUR]'))
 
     # A penalty on the deviation of a bus voltage from its setpoint. The band in oT_Data_BusVoltage says where a voltage may be; nothing in the objective said
@@ -164,17 +184,19 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
                     == OptModel.vVoltageDevUp[p,sc,n,nd] - OptModel.vVoltageDevDw[p,sc,n,nd])
         setattr(OptModel, f'eVoltageDeviation_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ndv, rule=eVoltageDeviation, doc='squared voltage against its setpoint [p.u.]'))
 
+        pVDevCost = mTEPES.pVoltageDeviationCost()
+
         def eTotalVPenalty(OptModel, n):
-            return OptModel.vTotalVPenalty[p,sc,n] == mTEPES.pVoltageDeviationCost() * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(
+            return OptModel.vTotalVPenalty[p,sc,n] == pVDevCost * pDurN[n] * sum(
                 (OptModel.vVoltageDevUp[p,sc,n,nd] + OptModel.vVoltageDevDw[p,sc,n,nd]) / (2.0 * mTEPES.pVSetBus[nd]) for nd in mTEPES.ndv)
         setattr(OptModel, f'eTotalVPenalty_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalVPenalty, doc='voltage setpoint penalty, objective only [MEUR]'))
 
     def eTotalRElecCost(OptModel,n):
-        pCost = mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
-        if mTEPES.pIndACPowerFlow():
+        pCost = pDurN[n] * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
+        if pIndAC:
             # Reactive power not served is priced at the same rate as active. The number is a penalty, not a valuation: its job is to make the slack a
             # last resort and to leave a visible trace in the results when the reactive side cannot be met, rather than an infeasible model.
-            pCost += mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vQNSPos[p,sc,n,nd] + OptModel.vQNSNeg[p,sc,n,nd] for nd in mTEPES.nd)
+            pCost += pDurN[n] * mTEPES.pENSCost * sum(OptModel.vQNSPos[p,sc,n,nd] + OptModel.vQNSNeg[p,sc,n,nd] for nd in mTEPES.nd)
         return OptModel.vTotalRElecCost[p,sc,n] == pCost
     setattr(OptModel, f'eTotalRElecCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRElecCost, doc='elec system reliability cost [MEUR]'))
 

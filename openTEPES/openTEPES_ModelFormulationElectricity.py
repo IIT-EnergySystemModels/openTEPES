@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -12,8 +12,7 @@ import time
 import math
 import networkx as nx
 import numpy    as np
-import pandas   as pd
-from collections   import defaultdict
+from collections   import defaultdict, deque
 from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, NonNegativeReals, Objective, SolverFactory, Suffix, tan, sin, sqrt, value
 
 
@@ -56,10 +55,22 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         if g in mTEPES.nr:
             n2a[ar].add(g); a2n[g].add(ar)
 
+    # reserve requirements per load level and area, read once into plain floats instead of once per unit and load level in every skip condition
+    pOperResUp   = {(n,ar): mTEPES.pOperReserveUp[p,sc,n,ar]    for n in mTEPES.n for ar in mTEPES.ar}
+    pOperResDw   = {(n,ar): mTEPES.pOperReserveDw[p,sc,n,ar]    for n in mTEPES.n for ar in mTEPES.ar}
+    pOperResUpDw = {(n,ar): pOperResUp[n,ar] + pOperResDw[n,ar] for n in mTEPES.n for ar in mTEPES.ar}
+    # hoisted: a rule fires once per index, these values cannot change during the build (same pattern as pACNetwork below)
+    pIndRsvAct   = mTEPES.pIndReserveActivation()
+    pDur         = {n: mTEPES.pDuration[p,sc,n]() for n in mTEPES.n}
+    pSqrtEff     = {es: math.sqrt(mTEPES.pEfficiency[es]) for es in mTEPES.es}
+
+    # units of every area available in this period, filtered once instead of per load level
+    pInertiaUnits = {ar: [nr for nr in n2a[ar] if (p,nr) in mTEPES.pnr] for ar in mTEPES.ar}
+
     def eSystemInertia(OptModel,n,ar):
-        if mTEPES.pSystemInertia[p,sc,n,ar] == 0.0 or len([nr for nr in n2a[ar] if (p,nr) in mTEPES.pnr]) == 0:
+        if mTEPES.pSystemInertia[p,sc,n,ar] == 0.0 or len(pInertiaUnits[ar]) == 0:
             return Constraint.Skip
-        return sum(OptModel.vCommitment[p,sc,n,nr] * mTEPES.pInertia[nr] for nr in n2a[ar] if (p,nr) in mTEPES.pnr) >= mTEPES.pSystemInertia[p,sc,n,ar]
+        return sum(OptModel.vCommitment[p,sc,n,nr] * mTEPES.pInertia[nr] for nr in pInertiaUnits[ar]) >= mTEPES.pSystemInertia[p,sc,n,ar]
     setattr(OptModel, f'eSystemInertia_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eSystemInertia, doc='system inertia [s]'))
 
     if pIndLogConsole:
@@ -73,7 +84,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         # Skip if there are no upward operating reserves or there are no generators in this area which can provide reserves
         if mTEPES.pOperReserveUp[p,sc,n,ar] == 0.0 or len(nr2aRsrv[ar]) + len(eh2aRsrv[ar]) == 0:
             return Constraint.Skip
-        return sum(OptModel.vReserveUp  [p,sc,n,nr] for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUp  [p,sc,n,eh] for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == mTEPES.pOperReserveUp[p,sc,n,ar]
+        return sum(OptModel.vReserveUp  [p,sc,n,nr] for nr in nr2aRsrv[ar]) + sum(OptModel.vESSReserveUp  [p,sc,n,eh] for eh in eh2aRsrv[ar]) == mTEPES.pOperReserveUp[p,sc,n,ar]
     setattr(OptModel, f'eOperReserveUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eOperReserveUp, doc='up   operating reserve [GW]'))
 
     if pIndLogConsole:
@@ -83,7 +94,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         # Skip if there are no downward operating reserves or there are no generators in this area which can provide reserves
         if mTEPES.pOperReserveDw[p,sc,n,ar] == 0.0 or len(nr2aRsrv[ar]) + len(eh2aRsrv[ar]) == 0:
             return Constraint.Skip
-        return sum(OptModel.vReserveDown[p,sc,n,nr] for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDown[p,sc,n,eh] for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == mTEPES.pOperReserveDw[p,sc,n,ar]
+        return sum(OptModel.vReserveDown[p,sc,n,nr] for nr in nr2aRsrv[ar]) + sum(OptModel.vESSReserveDown[p,sc,n,eh] for eh in eh2aRsrv[ar]) == mTEPES.pOperReserveDw[p,sc,n,ar]
     setattr(OptModel, f'eOperReserveDw_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eOperReserveDw, doc='down operating reserve [GW]'))
 
     if pIndLogConsole:
@@ -91,7 +102,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eReserveMinRatioDwUp(OptModel,n,nr):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveGen[nr] or (p,nr) not in mTEPES.pnr or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveGen[nr] or (p,nr) not in mTEPES.pnr or sum(pOperResUpDw[n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vReserveDown[p,sc,n,nr] >= OptModel.vReserveUp[p,sc,n,nr] * mTEPES.pMinRatioDwUp
     setattr(OptModel, f'eReserveMinRatioDwUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveMinRatioDwUp, doc='minimum ratio down to up operating reserve [GW]'))
@@ -101,7 +112,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eReserveMaxRatioDwUp(OptModel,n,nr):
         # Skip if there is no maximum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveGen[nr] or (p,nr) not in mTEPES.pnr or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveGen[nr] or (p,nr) not in mTEPES.pnr or sum(pOperResUpDw[n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vReserveDown[p,sc,n,nr] <= OptModel.vReserveUp[p,sc,n,nr] * mTEPES.pMaxRatioDwUp
     setattr(OptModel, f'eReserveMaxRatioDwUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveMaxRatioDwUp, doc='maximum ratio down to up operating reserve [GW]'))
@@ -111,7 +122,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eRsrvMinRatioDwUpESS(OptModel,n,eh):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
+        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(pOperResUpDw[n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveDown[p,sc,n,eh] >= OptModel.vESSReserveUp[p,sc,n,eh] * mTEPES.pMinRatioDwUp
     setattr(OptModel, f'eRsrvMinRatioDwUpESS_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRsrvMinRatioDwUpESS, doc='minimum ratio down to up operating reserve [GW]'))
@@ -121,7 +132,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eRsrvMaxRatioDwUpESS(OptModel,n,eh):
         # Skip if there is no maximum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
+        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(pOperResUpDw[n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveDown[p,sc,n,eh] <= OptModel.vESSReserveUp[p,sc,n,eh] * mTEPES.pMaxRatioDwUp
     setattr(OptModel, f'eRsrvMaxRatioDwUpESS_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRsrvMaxRatioDwUpESS, doc='maximum ratio down to up operating reserve [GW]'))
@@ -133,10 +144,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         # When ESS units offer operating reserves, they must be able to provide the corresponding energy
         # This means they must have enough stored energy to provide all reserves if they were to have 100% activation
         # Skip if generator is not available in the period or generator cannot provide operating reserves while generating power or no upward reserves are needed in the area where the generator is located or the ESS has no charging capabilities and receives no Inflows
-        if (p,es) not in mTEPES.pes or mTEPES.pIndOperReserveGen[es] or mTEPES.pMaxPower2ndBlock [p,sc,n,es] == 0.0 or mTEPES.pMaxStorage[p,sc,n,es]() == 0.0 or sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[es]) == 0.0 or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
+        if (p,es) not in mTEPES.pes or mTEPES.pIndOperReserveGen[es] or mTEPES.pMaxPower2ndBlock [p,sc,n,es] == 0.0 or mTEPES.pMaxStorage[p,sc,n,es]() == 0.0 or sum(pOperResUp[n,ar] for ar in a2e[es]) == 0.0 or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
             return Constraint.Skip
         else:
-            return (OptModel.vOutput2ndBlock[p,sc,n,es] + OptModel.vReserveUp[p,sc,n,es] + mTEPES.pMinPowerElec[p,sc,n,es]) * mTEPES.pDuration[p,sc,n]() / math.sqrt(mTEPES.pEfficiency[es]) <= OptModel.vESSInventory[p,sc,n,es] - mTEPES.pMinStorage[p,sc,n,es]
+            return (OptModel.vOutput2ndBlock[p,sc,n,es] + OptModel.vReserveUp[p,sc,n,es] + mTEPES.pMinPowerElec[p,sc,n,es]) * pDur[n] / pSqrtEff[es] <= OptModel.vESSInventory[p,sc,n,es] - mTEPES.pMinStorage[p,sc,n,es]
     setattr(OptModel, f'eReserveUpIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eReserveUpIfEnergy, doc='up   operating reserve if energy available [GWh]'))
 
     if pIndLogConsole:
@@ -146,10 +157,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         # When ESS units offer operating reserves, they must be able to provide the corresponding energy
         # This means they must have enough stored energy to provide all reserves if they were to have 100% activation
         # Skip if generator is not available in the period or generator cannot provide operating reserves while generating power or no downward reserves are needed in the area where the generator is located
-        if (p,es) not in mTEPES.pes or mTEPES.pIndOperReserveCon[es] or mTEPES.pMaxCharge2ndBlock[p,sc,n,es] == 0.0 or mTEPES.pMaxStorage[p,sc,n,es]() == 0.0 or sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[es]) == 0.0 or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
+        if (p,es) not in mTEPES.pes or mTEPES.pIndOperReserveCon[es] or mTEPES.pMaxCharge2ndBlock[p,sc,n,es] == 0.0 or mTEPES.pMaxStorage[p,sc,n,es]() == 0.0 or sum(pOperResDw[n,ar] for ar in a2e[es]) == 0.0 or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
             return Constraint.Skip
         else:
-            return (OptModel.vCharge2ndBlock[p,sc,n,es] + OptModel.vESSReserveDown[p,sc,n,es] + mTEPES.pMinCharge[p,sc,n,es]) * mTEPES.pDuration[p,sc,n]() * math.sqrt(mTEPES.pEfficiency[es]) <= mTEPES.pMaxStorage[p,sc,n,es]() - OptModel.vESSInventory[p,sc,n,es]
+            return (OptModel.vCharge2ndBlock[p,sc,n,es] + OptModel.vESSReserveDown[p,sc,n,es] + mTEPES.pMinCharge[p,sc,n,es]) * pDur[n] * pSqrtEff[es] <= mTEPES.pMaxStorage[p,sc,n,es]() - OptModel.vESSInventory[p,sc,n,es]
     setattr(OptModel, f'eESSReserveDwIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eESSReserveDwIfEnergy, doc='down operating reserve if energy available [GWh]'))
 
     if pIndLogConsole:
@@ -161,9 +172,12 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eOperReserveUpEnergy(OptModel,n):
         # Skip if there are no upward operating reserves activation or there are no generators in this area which can provide reserves
-        if mTEPES.pIndReserveActivation() == 0 or sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or len(nrRsrvAct) + len(ehRsrvAct) == 0:
+        if pIndRsvAct == 0 or len(nrRsrvAct) + len(ehRsrvAct) == 0:
             return Constraint.Skip
-        return sum(OptModel.vReserveUpEnergy  [p,sc,n,nr] for nr in nrRsrvAct if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUpEnergy  [p,sc,n,eh] for eh in ehRsrvAct if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar)
+        pUpEnergy = sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar)
+        if pUpEnergy == 0.0:
+            return Constraint.Skip
+        return sum(OptModel.vReserveUpEnergy  [p,sc,n,nr] for nr in nrRsrvAct) + sum(OptModel.vESSReserveUpEnergy  [p,sc,n,eh] for eh in ehRsrvAct) == pUpEnergy
     setattr(OptModel, f'eOperReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eOperReserveUpEnergy, doc='up   operating reserve activation [GW]'))
 
     if pIndLogConsole:
@@ -171,9 +185,12 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eOperReserveDwEnergy(OptModel,n):
         # Skip if there are no upward operating reserves activation or there are no generators in this area which can provide reserves
-        if mTEPES.pIndReserveActivation() == 0 or sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or len(nrRsrvAct) + len(ehRsrvAct) == 0:
+        if pIndRsvAct == 0 or len(nrRsrvAct) + len(ehRsrvAct) == 0:
             return Constraint.Skip
-        return sum(OptModel.vReserveDownEnergy[p,sc,n,nr] for nr in nrRsrvAct if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDownEnergy[p,sc,n,eh] for eh in ehRsrvAct if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar)
+        pDwEnergy = sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar)
+        if pDwEnergy == 0.0:
+            return Constraint.Skip
+        return sum(OptModel.vReserveDownEnergy[p,sc,n,nr] for nr in nrRsrvAct) + sum(OptModel.vESSReserveDownEnergy[p,sc,n,eh] for eh in ehRsrvAct) == pDwEnergy
     setattr(OptModel, f'eOperReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eOperReserveDwEnergy, doc='down operating reserve activation [GW]'))
 
     if pIndLogConsole:
@@ -181,7 +198,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     # def eOperReserveUpEnergy(OptModel,n,ar):
     #     # Skip if there are no upward operating reserves activation or there are no generators in this area which can provide reserves
-    #     if mTEPES.pIndReserveActivation() == 0 or mTEPES.pOperReserveUpEnergy[p,sc,n,ar] == 0.0 or len([nr for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr]) + len([eh for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh]) == 0:
+    #     if pIndRsvAct == 0 or mTEPES.pOperReserveUpEnergy[p,sc,n,ar] == 0.0 or len([nr for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr]) + len([eh for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh]) == 0:
     #         return Constraint.Skip
     #     return sum(OptModel.vReserveUpEnergy  [p,sc,n,nr] for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUpEnergy  [p,sc,n,eh] for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == mTEPES.pOperReserveUpEnergy[p,sc,n,ar]
     # setattr(OptModel, f'eOperReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eOperReserveUpEnergy, doc='up   operating reserve activation [GW]'))
@@ -191,7 +208,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
     #
     # def eOperReserveDwEnergy(OptModel,n,ar):
     #     # Skip if there are no upward operating reserves activation or there are no generators in this area which can provide reserves
-    #     if mTEPES.pIndReserveActivation() == 0 or mTEPES.pOperReserveDwEnergy[p,sc,n,ar] == 0.0 or len([nr for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr]) + len([eh for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh]) == 0:
+    #     if pIndRsvAct == 0 or mTEPES.pOperReserveDwEnergy[p,sc,n,ar] == 0.0 or len([nr for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr]) + len([eh for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh]) == 0:
     #         return Constraint.Skip
     #     return sum(OptModel.vReserveDownEnergy  [p,sc,n,nr] for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDownEnergy  [p,sc,n,eh] for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == mTEPES.pOperReserveDwEnergy[p,sc,n,ar]
     # setattr(OptModel, f'eOperReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eOperReserveDwEnergy, doc='down operating reserve activation [GW]'))
@@ -201,7 +218,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eReserveUpEnergy(OptModel,n,nr):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pIndReserveActivation() == 0 or mTEPES.pIndOperReserveGen[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if pIndRsvAct == 0 or mTEPES.pIndOperReserveGen[nr] or sum(pOperResUpDw[n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vReserveUpEnergy[p,sc,n,nr] <= OptModel.vReserveUp[p,sc,n,nr]
     setattr(OptModel, f'eReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveUpEnergy, doc='operating reserve activation lower than offered [GW]'))
@@ -211,7 +228,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eReserveDwEnergy(OptModel,n,nr):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pIndReserveActivation() == 0 or mTEPES.pIndOperReserveGen[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if pIndRsvAct == 0 or mTEPES.pIndOperReserveGen[nr] or sum(pOperResUpDw[n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vReserveDownEnergy[p,sc,n,nr] <= OptModel.vReserveDown[p,sc,n,nr]
     setattr(OptModel, f'eReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveDwEnergy, doc='operating reserve activation lower than offered [GW]'))
@@ -221,7 +238,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eESSReserveUpEnergy(OptModel,n,eh):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while consuming power
-        if mTEPES.pIndReserveActivation() == 0 or mTEPES.pIndOperReserveCon[eh] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
+        if pIndRsvAct == 0 or mTEPES.pIndOperReserveCon[eh] or sum(pOperResUpDw[n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveUpEnergy[p,sc,n,eh] <= OptModel.vESSReserveUp[p,sc,n,eh]
     setattr(OptModel, f'eESSReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eESSReserveUpEnergy, doc='operating reserve activation lower than offered [GW]'))
@@ -231,7 +248,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eESSReserveDwEnergy(OptModel,n,eh):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while consuming power
-        if mTEPES.pIndReserveActivation() == 0 or mTEPES.pIndOperReserveCon[eh] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
+        if pIndRsvAct == 0 or mTEPES.pIndOperReserveCon[eh] or sum(pOperResUpDw[n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveDownEnergy[p,sc,n,eh] <= OptModel.vESSReserveDown[p,sc,n,eh]
     setattr(OptModel, f'eESSReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eESSReserveDwEnergy, doc='operating reserve activation lower than offered [GW]'))
@@ -241,16 +258,25 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     pACNetwork = mTEPES.pIndACPowerFlow()          # hoisted: a rule fires once per index, the flag cannot change during the build
 
+    # per-node generators and lines available in this period, filtered once instead of per load level (none of these filters depends on n)
+    pGenNd   = {nd: [g  for g  in g2n  [nd] if (p,g )          in mTEPES.pg ] for nd in mTEPES.nd}
+    pEhNd    = {nd: [eh for eh in e2n  [nd] if (p,eh)          in mTEPES.peh] for nd in mTEPES.nd}
+    pLoutNd  = {nd: [(nf,cc) for nf,cc in lout [nd] if (p,nd,nf,cc) in mTEPES.pla] for nd in mTEPES.nd}
+    pLinNd   = {nd: [(ni,cc) for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla] for nd in mTEPES.nd}
+    pLoutlNd = {nd: [(nf,cc) for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll] for nd in mTEPES.nd}
+    pLinlNd  = {nd: [(ni,cc) for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll] for nd in mTEPES.nd}
+
     def eBalanceElec(OptModel,n,nd):
         # Under the AC model the balance is rebuilt by openTEPES_ModelFormulationElectricity under this same name, because ten places read its dual back by
         # string. Building the DC version first would be overwritten, so skip it here rather than pay for it.
         if pACNetwork:
             return Constraint.Skip
-        if len([g for g in g2n[nd] if (p,g) in mTEPES.pg]) + len(lout[nd]) + len(lin[nd]) == 0:
+        # the skip tests lout/lin UNFILTERED by pla on purpose: see the load-bearing comment on eBalanceElecAC about the dual readers
+        if len(pGenNd[nd]) + len(lout[nd]) + len(lin[nd]) == 0:
             return Constraint.Skip
-        return (sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd] if (p,g) in mTEPES.pg) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh) + OptModel.vENS[p,sc,n,nd] -
-                sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) - sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pla) -
-                sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll) + sum(OptModel.vFlowElec[p,sc,n,ni,nd,cc] for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pla)) == mTEPES.pDemandElec[p,sc,n,nd]
+        return (sum(OptModel.vTotalOutput[p,sc,n,g] for g in pGenNd[nd]) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in pEhNd[nd]) + OptModel.vENS[p,sc,n,nd] -
+                sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in pLoutlNd[nd]) - sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc] for nf,cc in pLoutNd[nd]) -
+                sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in pLinlNd [nd]) + sum(OptModel.vFlowElec[p,sc,n,ni,nd,cc] for ni,cc in pLinNd [nd])) == mTEPES.pDemandElec[p,sc,n,nd]
     # Under AC the component is created by openTEPES_ModelFormulationElectricity under this same name. Creating an empty one here first would make Pyomo
     # warn about an implicit replacement, so don't create it at all.
     if not pACNetwork:
@@ -277,6 +303,16 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     for ar,g in mTEPES.a2g:
         if g in mTEPES.eh:
             a2e[g].add(ar)
+
+    # reserve requirements per load level and area, read once into plain floats instead of once per unit and load level in every skip condition
+    pOperResUp = {(n,ar): mTEPES.pOperReserveUp[p,sc,n,ar] for n in mTEPES.n for ar in mTEPES.ar}
+    pOperResDw = {(n,ar): mTEPES.pOperReserveDw[p,sc,n,ar] for n in mTEPES.n for ar in mTEPES.ar}
+    # hoisted: a rule fires once per index, these values cannot change during the build. pDuration is a mutable Param and each [p,sc,n2]() inside a
+    # window sum pays a full Pyomo lookup; the sqrt of the efficiency was computed twice per window term
+    pIndRsvAct = mTEPES.pIndReserveActivation()
+    nLast      = mTEPES.n.last()
+    pDur       = {n2: mTEPES.pDuration[p,sc,n2]() for n2 in mTEPES.n}
+    pSqrtEff   = {es: math.sqrt(mTEPES.pEfficiency[es]) for es in mTEPES.es}
 
     def eMaxInventory2Comm(OptModel,n,ec):
         if mTEPES.pIndBinStorInvest[ec] == 0 or (p,ec) not in mTEPES.pec or mTEPES.pMaxStorage[p,sc,n,ec]() == 0.0:
@@ -308,16 +344,17 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     def eESSInventory(OptModel,n,es):
         if (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0) or (mTEPES.pMaxStorage[p,sc,n,es]() == 0.0 and es in mTEPES.el):
             return Constraint.Skip
-        if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
+        i, pStep, pSE = mTEPES.n.ord(n), mTEPES.pStorageTimeStep[es], pSqrtEff[es]
+        if   i == pStep:
             if es not in mTEPES.ec:
-                return mTEPES.pIniInventory[p,sc,n,es]()                                            + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
+                return mTEPES.pIniInventory[p,sc,n,es]()                 + sum(pDur[n2]*(mTEPES.pEnergyInflows[p,sc,n2,es]() - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] / pSE + pSE * OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[i-pStep:i]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
             else:
-                return OptModel.vIniInventory[p,sc,n,es]                                            + sum(mTEPES.pDuration[p,sc,n2]()*(OptModel.vEnergyInflows[p,sc,n2,es] - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
-        elif mTEPES.n.ord(n) >  mTEPES.pStorageTimeStep[es]:
+                return OptModel.vIniInventory[p,sc,n,es]                 + sum(pDur[n2]*(OptModel.vEnergyInflows[p,sc,n2,es] - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] / pSE + pSE * OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[i-pStep:i]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
+        elif i >  pStep:
             if es not in mTEPES.ec:
-                return OptModel.vESSInventory[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
+                return OptModel.vESSInventory[p,sc,mTEPES.n.prev(n,pStep),es] + sum(pDur[n2]*(mTEPES.pEnergyInflows[p,sc,n2,es]() - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] / pSE + pSE * OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[i-pStep:i]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
             else:
-                return OptModel.vESSInventory[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(OptModel.vEnergyInflows[p,sc,n2,es] - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
+                return OptModel.vESSInventory[p,sc,mTEPES.n.prev(n,pStep),es] + sum(pDur[n2]*(OptModel.vEnergyInflows[p,sc,n2,es] - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] / pSE + pSE * OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[i-pStep:i]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
         else:
             return Constraint.Skip
     setattr(OptModel, f'eESSInventory_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eESSInventory, doc='ESS inventory balance [GWh]'))
@@ -340,8 +377,8 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
             # ESS1 is 90 % efficient, charge and discharge both came out at 0.0000 against 0.0629 and 0.0566 without it.
             # In this form the constraint is that the unit exchange no net electricity with the system over the period,
             # after losses. Energy inflows and outflows are deliberately outside it: they are not grid exchanges.
-            pRoot = math.sqrt(mTEPES.pEfficiency[es])
-            return sum(mTEPES.pDuration[p,sc,n2]() * (pRoot * OptModel.vESSTotalCharge[p,sc,n2,es]
+            pRoot = pSqrtEff[es]
+            return sum(pDur[n2] * (pRoot * OptModel.vESSTotalCharge[p,sc,n2,es]
                        - OptModel.vTotalOutput[p,sc,n2,es] / pRoot) for n2 in n2list[i-win:i]) == 0.0
         setattr(OptModel, f'eEnergyNeutrality_{p}_{sc}_{st}',
                 Constraint(mTEPES.n, ne, rule=eEnergyNeutrality, doc='energy neutrality over the EnergyType period [GWh]'))
@@ -355,7 +392,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     def eIniFinInventory(OptModel,n,ec):
         if (p,ec) not in mTEPES.pec or mTEPES.n.ord(n) != mTEPES.pStorageTimeStep[ec]:
             return Constraint.Skip
-        return OptModel.vIniInventory[p,sc,n,ec] == OptModel.vESSInventory[p,sc,mTEPES.n.last(),ec]
+        return OptModel.vIniInventory[p,sc,n,ec] == OptModel.vESSInventory[p,sc,nLast,ec]
     setattr(OptModel, f'eIniFinInventory_{p}_{sc}_{st}', Constraint(mTEPES.necc, rule=eIniFinInventory, doc='Initial equal to final inventory for ESS candidates [p.u.]'))
 
     if pIndLogConsole:
@@ -373,7 +410,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     def eMaxShiftTime(OptModel,n,eh):
         if mTEPES.pShiftTime[eh] == 0 or (p,eh) not in mTEPES.peh:
             return Constraint.Skip
-        return mTEPES.pDuration[p,sc,n]()*mTEPES.pEfficiency[eh]*OptModel.vESSTotalCharge[p,sc,n,eh] <= sum(mTEPES.pDuration[p,sc,n2]()*OptModel.vTotalOutput[p,sc,n2,eh] for n2 in n2list[mTEPES.n.ord(n):mTEPES.n.ord(n)+mTEPES.pShiftTime[eh]])
+        return pDur[n]*mTEPES.pEfficiency[eh]*OptModel.vESSTotalCharge[p,sc,n,eh] <= sum(pDur[n2]*OptModel.vTotalOutput[p,sc,n2,eh] for n2 in n2list[mTEPES.n.ord(n):mTEPES.n.ord(n)+mTEPES.pShiftTime[eh]])
     setattr(OptModel, f'eMaxShiftTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eMaxShiftTime, doc='Maximum shift time [GWh]'))
 
     if pIndLogConsole:
@@ -386,7 +423,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         # Hydro units have commitment while ESS units are implicitly always committed
         if eh not in mTEPES.h:
             # ESS units only need this constraint when they can offer operating reserves and the system demands reserves
-            if mTEPES.pIndOperReserveCon[eh] or sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0:
+            if mTEPES.pIndOperReserveCon[eh] or sum(pOperResDw[n,ar] for ar in a2e[eh]) == 0.0:
                 return Constraint.Skip
             # ESS case equation
             return (OptModel.vCharge2ndBlock[p,sc,n,eh] + OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= 1.0
@@ -400,7 +437,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMinCharge(OptModel, n, eh):
         # Skip if ESS is not available in the period or ESS cannot provide reserves while consuming power or no reserves are demanded in the area where the ESS is located or the ESS cannot consume at variable power
-        if mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
+        if mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(pOperResUp[n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp[p,sc,n,eh] >= 0.0
     setattr(OptModel, f'eMinCharge_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eMinCharge, doc='min charge of an ESS [p.u.]'))
@@ -423,10 +460,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
             return Constraint.Skip
         # Hydro generators can have binary commitment, energy modeled ESS do not have commitment
         # ESS Generator
-        if eh not in mTEPES.h and mTEPES.pIndReserveActivation() == 0:
+        if eh not in mTEPES.h and pIndRsvAct == 0:
             return ((OptModel.vOutput2ndBlock[p,sc,n,eh] + mTEPES.pUpReserveActivation * OptModel.vReserveUp     [p,sc,n,eh]) / mTEPES.pMaxPower2ndBlock [p,sc,n,eh] +
                     (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= 1.0)
-        if eh not in mTEPES.h and mTEPES.pIndReserveActivation() == 1:
+        if eh not in mTEPES.h and pIndRsvAct == 1:
             return ((OptModel.vOutput2ndBlock[p,sc,n,eh] +                         OptModel.vReserveUpEnergy     [p,sc,n,eh]) / mTEPES.pMaxPower2ndBlock [p,sc,n,eh] +
                     (OptModel.vCharge2ndBlock[p,sc,n,eh] +                         OptModel.vESSReserveDownEnergy[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= 1.0)
         # Hydro Generator
@@ -446,12 +483,12 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         # ESS Generator
         if eh not in mTEPES.h:
             # Check the minimum charge to avoid dividing by 0. Dividing by MinCharge is more numerically stable
-            if mTEPES.pIndReserveActivation() == 0:
+            if pIndRsvAct == 0:
                 if mTEPES.pMinCharge[p,sc,n,eh] == 0.0:
                     return OptModel.vESSTotalCharge[p,sc,n,eh]                                ==        OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]
                 else:
                     return OptModel.vESSTotalCharge[p,sc,n,eh] / mTEPES.pMinCharge[p,sc,n,eh] == 1.0 + (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]) / mTEPES.pMinCharge[p,sc,n,eh]
-            if mTEPES.pIndReserveActivation() == 1:
+            if pIndRsvAct == 1:
                 if mTEPES.pMinCharge[p,sc,n,eh] == 0.0:
                     return OptModel.vESSTotalCharge[p,sc,n,eh]                                ==        OptModel.vCharge2ndBlock[p,sc,n,eh] +                         OptModel.vESSReserveDownEnergy[p,sc,n,eh] -                         OptModel.vESSReserveUpEnergy[p,sc,n,eh]
                 else:
@@ -459,12 +496,12 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         # Hydro generator
         else:
             # Check the minimum charge to avoid dividing by 0. Dividing by MinCharge is more numerically stable
-            if mTEPES.pIndReserveActivation() == 0:
+            if pIndRsvAct == 0:
                 if mTEPES.pMinCharge[p,sc,n,eh] == 0.0:
                     return OptModel.vESSTotalCharge[p,sc,n,eh]                                ==                                        OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]
                 else:
                     return OptModel.vESSTotalCharge[p,sc,n,eh] / mTEPES.pMinCharge[p,sc,n,eh] == OptModel.vCommitmentCons[p,sc,n,eh] + (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]) / mTEPES.pMinCharge[p,sc,n,eh]
-            if mTEPES.pIndReserveActivation() == 1:
+            if pIndRsvAct == 1:
                 if mTEPES.pMinCharge[p,sc,n,eh] == 0.0:
                     return OptModel.vESSTotalCharge[p,sc,n,eh]                                ==                                        OptModel.vCharge2ndBlock[p,sc,n,eh] +                         OptModel.vESSReserveDownEnergy[p,sc,n,eh] -                         OptModel.vESSReserveUpEnergy[p,sc,n,eh]
                 else:
@@ -486,25 +523,32 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     def eEnergyOutflows(OptModel,n,es):
         if (p,sc,es) not in mTEPES.eo:
             return Constraint.Skip
-        return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es]())*mTEPES.pDuration[p,sc,n2]() for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == 0.0
+        i = mTEPES.n.ord(n)
+        return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es]())*pDur[n2] for n2 in n2list[i-mTEPES.pOutflowsTimeStep[es]:i]) == 0.0
     setattr(OptModel, f'eEnergyOutflows_{p}_{sc}_{st}', Constraint(mTEPES.neso, rule=eEnergyOutflows, doc='energy outflows of an ESS unit [GW]'))
 
     if pIndLogConsole:
         print('eEnergyOutflows           ... ', len(getattr(OptModel, f'eEnergyOutflows_{p}_{sc}_{st}')), ' rows')
 
     def eMinimumEnergy(OptModel,n,g):
-        if (p,g) not in mTEPES.pg or (p,sc,g) not in mTEPES.gm or sum((mTEPES.pMinPowerElec[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) > 0.0:
+        if (p,g) not in mTEPES.pg or (p,sc,g) not in mTEPES.gm:
             return Constraint.Skip
-        return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) >= 0.0
+        i = mTEPES.n.ord(n)
+        if sum((mTEPES.pMinPowerElec[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*pDur[n2] for n2 in n2list[i-mTEPES.pEnergyTimeStep[g]:i]) > 0.0:
+            return Constraint.Skip
+        return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*pDur[n2] for n2 in n2list[i-mTEPES.pEnergyTimeStep[g]:i]) >= 0.0
     setattr(OptModel, f'eMinimumEnergy_{p}_{sc}_{st}', Constraint(mTEPES.ngen, rule=eMinimumEnergy, doc='minimum energy of a unit [GWh]'))
 
     if pIndLogConsole:
         print('eMinimumEnergy            ... ', len(getattr(OptModel, f'eMinimumEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eMaximumEnergy(OptModel,n,g):
-        if (p,g) not in mTEPES.pg or (p,sc,g) not in mTEPES.gM or sum((mTEPES.pMaxPowerElec[p,sc,n2,g] - mTEPES.pMaxEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
+        if (p,g) not in mTEPES.pg or (p,sc,g) not in mTEPES.gM:
             return Constraint.Skip
-        return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMaxEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) <= 0.0
+        i = mTEPES.n.ord(n)
+        if sum((mTEPES.pMaxPowerElec[p,sc,n2,g] - mTEPES.pMaxEnergy[p,sc,n2,g])*pDur[n2] for n2 in n2list[i-mTEPES.pEnergyTimeStep[g]:i]) < 0.0:
+            return Constraint.Skip
+        return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMaxEnergy[p,sc,n2,g])*pDur[n2] for n2 in n2list[i-mTEPES.pEnergyTimeStep[g]:i]) <= 0.0
     setattr(OptModel, f'eMaximumEnergy_{p}_{sc}_{st}', Constraint(mTEPES.ngen, rule=eMaximumEnergy, doc='maximum energy of a unit [GWh]'))
 
     if pIndLogConsole:
@@ -528,39 +572,51 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         if g in mTEPES.nr:
             a2n[g].add(ar)
 
+    # reserve requirements per load level, read once into plain floats instead of once per unit and load level in every branch condition
+    pOperResUp    = {(n,ar): mTEPES.pOperReserveUp[p,sc,n,ar] for n in mTEPES.n for ar in mTEPES.ar}
+    pOperResDw    = {(n,ar): mTEPES.pOperReserveDw[p,sc,n,ar] for n in mTEPES.n for ar in mTEPES.ar}
+    pIndRampRsv   = mTEPES.pIndRampReserves()          # hoisted: a rule fires once per index, the flag cannot change during the build
+    # pRampReserveUp/Dw only exist on the model when ramp reserves are configured; with the flag off every use below short-circuits before the lookup
+    pRampRsvUpTot = {n: sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) for n in mTEPES.n} if pIndRampRsv else {}
+    pRampRsvDwTot = {n: sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) for n in mTEPES.n} if pIndRampRsv else {}
+    pIndRsvAct    = mTEPES.pIndReserveActivation()
+    nFirst        = mTEPES.n.first()
+    nLast         = mTEPES.n.last()
+
     def eMaxOutput2ndBlock(OptModel,n,nr):
         if (p,nr) not in mTEPES.pnr or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         if (nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr])):
-            if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2n[nr]) >  0.0:
-                if   mTEPES.pIndRampReserves() == 0 or  sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
-                    if   mTEPES.pIndOperReserveGen[nr] == 0 and n != mTEPES.n.last():
+            pUpNeed = sum(pOperResUp[n,ar] for ar in a2n[nr])
+            if pUpNeed >  0.0:
+                if   pIndRampRsv == 0 or  pRampRsvUpTot[n] == 0.0:
+                    if   mTEPES.pIndOperReserveGen[nr] == 0 and n != nLast:
                         return (OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]                                       ) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,mTEPES.n.next(n),nr]
-                    elif mTEPES.pIndOperReserveGen[nr] == 0 and n == mTEPES.n.last():
+                    elif mTEPES.pIndOperReserveGen[nr] == 0 and n == nLast:
                         return (OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]                                       ) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
                     else:
                         return Constraint.Skip
-                elif mTEPES.pIndRampReserves() == 1 and sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) >  0.0:
-                    if   mTEPES.pIndOperReserveGen[nr] == 0 and n != mTEPES.n.last():
+                elif pIndRampRsv == 1 and pRampRsvUpTot[n] >  0.0:
+                    if   mTEPES.pIndOperReserveGen[nr] == 0 and n != nLast:
                         return (OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr] + OptModel.vRampReserveUp  [p,sc,n,nr]) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,mTEPES.n.next(n),nr]
-                    elif mTEPES.pIndOperReserveGen[nr] == 0 and n == mTEPES.n.last():
+                    elif mTEPES.pIndOperReserveGen[nr] == 0 and n == nLast:
                         return (OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr] + OptModel.vRampReserveUp  [p,sc,n,nr]) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
                     else:
                         return Constraint.Skip
                 else:
                     return Constraint.Skip
-            if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2n[nr]) == 0.0:
-                if   mTEPES.pIndRampReserves() == 0 or  sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
-                    if   n != mTEPES.n.last():
+            if pUpNeed == 0.0:
+                if   pIndRampRsv == 0 or  pRampRsvUpTot[n] == 0.0:
+                    if   n != nLast:
                         return (OptModel.vOutput2ndBlock[p,sc,n,nr]                                                                          ) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,mTEPES.n.next(n),nr]
-                    elif n == mTEPES.n.last():
+                    elif n == nLast:
                         return (OptModel.vOutput2ndBlock[p,sc,n,nr]                                                                          ) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
                     else:
                         return Constraint.Skip
-                elif mTEPES.pIndRampReserves() == 1 and sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) >  0.0:
-                    if   n != mTEPES.n.last():
+                elif pIndRampRsv == 1 and pRampRsvUpTot[n] >  0.0:
+                    if   n != nLast:
                         return (OptModel.vOutput2ndBlock[p,sc,n,nr]                                    + OptModel.vRampReserveUp  [p,sc,n,nr]) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,mTEPES.n.next(n),nr]
-                    elif n == mTEPES.n.last():
+                    elif n == nLast:
                         return (OptModel.vOutput2ndBlock[p,sc,n,nr]                                    + OptModel.vRampReserveUp  [p,sc,n,nr]) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
                     else:
                         return Constraint.Skip
@@ -577,15 +633,16 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         if (p,nr) not in mTEPES.pnr or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         if (nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr])):
-            if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) > 0.0:
-                if   mTEPES.pIndOperReserveGen[nr] == 0 and (mTEPES.pIndRampReserves() == 0 or  sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) == 0.0):
+            pDwNeed = sum(pOperResDw[n,ar] for ar in a2n[nr])
+            if pDwNeed > 0.0:
+                if   mTEPES.pIndOperReserveGen[nr] == 0 and (pIndRampRsv == 0 or  pRampRsvDwTot[n] == 0.0):
                     return  OptModel.vOutput2ndBlock[p,sc,n,nr] - OptModel.vReserveDown[p,sc,n,nr]                                      >= 0.0
-                elif mTEPES.pIndOperReserveGen[nr] == 0 and  mTEPES.pIndRampReserves() == 1 and sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) >  0.0:
+                elif mTEPES.pIndOperReserveGen[nr] == 0 and  pIndRampRsv == 1 and pRampRsvDwTot[n] >  0.0:
                     return  OptModel.vOutput2ndBlock[p,sc,n,nr] - OptModel.vReserveDown[p,sc,n,nr] - OptModel.vRampReserveDw[p,sc,n,nr] >= 0.0
                 else:
                     return Constraint.Skip
-            if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0:
-                if mTEPES.pIndRampReserves() == 1 and sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) >  0.0:
+            if pDwNeed == 0.0:
+                if pIndRampRsv == 1 and pRampRsvDwTot[n] >  0.0:
                     return  OptModel.vOutput2ndBlock[p,sc,n,nr]                                    - OptModel.vRampReserveDw[p,sc,n,nr] >= 0.0
                 else:
                     return Constraint.Skip
@@ -601,7 +658,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
             return Constraint.Skip
         if (mTEPES.pMustRun[nr] == 0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] or nr in mTEPES.gc) and (nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr])):
             if mTEPES.pMaxPowerElec[p,sc,n,nr]:
-                if   mTEPES.pIndReserveActivation() == 0:
+                if   pIndRsvAct == 0:
                     if mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0:
                         return OptModel.vTotalOutput[p,sc,n,nr]                                   ==                                    OptModel.vOutput2ndBlock[p,sc,n,nr] + mTEPES.pUpReserveActivation * OptModel.vReserveUp[p,sc,n,nr] - mTEPES.pDwReserveActivation * OptModel.vReserveDown[p,sc,n,nr]
                     else:
@@ -623,7 +680,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
     def eUCStrShut(OptModel,n,nr):
         if (p,nr) not in mTEPES.pnr or nr in mTEPES.eh or mTEPES.pMustRun[nr] or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or mTEPES.pVariableMinPowerElec[p,sc,n,nr] > 0.0:
             return Constraint.Skip
-        if n == mTEPES.n.first():
+        if n == nFirst:
             return OptModel.vCommitment[p,sc,n,nr] - mTEPES.pInitialUC[p,sc,n,nr]()                 == OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,n,nr]
         else:
             return OptModel.vCommitment[p,sc,n,nr] - OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr] == OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,n,nr]
@@ -646,42 +703,39 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
     pYearlyActive = {group: len(mTEPES.GeneratorsInYearlyGroup[group] & pnrGensAll) > 1 for group in mTEPES.ExclusiveGroupsYearly}
     pHourlyActive = {group: len(mTEPES.GeneratorsInHourlyGroup[group] & pnrGensP  ) > 1 for group in mTEPES.ExclusiveGroupsHourly}
 
+    # sparse (group, generator) pairs in mTEPES.nr order, filtered once: the dense product used to call each rule |n|*|groups|*|nr| times only to skip
+    # every non-member. Iterating mTEPES.nr keeps the surviving rows in exactly the order the dense product produced them
+    pYearlyGN = [(group,nr) for group in mTEPES.ExclusiveGroupsYearly if pYearlyActive[group] for nr in mTEPES.nr if nr in mTEPES.GeneratorsInYearlyGroup[group] and (p,nr) in mTEPES.pnr]
+    pHourlyGN = [(group,nr) for group in mTEPES.ExclusiveGroupsHourly if pHourlyActive[group] for nr in mTEPES.nr if nr in mTEPES.GeneratorsInHourlyGroup[group] and (p,nr) in mTEPES.pnr]
+
     def eMaxCommitmentYearly(OptModel,n,group,nr):
-        # Skip if generator not available on period
-        # Skip if the generator is not part of the exclusive group
-        # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group] or not pYearlyActive[group]:
-            return Constraint.Skip
+        # availability, membership and group-size filters moved to pYearlyGN, built once
         return OptModel.vCommitment[p,sc,n,nr]                                  <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
 
-    setattr(OptModel, f'eMaxCommitmentYearly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsYearly*mTEPES.nr, rule=eMaxCommitmentYearly, doc='maximum of all the commitments [p.u.]'))
+    setattr(OptModel, f'eMaxCommitmentYearly_{p}_{sc}_{st}', Constraint(mTEPES.n, pYearlyGN, rule=eMaxCommitmentYearly, doc='maximum of all the commitments [p.u.]'))
 
     if pIndLogConsole:
         print('eMaxCommitmentYearly      ... ', len(getattr(OptModel, f'eMaxCommitmentYearly_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCommitmentConsYearly(OptModel,n,group,nr):
-        # Skip if generator not available on period
-        # Skip if the generator is not part of the exclusive group
+        # availability, membership and group-size filters moved to pYearlyGN, built once
         # Skip if the generator has no consumption commitment (only hydro units do)
-        # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group] or nr not in mTEPES.h or not pYearlyActive[group]:
+        if nr not in mTEPES.h:
             return Constraint.Skip
         return OptModel.vCommitmentCons[p,sc,n,nr]                           <= OptModel.vMaxCommitmentConsYearly[p,sc,nr,group]
 
-    setattr(OptModel, f'eMaxCommitmentConsYearly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsYearly*mTEPES.nr, rule=eMaxCommitmentConsYearly, doc='maximum of all the consumption commitments [p.u.]'))
+    setattr(OptModel, f'eMaxCommitmentConsYearly_{p}_{sc}_{st}', Constraint(mTEPES.n, pYearlyGN, rule=eMaxCommitmentConsYearly, doc='maximum of all the consumption commitments [p.u.]'))
 
     if pIndLogConsole:
         print('eMaxCommitmentConsYearly  ... ', len(getattr(OptModel, f'eMaxCommitmentConsYearly_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCommitGenYearly(OptModel,n,group,nr):
-        # Skip if generator not available on period
-        # Skip if the generator is not part of the exclusive group
+        # availability, membership and group-size filters moved to pYearlyGN, built once
         # Avoid division by 0. If Maximum power is 0 this equation is not needed anyway
-        # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group] or mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0 or not pYearlyActive[group]:
+        if mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
-    setattr(OptModel, f'eMaxCommitGenYearly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsYearly*mTEPES.nr, rule=eMaxCommitGenYearly, doc='maximum of all the capacity factors'))
+    setattr(OptModel, f'eMaxCommitGenYearly_{p}_{sc}_{st}', Constraint(mTEPES.n, pYearlyGN, rule=eMaxCommitGenYearly, doc='maximum of all the capacity factors'))
 
     if pIndLogConsole:
         print('eMaxCommitGenYearly       ... ', len(getattr(OptModel, f'eMaxCommitGenYearly_{p}_{sc}_{st}')), ' rows')
@@ -701,25 +755,20 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('Generating generation commitment       ... ', round(GeneratingTime), 's')
 
     def eMaxCommitmentHourly(OptModel,n,group,nr):
-        # Skip if generator not available on period
-        # Skip if the generator is not part of the exclusive group
-        # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInHourlyGroup[group] or not pHourlyActive[group]:
-            return Constraint.Skip
+        # availability, membership and group-size filters moved to pHourlyGN, built once
         return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
-    setattr(OptModel, f'eMaxCommitmentHourly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsHourly*mTEPES.nr, rule=eMaxCommitmentHourly, doc='maximum of all the commitments [p.u.]'))
+    setattr(OptModel, f'eMaxCommitmentHourly_{p}_{sc}_{st}', Constraint(mTEPES.n, pHourlyGN, rule=eMaxCommitmentHourly, doc='maximum of all the commitments [p.u.]'))
 
     if pIndLogConsole:
         print('eMaxCommitmentHourly      ... ', len(getattr(OptModel, f'eMaxCommitmentHourly_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCommitGenHourly(OptModel,n,group,nr):
-        # Skip if generator not available on period or the generator is not part of the exclusive group
+        # availability, membership and group-size filters moved to pHourlyGN, built once
         # Avoid division by 0. If Maximum power is 0 this equation is not needed anyway
-        # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInHourlyGroup[group] or mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0 or not pHourlyActive[group]:
+        if mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
-    setattr(OptModel, f'eMaxCommitGenHourly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsHourly*mTEPES.nr, rule=eMaxCommitGenHourly, doc='maximum of all the capacity factors'))
+    setattr(OptModel, f'eMaxCommitGenHourly_{p}_{sc}_{st}', Constraint(mTEPES.n, pHourlyGN, rule=eMaxCommitGenHourly, doc='maximum of all the capacity factors'))
 
     if pIndLogConsole:
         print('eMaxCommitGenHourly       ... ', len(getattr(OptModel, f'eMaxCommitGenHourly_{p}_{sc}_{st}')), ' rows')
@@ -747,19 +796,29 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
 
     n2list = list(mTEPES.n2)
 
+    # ramp-reserve requirements per load level and the activation flag, read once instead of twice per load level (skip and RHS).
+    # pRampReserveUp/Dw only exist on the model when ramp reserves are configured; with the flag off every use below short-circuits before the lookup
+    pIndRampRsv   = mTEPES.pIndRampReserves()          # hoisted: a rule fires once per index, the flag cannot change during the build
+    pRampRsvUpTot = {n: sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) for n in mTEPES.n} if pIndRampRsv else {}
+    pRampRsvDwTot = {n: sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) for n in mTEPES.n} if pIndRampRsv else {}
+    pIndBinRamps   = mTEPES.pIndBinGenRamps()
+    pIndBinMinTime = mTEPES.pIndBinGenMinTime()
+    nFirst         = mTEPES.n.first()
+    pDur           = {n: mTEPES.pDuration[p,sc,n]() for n in mTEPES.n}
+
     def eSystemRampUp(OptModel,n):
-        if mTEPES.pIndRampReserves() == 0 or sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
+        if pIndRampRsv == 0 or pRampRsvUpTot[n] == 0.0:
             return Constraint.Skip
-        return sum(OptModel.vRampReserveUp[p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr]))) / mTEPES.pDuration[p,sc,n]() >= sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar)
+        return sum(OptModel.vRampReserveUp[p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr]))) / pDur[n] >= pRampRsvUpTot[n]
     setattr(OptModel, f'eSystemRampUp_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eSystemRampUp, doc='minimum system ramp up   [p.u.]'))
 
     if pIndLogConsole:
         print('eSystemRampUp             ... ', len(getattr(OptModel, f'eSystemRampUp_{p}_{sc}_{st}')), ' rows')
 
     def eSystemRampDw(OptModel,n):
-        if mTEPES.pIndRampReserves() == 0 or sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
+        if pIndRampRsv == 0 or pRampRsvDwTot[n] == 0.0:
             return Constraint.Skip
-        return sum(OptModel.vRampReserveDw[p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr]))) / mTEPES.pDuration[p,sc,n]() >= sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar)
+        return sum(OptModel.vRampReserveDw[p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr]))) / pDur[n] >= pRampRsvDwTot[n]
     setattr(OptModel, f'eSystemRampDw_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eSystemRampDw, doc='minimum system ramp down [p.u.]'))
 
     if pIndLogConsole:
@@ -769,11 +828,11 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         if (p,nr) not in mTEPES.pnr:
             return Constraint.Skip
         if nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr]):
-            if mTEPES.pIndBinGenRamps() and mTEPES.pRampUp[nr] and mTEPES.pRampUp[nr]*mTEPES.pDuration[p,sc,n]() < mTEPES.pMaxPower2ndBlock[p,sc,n,nr]:
-                if n == mTEPES.n.first():
-                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0)                        + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[nr] <=   OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
+            if pIndBinRamps and mTEPES.pRampUp[nr] and mTEPES.pRampUp[nr]*pDur[n] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr]:
+                if n == nFirst:
+                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0)                        + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]) / pDur[n] / mTEPES.pRampUp[nr] <=   OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
                 else:
-                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr] - OptModel.vReserveDown[p,sc,mTEPES.n.prev(n),nr] + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[nr] <=   OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
+                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr] - OptModel.vReserveDown[p,sc,mTEPES.n.prev(n),nr] + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]) / pDur[n] / mTEPES.pRampUp[nr] <=   OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
             else:
                 return Constraint.Skip
         else:
@@ -787,11 +846,11 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         if (p,nr) not in mTEPES.pnr:
             return Constraint.Skip
         if nr not in mTEPES.es or (nr in mTEPES.es and mTEPES.pTotalMaxCharge[nr]+mTEPES.pTotalEnergyInflows[nr]):
-            if mTEPES.pIndBinGenRamps() and mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr]*mTEPES.pDuration[p,sc,n]() < mTEPES.pMaxPower2ndBlock[p,sc,n,nr]:
-                if n == mTEPES.n.first():
-                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0)                        + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveDown[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[nr] >= - mTEPES.pInitialUC[p,sc,n,nr]()                 + OptModel.vShutDown[p,sc,n,nr]
+            if pIndBinRamps and mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr]*pDur[n] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr]:
+                if n == nFirst:
+                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0)                        + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveDown[p,sc,n,nr]) / pDur[n] / mTEPES.pRampDw[nr] >= - mTEPES.pInitialUC[p,sc,n,nr]()                 + OptModel.vShutDown[p,sc,n,nr]
                 else:
-                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr] - OptModel.vReserveUp  [p,sc,mTEPES.n.prev(n),nr] + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveDown[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[nr] >= - OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr] + OptModel.vShutDown[p,sc,n,nr]
+                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr] - OptModel.vReserveUp  [p,sc,mTEPES.n.prev(n),nr] + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveDown[p,sc,n,nr]) / pDur[n] / mTEPES.pRampDw[nr] >= - OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr] + OptModel.vShutDown[p,sc,n,nr]
             else:
                 return Constraint.Skip
         else:
@@ -803,11 +862,11 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
 
     def eRampUpCharge(OptModel,n,eh):
         if (p,eh) in mTEPES.peh:
-            if mTEPES.pIndBinGenRamps() and mTEPES.pRampUp[eh] and mTEPES.pRampUp[eh]*mTEPES.pDuration[p,sc,n]() < mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]:
-                if n == mTEPES.n.first():
-                    return (                                                                                                            OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp  [p,sc,n,eh]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[eh] >= - 1.0
+            if pIndBinRamps and mTEPES.pRampUp[eh] and mTEPES.pRampUp[eh]*pDur[n] < mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]:
+                if n == nFirst:
+                    return (                                                                                                            OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp  [p,sc,n,eh]) / pDur[n] / mTEPES.pRampUp[eh] >= - 1.0
                 else:
-                    return (- OptModel.vCharge2ndBlock[p,sc,mTEPES.n.prev(n),eh] + OptModel.vESSReserveDown[p,sc,mTEPES.n.prev(n),eh] + OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp  [p,sc,n,eh]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[eh] >= - 1.0
+                    return (- OptModel.vCharge2ndBlock[p,sc,mTEPES.n.prev(n),eh] + OptModel.vESSReserveDown[p,sc,mTEPES.n.prev(n),eh] + OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp  [p,sc,n,eh]) / pDur[n] / mTEPES.pRampUp[eh] >= - 1.0
             else:
                 return Constraint.Skip
         else:
@@ -819,11 +878,11 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
 
     def eRampDwCharge(OptModel,n,eh):
         if (p,eh) in mTEPES.peh:
-            if mTEPES.pIndBinGenRamps() and mTEPES.pRampDw[eh] and mTEPES.pRampDw[eh]*mTEPES.pDuration[p,sc,n]() < mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]:
-                if n == mTEPES.n.first():
-                    return (                                                                                                          + OptModel.vCharge2ndBlock[p,sc,n,eh] + OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[eh] <=   1.0
+            if pIndBinRamps and mTEPES.pRampDw[eh] and mTEPES.pRampDw[eh]*pDur[n] < mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]:
+                if n == nFirst:
+                    return (                                                                                                          + OptModel.vCharge2ndBlock[p,sc,n,eh] + OptModel.vESSReserveDown[p,sc,n,eh]) / pDur[n] / mTEPES.pRampDw[eh] <=   1.0
                 else:
-                    return (- OptModel.vCharge2ndBlock[p,sc,mTEPES.n.prev(n),eh] - OptModel.vESSReserveUp  [p,sc,mTEPES.n.prev(n),eh] + OptModel.vCharge2ndBlock[p,sc,n,eh] + OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[eh] <=   1.0
+                    return (- OptModel.vCharge2ndBlock[p,sc,mTEPES.n.prev(n),eh] - OptModel.vESSReserveUp  [p,sc,mTEPES.n.prev(n),eh] + OptModel.vCharge2ndBlock[p,sc,n,eh] + OptModel.vESSReserveDown[p,sc,n,eh]) / pDur[n] / mTEPES.pRampDw[eh] <=   1.0
             else:
                 return Constraint.Skip
         else:
@@ -846,26 +905,26 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
             return Constraint.Skip
         if pIndStableTimeDeadBand:
             if mTEPES.pRampUp[nr]:
-                if n == mTEPES.n.first():
-                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[nr]                  <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * (OptModel.vRampDwState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
+                if n == nFirst:
+                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pRampUp[nr]                  <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * (OptModel.vRampDwState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
                 else:
-                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[nr]                  <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * (OptModel.vRampDwState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
+                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pRampUp[nr]                  <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * (OptModel.vRampDwState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
             else:
-                if n == mTEPES.n.first():
-                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * (OptModel.vRampDwState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
+                if n == nFirst:
+                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * (OptModel.vRampDwState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
                 else:
-                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * (OptModel.vRampDwState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
+                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * (OptModel.vRampDwState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
         else:
             if mTEPES.pRampUp[nr]:
-                if n == mTEPES.n.first():
-                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[nr]                  <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
+                if n == nFirst:
+                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pRampUp[nr]                  <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
                 else:
-                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[nr]                  <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
+                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pRampUp[nr]                  <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
             else:
-                if n == mTEPES.n.first():
-                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
+                if n == nFirst:
+                    return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
                 else:
-                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
+                    return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
     setattr(OptModel, f'eRampUpState_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eRampUpState, doc='ramp up state  [p.u.]'))
 
     if pIndLogConsole:
@@ -876,33 +935,33 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
             return Constraint.Skip
         if pIndStableTimeDeadBand:
             if mTEPES.pRampDw[nr]:
-                if n == mTEPES.n.first():
-                    return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[nr]                  <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * (OptModel.vRampUpState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
+                if n == nFirst:
+                    return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pRampDw[nr]                  <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * (OptModel.vRampUpState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
                 else:
-                    return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[nr]                  <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * (OptModel.vRampUpState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
+                    return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pRampDw[nr]                  <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * (OptModel.vRampUpState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
             else:
-                if n == mTEPES.n.first():
-                    return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * (OptModel.vRampUpState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
+                if n == nFirst:
+                    return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * (OptModel.vRampUpState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
                 else:
-                    return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * (OptModel.vRampUpState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
+                    return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * (OptModel.vRampUpState[p,sc,n,nr] - OptModel.vStableState[p,sc,n,nr])
         else:
             if mTEPES.pRampDw[nr]:
-                if n == mTEPES.n.first():
-                    return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[nr]                  <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
+                if n == nFirst:
+                    return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pRampDw[nr]                  <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
                 else:
-                    return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[nr]                  <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
+                    return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pRampDw[nr]                  <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
             else:
-                if n == mTEPES.n.first():
-                    return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
+                if n == nFirst:
+                    return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr], 0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
                 else:
-                    return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
+                    return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / pDur[n] / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
     setattr(OptModel, f'eRampDwState_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eRampDwState, doc='maximum ramp down [p.u.]'))
 
     if pIndLogConsole:
         print('eRampDwState              ... ', len(getattr(OptModel, f'eRampDwState_{p}_{sc}_{st}')), ' rows')
 
     def eMinUpTime(OptModel,n,t):
-        if (p,t) not in mTEPES.pg or t in mTEPES.eh or mTEPES.pMustRun[t] or mTEPES.pIndBinGenMinTime() == 0 or (mTEPES.pMinPowerElec[p,sc,n,t] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,t] == 0.0) or mTEPES.pUpTime[t] <= 1 or mTEPES.n.ord(n) <= mTEPES.pUpTime[t]:
+        if (p,t) not in mTEPES.pg or t in mTEPES.eh or mTEPES.pMustRun[t] or pIndBinMinTime == 0 or (mTEPES.pMinPowerElec[p,sc,n,t] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,t] == 0.0) or mTEPES.pUpTime[t] <= 1 or mTEPES.n.ord(n) <= mTEPES.pUpTime[t]:
             return Constraint.Skip
         return sum(OptModel.vStartUp [p,sc,n2,t] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pUpTime[t]:mTEPES.n.ord(n)]) <=     OptModel.vCommitment[p,sc,n,t]
     setattr(OptModel, f'eMinUpTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.tr, rule=eMinUpTime  , doc='minimum up   time [p.u.]'))
@@ -911,7 +970,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eMinUpTime                ... ', len(getattr(OptModel, f'eMinUpTime_{p}_{sc}_{st}')), ' rows')
 
     def eMinDownTime(OptModel,n,t):
-        if (p,t) not in mTEPES.pg or t in mTEPES.eh or mTEPES.pMustRun[t] or mTEPES.pIndBinGenMinTime() == 0 or (mTEPES.pMinPowerElec[p,sc,n,t] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,t] == 0.0) or mTEPES.pDwTime[t] <= 1 or mTEPES.n.ord(n) <= mTEPES.pDwTime[t]:
+        if (p,t) not in mTEPES.pg or t in mTEPES.eh or mTEPES.pMustRun[t] or pIndBinMinTime == 0 or (mTEPES.pMinPowerElec[p,sc,n,t] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,t] == 0.0) or mTEPES.pDwTime[t] <= 1 or mTEPES.n.ord(n) <= mTEPES.pDwTime[t]:
             return Constraint.Skip
         return sum(OptModel.vShutDown[p,sc,n2,t] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pDwTime[t]:mTEPES.n.ord(n)]) <= 1 - OptModel.vCommitment[p,sc,n,t]
     setattr(OptModel, f'eMinDownTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.tr, rule=eMinDownTime, doc='minimum down time [p.u.]'))
@@ -954,44 +1013,55 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
 
     n2list = list(mTEPES.n2)
 
+    # hoisted: a rule fires once per index, these values cannot change during the build
+    pSingleNode = mTEPES.pIndBinSingleNode()
+    nFirst      = mTEPES.n.first()
+
+    # candidate and switchable lines of this period, filtered once: these conditions do not depend on n (the lists keep the mTEPES.lc / mTEPES.la order,
+    # so the surviving rows are registered exactly as the dense product used to)
+    pLcP       = [(ni,nf,cc) for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc]
+    pSwOnOff   = [(ni,nf,cc) for ni,nf,cc in mTEPES.la if mTEPES.pIndBinLineSwitch[ni,nf,cc] and (p,ni,nf,cc) in mTEPES.pla and (mTEPES.pSwOnTime[ni,nf,cc] > 1 or mTEPES.pSwOffTime[ni,nf,cc] > 1)]
+    pSwOnLong  = [(ni,nf,cc) for ni,nf,cc in mTEPES.la if mTEPES.pIndBinLineSwitch[ni,nf,cc] and (p,ni,nf,cc) in mTEPES.pla and mTEPES.pSwOnTime [ni,nf,cc] > 1]
+    pSwOffLong = [(ni,nf,cc) for ni,nf,cc in mTEPES.la if mTEPES.pIndBinLineSwitch[ni,nf,cc] and (p,ni,nf,cc) in mTEPES.pla and mTEPES.pSwOffTime[ni,nf,cc] > 1]
+
     def eLineStateCand(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or (p,ni,nf,cc) not in mTEPES.plc:
+        if pSingleNode:
             return Constraint.Skip
         if mTEPES.pIndBinLineSwitch[ni,nf,cc]:
             return OptModel.vLineCommit[p,sc,n,ni,nf,cc] <= OptModel.vNetworkInvest[p,ni,nf,cc]
         else:
             return OptModel.vLineCommit[p,sc,n,ni,nf,cc] == OptModel.vNetworkInvest[p,ni,nf,cc]
-    setattr(OptModel, f'eLineStateCand_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lc, rule=eLineStateCand, doc='logical relation between investment and operation in candidates'))
+    setattr(OptModel, f'eLineStateCand_{p}_{sc}_{st}', Constraint(mTEPES.n, pLcP, rule=eLineStateCand, doc='logical relation between investment and operation in candidates'))
 
     if pIndLogConsole:
         print('eLineStateCand            ... ', len(getattr(OptModel, f'eLineStateCand_{p}_{sc}_{st}')), ' rows')
 
     def eSWOnOff(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla or (mTEPES.pSwOnTime[ni,nf,cc] <= 1 and mTEPES.pSwOffTime[ni,nf,cc] <= 1):
+        if pSingleNode:
             return Constraint.Skip
-        if n == mTEPES.n.first():
+        if n == nFirst:
             return OptModel.vLineCommit[p,sc,n,ni,nf,cc] - mTEPES.pInitialSwitch[p,sc,n,ni,nf,cc]()             == OptModel.vLineOnState[p,sc,n,ni,nf,cc] - OptModel.vLineOffState[p,sc,n,ni,nf,cc]
         else:
             return OptModel.vLineCommit[p,sc,n,ni,nf,cc] - OptModel.vLineCommit[p,sc,mTEPES.n.prev(n),ni,nf,cc] == OptModel.vLineOnState[p,sc,n,ni,nf,cc] - OptModel.vLineOffState[p,sc,n,ni,nf,cc]
-    setattr(OptModel, f'eSWOnOff_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eSWOnOff, doc='relation among switching decision activate and deactivate state'))
+    setattr(OptModel, f'eSWOnOff_{p}_{sc}_{st}', Constraint(mTEPES.n, pSwOnOff, rule=eSWOnOff, doc='relation among switching decision activate and deactivate state'))
 
     if pIndLogConsole:
         print('eSWOnOff                  ... ', len(getattr(OptModel, f'eSWOnOff_{p}_{sc}_{st}')), ' rows')
 
     def eMinSwOnState(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pSwOnTime [ni,nf,cc] <= 1 or mTEPES.n.ord(n) <= mTEPES.pSwOnTime [ni,nf,cc]:
+        if pSingleNode or mTEPES.n.ord(n) <= mTEPES.pSwOnTime [ni,nf,cc]:
             return Constraint.Skip
         return sum(OptModel.vLineOnState [p,sc,n2,ni,nf,cc] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pSwOnTime [ni,nf,cc]:mTEPES.n.ord(n)]) <=    OptModel.vLineCommit[p,sc,n,ni,nf,cc]
-    setattr(OptModel, f'eMinSwOnState_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eMinSwOnState, doc='minimum switch on state [h]'))
+    setattr(OptModel, f'eMinSwOnState_{p}_{sc}_{st}', Constraint(mTEPES.n, pSwOnLong, rule=eMinSwOnState, doc='minimum switch on state [h]'))
 
     if pIndLogConsole:
         print('eMinSwOnState             ... ', len(getattr(OptModel, f'eMinSwOnState_{p}_{sc}_{st}')), ' rows')
 
     def eMinSwOffState(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pSwOffTime[ni,nf,cc] <= 1 or mTEPES.n.ord(n) <= mTEPES.pSwOffTime[ni,nf,cc]:
+        if pSingleNode or mTEPES.n.ord(n) <= mTEPES.pSwOffTime[ni,nf,cc]:
             return Constraint.Skip
         return sum(OptModel.vLineOffState[p,sc,n2,ni,nf,cc] for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pSwOffTime[ni,nf,cc]:mTEPES.n.ord(n)]) <= 1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
-    setattr(OptModel, f'eMinSwOffState_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eMinSwOffState, doc='minimum switch off state [h]'))
+    setattr(OptModel, f'eMinSwOffState_{p}_{sc}_{st}', Constraint(mTEPES.n, pSwOffLong, rule=eMinSwOffState, doc='minimum switch off state [h]'))
 
     if pIndLogConsole:
         print('eMinSwOffState            ... ', len(getattr(OptModel, f'eMinSwOffState_{p}_{sc}_{st}')), ' rows')
@@ -1007,26 +1077,36 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
 
     StartTime = time.time()
 
+    # hoisted: a rule fires once per index, these flags cannot change during the build
+    pSingleNode = mTEPES.pIndBinSingleNode()
+    pPTDF       = mTEPES.pIndPTDF()
+    pACFlow     = mTEPES.pIndACPowerFlow()
+    pNetLosses  = mTEPES.pIndBinNetLosses()
+
+    # lines whose flow is gated by a commitment (candidate or switchable) in this period, filtered once: these conditions do not depend on n
+    # (the list keeps the mTEPES.la order, so the surviving rows are registered exactly as the dense product used to)
+    pGatedLines = [(ni,nf,cc) for ni,nf,cc in mTEPES.la if ((ni,nf,cc) in mTEPES.lc or mTEPES.pIndBinLineSwitch[ni,nf,cc]) and (p,ni,nf,cc) in mTEPES.pla]
+
     def eNetCapacity1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or (p,ni,nf,cc) not in mTEPES.pla or ((ni,nf,cc) not in mTEPES.lc and mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0) or mTEPES.pMaxNTCMax[p,sc,n,ni,nf,cc] == 0.0:
+        if pSingleNode or mTEPES.pMaxNTCMax[p,sc,n,ni,nf,cc] == 0.0:
             return Constraint.Skip
         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pMaxNTCMax[p,sc,n,ni,nf,cc] >= - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
-    setattr(OptModel, f'eNetCapacity1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eNetCapacity1, doc='maximum flow by existing network capacity [p.u.]'))
+    setattr(OptModel, f'eNetCapacity1_{p}_{sc}_{st}', Constraint(mTEPES.n, pGatedLines, rule=eNetCapacity1, doc='maximum flow by existing network capacity [p.u.]'))
 
     if pIndLogConsole:
         print('eNetCapacity1             ... ', len(getattr(OptModel, f'eNetCapacity1_{p}_{sc}_{st}')), ' rows')
 
     def eNetCapacity2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or (p,ni,nf,cc) not in mTEPES.pla or ((ni,nf,cc) not in mTEPES.lc and mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0) or mTEPES.pMaxNTCMax[p,sc,n,ni,nf,cc] == 0.0:
+        if pSingleNode or mTEPES.pMaxNTCMax[p,sc,n,ni,nf,cc] == 0.0:
             return Constraint.Skip
         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pMaxNTCMax[p,sc,n,ni,nf,cc] <=   OptModel.vLineCommit[p,sc,n,ni,nf,cc]
-    setattr(OptModel, f'eNetCapacity2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eNetCapacity2, doc='maximum flow by existing network capacity [p.u.]'))
+    setattr(OptModel, f'eNetCapacity2_{p}_{sc}_{st}', Constraint(mTEPES.n, pGatedLines, rule=eNetCapacity2, doc='maximum flow by existing network capacity [p.u.]'))
 
     if pIndLogConsole:
         print('eNetCapacity2             ... ', len(getattr(OptModel, f'eNetCapacity2_{p}_{sc}_{st}')), ' rows')
 
     def eKirchhoff2ndLaw1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndACPowerFlow() or mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
+        if pACFlow or pSingleNode or pPTDF or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
             return Constraint.Skip
         if (ni,nf,cc) in mTEPES.lca:
             return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc]() - (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc]() * mTEPES.pSBase >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
@@ -1038,7 +1118,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eKirchhoff2ndLaw1         ... ', len(getattr(OptModel, f'eKirchhoff2ndLaw1_{p}_{sc}_{st}')), ' rows')
 
     def eKirchhoff2ndLaw2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndACPowerFlow() or mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
+        if pACFlow or pSingleNode or pPTDF or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
             return Constraint.Skip
         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc]() - (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc]() * mTEPES.pSBase <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eKirchhoff2ndLaw2, doc='flow for each AC candidate line [rad]'))
@@ -1049,7 +1129,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     def eLineLosses1(OptModel,n,ni,nf,cc):
         # Under AC the loss of an AC branch comes from vFlowElec + vFlowElecBck (eLineLossesAC). A DC branch has no AC physics, so it keeps the
         # loss factor — dropping it there would make every HVDC link lossless.
-        if (mTEPES.pIndACPowerFlow() and (ni,nf,cc) in mTEPES.laa) or mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or mTEPES.pIndBinNetLosses() == 0 or (p,ni,nf,cc) not in mTEPES.pll:
+        if (pACFlow and (ni,nf,cc) in mTEPES.laa) or pSingleNode or pPTDF or pNetLosses == 0 or (p,ni,nf,cc) not in mTEPES.pll:
             return Constraint.Skip
         return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eLineLosses1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ll, rule=eLineLosses1, doc='ohmic losses for all the lines [GW]'))
@@ -1060,7 +1140,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     def eLineLosses2(OptModel,n,ni,nf,cc):
         # Under AC the loss of an AC branch comes from vFlowElec + vFlowElecBck (eLineLossesAC). A DC branch has no AC physics, so it keeps the
         # loss factor — dropping it there would make every HVDC link lossless.
-        if (mTEPES.pIndACPowerFlow() and (ni,nf,cc) in mTEPES.laa) or mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or mTEPES.pIndBinNetLosses() == 0 or (p,ni,nf,cc) not in mTEPES.pll:
+        if (pACFlow and (ni,nf,cc) in mTEPES.laa) or pSingleNode or pPTDF or pNetLosses == 0 or (p,ni,nf,cc) not in mTEPES.pll:
             return Constraint.Skip
         return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eLineLosses2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ll, rule=eLineLosses2, doc='ohmic losses for all the lines [GW]'))
@@ -1068,19 +1148,21 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     if pIndLogConsole:
         print('eLineLosses2              ... ', len(getattr(OptModel, f'eLineLosses2_{p}_{sc}_{st}')), ' rows')
 
-    # nodes to generators (g2n)
+    # nodes to generators (g2n), filtered once by period availability instead of per load level
     g2n = defaultdict(set)
     e2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
         g2n[nd].add(g)
         if g in mTEPES.eh:
             e2n[nd].add(g)
+    pGenNd = {nd: [g  for g  in g2n[nd] if (p,g ) in mTEPES.pg ] for nd in mTEPES.nd}
+    pEhNd  = {nd: [eh for eh in e2n[nd] if (p,eh) in mTEPES.peh] for nd in mTEPES.nd}
 
     def eNetPosition(OptModel,n,nd):
         # net position NP_n = sum of the output of the generators in node n minus its demand
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() == 0:
+        if pSingleNode or pPTDF == 0:
             return Constraint.Skip
-        return (OptModel.vNetPosition[p,sc,n,nd] == sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd] if (p,g) in mTEPES.pg) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh) + OptModel.vENS[p,sc,n,nd] - mTEPES.pDemandElec[p,sc,n,nd])
+        return (OptModel.vNetPosition[p,sc,n,nd] == sum(OptModel.vTotalOutput[p,sc,n,g] for g in pGenNd[nd]) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in pEhNd[nd]) + OptModel.vENS[p,sc,n,nd] - mTEPES.pDemandElec[p,sc,n,nd])
     setattr(OptModel, f'eNetPosition_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eNetPosition, doc='net position [GW]'))
 
     if pIndLogConsole:
@@ -1089,12 +1171,12 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     # The factors come from the case (IndPTDF = 1) or from the reactances (IndPTDF = 2). The computed ones carry no load
     # level index: the topology is fixed for a period, so an hourly index would repeat the same numbers every hour.
     def _pFlowBased(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndPTDF() == 2:
+        if pPTDF == 2:
             return sum(mTEPES.pPTDFCalc[p,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,ni,nf,cc,nd) in mTEPES.pland)
         return     sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland)
 
     def eFlowBasedCalcu1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
+        if pSingleNode or pPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
             return Constraint.Skip
         if (ni,nf,cc) in mTEPES.lca:
             return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - _pFlowBased(OptModel,n,ni,nf,cc) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
@@ -1106,7 +1188,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eFlowBasedCalcu1          ... ', len(getattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}')), ' rows')
 
     def eFlowBasedCalcu2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
+        if pSingleNode or pPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
             return Constraint.Skip
         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - _pFlowBased(OptModel,n,ni,nf,cc) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eFlowBasedCalcu2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eFlowBasedCalcu2, doc='flow based calculation [p.u.]'))
@@ -1115,7 +1197,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eFlowBasedCalcu2          ... ', len(getattr(OptModel, f'eFlowBasedCalcu2_{p}_{sc}_{st}')), ' rows')
 
     # def eSecurityMargingTTCFrw(OptModel,n,ni,nf,cc):
-    #     if mTEPES.pIndBinSingleNode()or mTEPES.pIndPTDF() == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
+    #     if pSingleNodeor pPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
     #         return Constraint.Skip
     #     return OptModel.vFlowElec[p,sc,n,ni,nf,cc] <=   mTEPES.pVariableTTCFrw[p,sc,n,ni,nf,cc]
     # setattr(OptModel, f'eSecurityMargingTTCFrw_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eSecurityMargingTTCFrw, doc='security margin TTC for flow based calculation [p.u.]'))
@@ -1124,7 +1206,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     #     print('eSecurityMargingTTCFrw... ', len(getattr(OptModel, f'eSecurityMargingTTCFrw_{p}_{sc}_{st}')), ' rows')
     #
     # def eSecurityMargingTTCBck(OptModel,n,ni,nf,cc):
-    #     if mTEPES.pIndBinSingleNode()or mTEPES.pIndPTDF() == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
+    #     if pSingleNodeor pPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
     #         return Constraint.Skip
     #     return OptModel.vFlowElec[p,sc,n,ni,nf,cc] >= - mTEPES.pVariableTTCBck[p,sc,n,ni,nf,cc]
     # setattr(OptModel, f'eSecurityMargingTTCBck_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eSecurityMargingTTCBck, doc='security margin TTC for flow based calculation [p.u.]'))
@@ -1150,20 +1232,18 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     # cycles for AC existing lines and non-switchable lines
     mTEPES.nce = nx.cycle_basis(NetworkGraph, list(mTEPES.rf)[0])
 
-    # determining the set of unique existing circuits (only one in case of several circuits in //) and the parallel circuits
-    pUniqueCircuits = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.lea, names=('NodeI', 'NodeF', 'Circuit')), columns=['0/1'        ])
-    pNoCircuits     = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.br , names=('NodeI', 'NodeF'           )), columns=['No.Circuits'])
+    # determining the set of unique existing circuits (only one in case of several circuits in //) and the parallel circuits.
+    # plain dict counters: the former pandas frames paid a scalar MultiIndex .loc read+write per line
+    pCircuitCount = defaultdict(int)
+    pUniqueList   = []
     for ni,nf,cc in mTEPES.lea:
-        pNoCircuits.loc[ni,nf] += 1
-        if pNoCircuits.loc[ni,nf]['No.Circuits'] <= 1:
-            pUniqueCircuits.at[(ni,nf,cc),'0/1'] = 1
-    pNoCircuits     = pNoCircuits.replace(1,0)
-    pNoCircuits     = pNoCircuits[pNoCircuits['No.Circuits'] >  0]
-    pUniqueCircuits = pUniqueCircuits[pUniqueCircuits['0/1'] == 1]
+        pCircuitCount[ni,nf] += 1
+        if pCircuitCount[ni,nf] <= 1:
+            pUniqueList.append((ni,nf,cc))
 
     # unique and parallel circuits of existing lines
-    mTEPES.ucte = Set(doc='unique   circuits', initialize=[lea for lea in mTEPES.lea if lea in pUniqueCircuits['0/1'    ]])
-    mTEPES.pct  = Set(doc='parallel circuits', initialize=[br  for br  in mTEPES.br  if br  in pNoCircuits['No.Circuits']])
+    mTEPES.ucte = Set(doc='unique   circuits', initialize=pUniqueList)
+    mTEPES.pct  = Set(doc='parallel circuits', initialize=[br for br in mTEPES.br if pCircuitCount[br] > 1])
     mTEPES.cye  = RangeSet(0,len(mTEPES.nce)-1)
 
     # graph with all AC existing and candidate lines
@@ -1175,19 +1255,17 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     # cycles added due to considering candidate lines
     mTEPES.ncd = [nc for nc in mTEPES.ncc if nc not in mTEPES.nce]
 
-    # determining the set of unique existing and candidate circuits (only one in case of several circuits in //) and the parallel circuits
-    pUniqueCircuits = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.laa, names=('NodeI', 'NodeF', 'Circuit')), columns=['0/1'        ])
-    pNoCircuits     = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.br , names=('NodeI', 'NodeF'           )), columns=['No.Circuits'])
+    # determining the set of unique existing and candidate circuits (only one in case of several circuits in //).
+    # the parallel-circuit counter of the former version was computed and never used here (pct comes from the existing-lines block above)
+    pCircuitCount = defaultdict(int)
+    pUniqueList   = []
     for ni,nf,cc in mTEPES.laa:
-        pNoCircuits.loc[ni,nf] += 1
-        if pNoCircuits.loc[ni,nf]['No.Circuits'] <= 1:
-            pUniqueCircuits.at[(ni,nf,cc),'0/1'] = 1
-    pNoCircuits     = pNoCircuits.replace(1,0)
-    pNoCircuits     = pNoCircuits[pNoCircuits['No.Circuits'] >  0]
-    pUniqueCircuits = pUniqueCircuits[pUniqueCircuits['0/1'] == 1]
+        pCircuitCount[ni,nf] += 1
+        if pCircuitCount[ni,nf] <= 1:
+            pUniqueList.append((ni,nf,cc))
 
-    # unique and parallel circuits of candidate lines
-    mTEPES.uctc = Set(doc='unique   circuits', initialize=[laa for laa in mTEPES.laa if laa in pUniqueCircuits['0/1']])
+    # unique circuits of existing and candidate lines
+    mTEPES.uctc = Set(doc='unique   circuits', initialize=pUniqueList)
     mTEPES.cyc  = RangeSet(0,len(mTEPES.ncd)-1)
     # edges of every cycle, computed once instead of per (cycle, candidate line) pair, same hoist as in CycleConstraints. The list keeps the cycle order for
     # the pBigMTheta sums below; the set makes the membership tests O(1) instead of a scan of the cycle
@@ -1196,17 +1274,14 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     # candidate lines included in every cycle
     mTEPES.lcac = Set(doc='AC candidate circuits in a cycle', initialize=[(cyc,ni,nf,cc) for cyc,ni,nf,cc in mTEPES.cyc*mTEPES.lca if (ni,nf) in pCycleEdgesSet[cyc] or (nf,ni) in pCycleEdgesSet[cyc]])
 
-    pBigMTheta = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.cyc*mTEPES.lca, names=('No.Cycle', 'NodeI', 'NodeF', 'Circuit')), columns=['rad'])
-    # for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca:
-    #     if (nii,nff) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nff,nii) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])):
-    #         pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) +
-    #                                            sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) )
+    # plain dict instead of a DataFrame filled with one scalar .loc write per matching cell and converted with .to_dict() at the end
+    pBigMTheta = {(cyc,nii,nff,ccc): 0.0 for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca}
     for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca:
         if (nii,nff) in pCycleEdgesSet[cyc] or (nff,nii) in pCycleEdgesSet[cyc]:
-            pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
-                                               sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
+            pBigMTheta[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
+                                           sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
 
-    mTEPES.pBigMTheta = Param(mTEPES.cyc, mTEPES.lca, initialize=pBigMTheta['rad'].to_dict(), doc='big M for an AC candidate line in a cycle [rad]')
+    mTEPES.pBigMTheta = Param(mTEPES.cyc, mTEPES.lca, initialize=pBigMTheta, doc='big M for an AC candidate line in a cycle [rad]')
 
     CyclesDetectionTime = time.time() - StartTime
     if pIndLogConsole:
@@ -1222,6 +1297,13 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     # edges of every cycle, computed once instead of twice per constraint row
     pCycleEdges = {cyc: list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1], strict=True)) for cyc in mTEPES.cyc}
 
+    # hoisted: a rule fires once per index, the flag cannot change during the build
+    pPTDF = mTEPES.pIndPTDF()
+
+    # parallel (existing, candidate) circuit pairs, filtered once: none of these conditions depends on n, and the dense product used to call the rule
+    # |n|*|pct|*|cc|*|c2| times only to skip every non-pair (the list keeps the pct, cc, c2 nesting order of the dense product)
+    pParallelPairs = [(ni,nf,cc,c2) for ni,nf in mTEPES.pct for cc in mTEPES.cc for c2 in mTEPES.c2 if cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca]
+
     # remove the Kirchhoff's second law for AC existing and candidate lines
     OptModel.del_component(getattr(OptModel, f'eKirchhoff2ndLaw1_{p}_{sc}_{st}'))
     OptModel.del_component(getattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}'))
@@ -1229,7 +1311,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     #%% cycle Kirchhoff's second law with some candidate lines
     # this equation is formulated for every AC candidate line included in the cycle
     def eCycleKirchhoff2ndLawCnd1(OptModel,n,cyc,nii,nff,cc):
-        if mTEPES.pIndPTDF() or (p,nii,nff,cc) not in mTEPES.pla:
+        if pPTDF or (p,nii,nff,cc) not in mTEPES.pla:
             return Constraint.Skip
         return (sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
                 sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] <=   1 - OptModel.vLineCommit[p,sc,n,nii,nff,cc]
@@ -1239,7 +1321,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
         print('eCycleKirchhoff2ndLC1     ... ', len(getattr(OptModel, f'eCycleKirchhoff2ndLawCnd1_{p}_{sc}_{st}')), ' rows')
 
     def eCycleKirchhoff2ndLawCnd2(OptModel,n,cyc,nii,nff,cc):
-        if mTEPES.pIndPTDF() or (p,nii,nff,cc) not in mTEPES.pla:
+        if pPTDF or (p,nii,nff,cc) not in mTEPES.pla:
             return Constraint.Skip
         return (sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
                 sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] >= - 1 + OptModel.vLineCommit[p,sc,n,nii,nff,cc]
@@ -1249,21 +1331,19 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
         print('eCycleKirchhoff2ndLC2     ... ', len(getattr(OptModel, f'eCycleKirchhoff2ndLawCnd2_{p}_{sc}_{st}')), ' rows')
 
     def eFlowParallelCandidate1(OptModel,n,ni,nf,cc,c2):
-        if (cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca) and mTEPES.pIndPTDF() == 0:
-            return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] - OptModel.vFlowElec[p,sc,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc],mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,c2]
-        else:
+        if pPTDF:
             return Constraint.Skip
-    setattr(OptModel, f'eFlowParallelCandidate1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate1, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
+        return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] - OptModel.vFlowElec[p,sc,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc],mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,c2]
+    setattr(OptModel, f'eFlowParallelCandidate1_{p}_{sc}_{st}', Constraint(mTEPES.n, pParallelPairs, rule=eFlowParallelCandidate1, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
 
     if pIndLogConsole:
         print('eFlowParallelCnddate1     ... ', len(getattr(OptModel, f'eFlowParallelCandidate1_{p}_{sc}_{st}')), ' rows')
 
     def eFlowParallelCandidate2(OptModel,n,ni,nf,cc,c2):
-        if (cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca) and mTEPES.pIndPTDF() == 0:
-            return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] - OptModel.vFlowElec[p,sc,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc],mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,c2]
-        else:
+        if pPTDF:
             return Constraint.Skip
-    setattr(OptModel, f'eFlowParallelCandidate2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate2, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
+        return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] - OptModel.vFlowElec[p,sc,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc],mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,c2]
+    setattr(OptModel, f'eFlowParallelCandidate2_{p}_{sc}_{st}', Constraint(mTEPES.n, pParallelPairs, rule=eFlowParallelCandidate2, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
 
     if pIndLogConsole:
         print('eFlowParallelCnddate2     ... ', len(getattr(OptModel, f'eFlowParallelCandidate2_{p}_{sc}_{st}')), ' rows')
@@ -1362,35 +1442,41 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
         setattr(OptModel, f'eVoltageSquare_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.nd, rule=eVoltageSquare, doc='|V|^2 from the rectangular parts'))
 
     # --- branch flows ---------------------------------------------------------------------------------------------------------------------------
-    def _flows(OptModel, n, ni, nf, cc):
-        """(P_ij, Q_ij, P_ji, Q_ji) in per unit, from whichever voltage representation is active."""
+    def _flow_expr(OptModel, n, ni, nf, cc, k):
+        """One of (P_ij, Q_ij, P_ji, Q_ji) in per unit, from whichever voltage representation is active. Only the component asked for is built:
+        the previous form built all four per rule call and discarded three, which quadrupled the expression-construction work of this block."""
         g, b   = _y((ni,nf,cc))
         a      = _tap(mTEPES, (ni,nf,cc))
         if pMode == 2:
-            Wii, Wjj = OptModel.vW[p,sc,n,ni], OptModel.vW[p,sc,n,nf]
             Wre, Wim = OptModel.vWre[p,sc,n,ni,nf,cc], OptModel.vWim[p,sc,n,ni,nf,cc]
+            Wii = OptModel.vW[p,sc,n,ni] if k <= 1 else None
+            Wjj = OptModel.vW[p,sc,n,nf] if k >= 2 else None
         else:
             ei, fi = OptModel.vVre[p,sc,n,ni], OptModel.vVim[p,sc,n,ni]
             ej, fj = OptModel.vVre[p,sc,n,nf], OptModel.vVim[p,sc,n,nf]
-            Wii, Wjj = ei*ei + fi*fi, ej*ej + fj*fj
             Wre, Wim = ei*ej + fi*fj, fi*ej - ei*fj
+            Wii = ei*ei + fi*fi if k <= 1 else None
+            Wjj = ej*ej + fj*fj if k >= 2 else None
         # SERIES flows only, with the charging term bsh deliberately left OUT.
         #
         # eBalanceReact is shared with branch flow, where vFlowReactFrw carries the series flow and the pi-model charging is added separately as
         # pFixedCharge * vW * pSBase. Including bsh here as well counts the charging TWICE: the branch equation injects it and the balance injects it
         # again, which hands the system free reactive power and drops the objective. On 9n_AC that was most of a 10.5% gap against branch flow.
-        Pij =  g * a*a * Wii - a * ( g * Wre + b * Wim)
-        Qij = -b * a*a * Wii - a * ( g * Wim - b * Wre)
-        Pji =  g * Wjj       - a * ( g * Wre - b * Wim)
-        Qji = -b * Wjj       - a * (-g * Wim - b * Wre)
-        return Pij, Qij, Pji, Qji
+        if k == 0:
+            return  g * a*a * Wii - a * ( g * Wre + b * Wim)
+        if k == 1:
+            return -b * a*a * Wii - a * ( g * Wim - b * Wre)
+        if k == 2:
+            return  g * Wjj       - a * ( g * Wre - b * Wim)
+        return     -b * Wjj       - a * (-g * Wim - b * Wre)
 
     for pIdx, (pVar, pName) in enumerate((('vFlowElec', 'eBIMFlowP'), ('vFlowReactFrw', 'eBIMFlowQ'),
                                           ('vFlowElecBck', 'eBIMFlowPBck'), ('vFlowReactBck', 'eBIMFlowQBck'))):
-        def rule(OptModel, n, ni, nf, cc, k=pIdx, v=pVar):
+        pV = getattr(OptModel, pVar)
+        def rule(OptModel, n, ni, nf, cc, k=pIdx, v=pV):
             if not _live((ni,nf,cc)):
                 return Constraint.Skip
-            return getattr(OptModel, v)[p,sc,n,ni,nf,cc] == _flows(OptModel, n, ni, nf, cc)[k] * pSBase
+            return v[p,sc,n,ni,nf,cc] == _flow_expr(OptModel, n, ni, nf, cc, k) * pSBase
         setattr(OptModel, f'{pName}_{p}_{sc}_{st}{pTag}', Constraint(mTEPES.n*mTEPES.laa, rule=rule, doc='bus-injection branch flow [GW/Gvar]'))
 
     # --- the relaxation, and the thermal limit --------------------------------------------------------------------------------------------------
@@ -1624,17 +1710,18 @@ def _ProjectConeToVoltages(OptModel, mTEPES, p, sc):
             pAdj[la[1]].append((la[0], la, -1.0))
     pRef = mTEPES.rf.first()
     nSet = 0
+    # the roots depend only on pAdj and pRef, so they are computed once; deque.popleft() keeps the same FIFO order as list.pop(0) without the O(V) shift
+    pRoots = [pRef] if pRef in pAdj else []
+    pRoots += [nd for nd in pAdj if nd not in pRoots]
     for n in mTEPES.n:
         pTheta = {}
-        pRoots = [pRef] if pRef in pAdj else []
-        pRoots += [nd for nd in pAdj if nd not in pRoots]
         for pRoot in pRoots:
             if pRoot in pTheta:
                 continue
             pTheta[pRoot] = 0.0
-            pQueue = [pRoot]
+            pQueue = deque([pRoot])
             while pQueue:
-                ni = pQueue.pop(0)
+                ni = pQueue.popleft()
                 for nf, la, pSign in pAdj[ni]:
                     if nf in pTheta:
                         continue
@@ -2066,11 +2153,13 @@ def _ApparentPowerLimit(OptModel, mTEPES, p, sc, st, live, pDisc):
     pInscribed = math.cos(math.pi / APPARENT_CUTS)
 
     def _eApparentCut(pP, pQ, k):
+        # the cut's trigonometric coefficients depend only on k: computed once here instead of once per (n, branch) row
+        pAng = 2.0 * math.pi * k / APPARENT_CUTS
+        pCos, pSin = math.cos(pAng), math.sin(pAng)
         def rule(OptModel, n, ni, nf, cc):
             if not live((ni,nf,cc)):
                 return Constraint.Skip
-            pAng = 2.0 * math.pi * k / APPARENT_CUTS
-            return (math.cos(pAng) * pP[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ[p,sc,n,ni,nf,cc]
+            return (pCos * pP[p,sc,n,ni,nf,cc] + pSin * pQ[p,sc,n,ni,nf,cc]
                     <= mTEPES.pLineSmax[ni,nf,cc] * pInscribed)
         return rule
 
@@ -2117,6 +2206,9 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         g2n[nd].add(g)
         if g in mTEPES.eh:
             e2n[nd].add(g)
+    # generators available in this period, filtered once instead of per load level (the SKIP below keeps using the unfiltered g2n on purpose)
+    pGenNd = {nd: [g  for g  in g2n[nd] if (p,g ) in mTEPES.pg ] for nd in mTEPES.nd}
+    pEhNd  = {nd: [eh for eh in e2n[nd] if (p,eh) in mTEPES.peh] for nd in mTEPES.nd}
 
     # from n2gq, not from n2g filtered by gq: a synchronous condenser has MaximumPower = 0 and so is not in mTEPES.g, hence not in n2g
     q2n = defaultdict(set)
@@ -2174,11 +2266,11 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         # successfully. The demand term is kept so a node with no branch at all still reports its load as ENS.
         if not (g2n[nd] or ndHasBranch[nd] or mTEPES.pDemandElec[p,sc,n,nd]()):
             return Constraint.Skip
-        return (sum(OptModel.vTotalOutput   [p,sc,n,g ] for g  in g2n[nd] if (p,g ) in mTEPES.pg )
-              - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh)
+        return (sum(OptModel.vTotalOutput   [p,sc,n,g ] for g  in pGenNd[nd])
+              - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in pEhNd [nd])
               + OptModel.vENS[p,sc,n,nd]
-              # a shunt with a non-zero conductance draws active power; pShuntG is empty for the usual Gshb = 0 case
-              + sum(OptModel.vPShunt[p,sc,n,sh] for sh in sh2nd[nd] if pShuntG and (p,sc,n,sh) in mTEPES.psnsh)
+              # a shunt with a non-zero conductance draws active power; pShuntG is False for the usual Gshb = 0 case, so the whole term is hoisted out
+              + (sum(OptModel.vPShunt[p,sc,n,sh] for sh in sh2nd[nd] if (p,sc,n,sh) in mTEPES.psnsh) if pShuntG else 0.0)
               # AC branches: the near end injects vFlowElec, the far end vFlowElecBck, and their sum is the loss
               - sum(OptModel.vFlowElec   [(p,sc,n)+la] for la in acOut[nd])
               - sum(OptModel.vFlowElecBck[(p,sc,n)+la] for la in acIn [nd])
@@ -2253,18 +2345,22 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     # CONV_CUTS tangent lines circumscribe the disc, so the bound is loose by 1/cos(pi/CONV_CUTS): 3.5% at 12 cuts. That is an approximation, and it
     # is a fifth of the 17.6% it replaces.
     if pConvLCC or pConvVSC:
+        # trigonometric coefficients and the clamped power factor depend only on k / on nothing: computed once instead of once per (n, link) row
+        pConvCos   = {k: math.cos(2.0 * math.pi * k / CONV_CUTS) for k in range(CONV_CUTS)}
+        pConvSin   = {k: math.sin(2.0 * math.pi * k / CONV_CUTS) for k in range(CONV_CUTS)}
+        pPFClamped = min(max(mTEPES.pConverterPF(), 1e-3), 1.0)   # the same clamp already hoisted into pConvTan above
+
         def eConvSLimit(OptModel, n, ni, nf, cc, k=0, pSide=+1):
             if not _live((ni,nf,cc)):
                 return Constraint.Skip
             pSmax = mTEPES.pLineNTCMax[ni,nf,cc]
             if pConvVSC:
                 pQ = OptModel.vQConvFrw[p,sc,n,ni,nf,cc] if pSide > 0 else OptModel.vQConvBck[p,sc,n,ni,nf,cc]
-                pAng = 2.0 * math.pi * k / CONV_CUTS
-                return (math.cos(pAng) * OptModel.vFlowElec[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ <= pSmax)
+                return (pConvCos[k] * OptModel.vFlowElec[p,sc,n,ni,nf,cc] + pConvSin[k] * pQ <= pSmax)
             # An LCC draws tan(acos(pf)) |P|, so P^2 + Q^2 = P^2 (1 + tan^2) and the disc collapses to a linear bound on |P|, exactly and with no
             # cuts. |P| is already split for the reactive draw.
             return (OptModel.vDCFlowPos[p,sc,n,ni,nf,cc] + OptModel.vDCFlowNeg[p,sc,n,ni,nf,cc]
-                    <= pSmax * min(max(mTEPES.pConverterPF(), 1e-3), 1.0))
+                    <= pSmax * pPFClamped)
 
         if pConvLCC:
             setattr(OptModel, f'eConvSLimit_{p}_{sc}_{st}',

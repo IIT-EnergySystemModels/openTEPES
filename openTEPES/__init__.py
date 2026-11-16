@@ -70,7 +70,7 @@ from .openTEPES_ModelFormulationHeat              import *
 from .openTEPES_ProblemSolving                    import *
 from .openTEPES_ProblemSolvingStageIter           import *
 from .openTEPES_ProblemSolvingBenders             import *
-from .openTEPES_ProblemSolvingStageDecomposition   import *
+from .openTEPES_ProblemSolvingStageDecomposition  import *
 from .openTEPES_ProblemSolvingSectorDecomposition import *
 from .openTEPES_OutputResultsSink                 import *
 from .openTEPES_OutputResultsCommon               import *

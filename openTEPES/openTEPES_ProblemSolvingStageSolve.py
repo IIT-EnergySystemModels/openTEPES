@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 """
 
 import os
@@ -53,11 +53,16 @@ STAGE_PARAMS = (
 
 def RebuildStageAndLoadLevelSets(mTEPES):
     # rebuild the active stage set (st) and the load-level sets (n, n2) from s2n; shared by the per-stage loop and the final reactivation
+    # one pass over s2n collects the stages and load levels present, instead of re-scanning s2n once per stage and once per (load level, period, scenario, stage)
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
-    mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for pp,scc,stt2,nn in mTEPES.s2n if stt2 == stt)])
-    ActiveLoadLevels = [nn for nn in mTEPES.nn if sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st,nn) in mTEPES.s2n)]
+    pStagesInS2N = {stt2 for pp,scc,stt2,nn in mTEPES.s2n}
+    mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and stt in pStagesInS2N])
+    pActiveSt        = set(mTEPES.st)
+    pPsSet           = set(mTEPES.ps)
+    pLevelsInS2N     = {nn for pp,scc,stt2,nn in mTEPES.s2n if (pp,scc) in pPsSet and stt2 in pActiveSt}
+    ActiveLoadLevels = [nn for nn in mTEPES.nn if nn in pLevelsInS2N]
     mTEPES.n  = Set(doc='load levels', initialize=ActiveLoadLevels)
     mTEPES.n2 = Set(doc='load levels', initialize=ActiveLoadLevels)
 
@@ -117,13 +122,14 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
         action_handle_map = {}
         action_handles    = []
 
+    # the rebuilt sets do not depend on (p,sc,st) — s2n, pStageWeight, nn and ps do not change inside the loop, and no formulation builder
+    # deletes or filters st/n/n2 — so one rebuild before the loop replaces the identical rebuild every iteration performed
+    RebuildStageAndLoadLevelSets(mTEPES)
+
     # %% iterative solve for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
 
         StartTime = time.time()
-
-        # activate only period, scenario, and load levels to formulate
-        RebuildStageAndLoadLevelSets(mTEPES)
 
         if mTEPES.n:
             ObjVal = None
@@ -210,8 +216,15 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                         CycleConstraints                                 (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                 else:
                     # activate all the constraints by stage
-                    for c in OptModel.component_objects(pyo.Constraint):
-                        if c.name.endswith(str(st)):
+                    # the component walk is cheap; what dominated was rebuilding every qualified name with c.name on every Benders iteration,
+                    # so cache (component, name) pairs once and refresh the cache only when new components have been registered
+                    nCons = sum(1 for c in OptModel.component_objects(pyo.Constraint))
+                    if getattr(mTEPES, 'pConstraintNameCacheLen', -1) != nCons:
+                        mTEPES.pConstraintNameCache    = [(c, c.name) for c in OptModel.component_objects(pyo.Constraint)]
+                        mTEPES.pConstraintNameCacheLen = nCons
+                    stTag = str(st)
+                    for c, cname in mTEPES.pConstraintNameCache:
+                        if cname.endswith(stTag):
                             c.activate()
 
                 # send the problem to the solver

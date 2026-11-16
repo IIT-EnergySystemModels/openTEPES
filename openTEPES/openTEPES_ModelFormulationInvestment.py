@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 openTEPES.openTEPES_ModelFormulationInvestment — investment variables and constraints (electricity, hydro, H2, heat) plus the installed-capacity, adequacy-reserve-margin and emission / RES-energy limits.
 """
@@ -173,11 +173,20 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
     for ar,g in mTEPES.a2g:
         g2a[ar].add(g)
 
+    # n-invariant part of each skip condition, evaluated once per unit instead of once per (load level, unit) row
+    pSkipGenCommGc = {gc: gc in mTEPES.eh or gc in mTEPES.bc or gc not in mTEPES.nr or (p,gc) not in mTEPES.pgc for gc in mTEPES.gc}
+    pMustRunGc     = {gc: mTEPES.pMustRun[gc] for gc in mTEPES.gc}
+    pSkipESSCommEc = {ec: (p,ec) not in mTEPES.pec or mTEPES.pIndBinStorInvest[ec] == 0 for ec in mTEPES.ec}
+    pSkipGenCapGc  = {gc: gc in mTEPES.bc or (p,gc) not in mTEPES.pgc for gc in mTEPES.gc}
+    pInPecEc       = {ec: (p,ec) in mTEPES.pec for ec in mTEPES.ec}
+    pSkipGenCommGd = {gd: gd in mTEPES.eh or gd not in mTEPES.nr or (p,gd) not in mTEPES.pgd or mTEPES.pMustRun[gd] for gd in mTEPES.gd}
+    pInPgdGd       = {gd: (p,gd) in mTEPES.pgd for gd in mTEPES.gd}
+
     # only thermal generators and ESS units can be committed, i.e. must run or not, depending on the installed capacity
     def eInstallGenComm(OptModel,n,gc):
-        if gc in mTEPES.eh or gc in mTEPES.bc or gc not in mTEPES.nr or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gc] == 0.0):
+        if pSkipGenCommGc[gc] or (mTEPES.pMinPowerElec[p,sc,n,gc] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gc] == 0.0):
             return Constraint.Skip
-        if mTEPES.pMustRun[gc] == 0:
+        if pMustRunGc[gc] == 0:
             return OptModel.vCommitment[p,sc,n,gc] <= OptModel.vGenerationInvest[p,gc]
         else:
             return OptModel.vCommitment[p,sc,n,gc] == OptModel.vGenerationInvest[p,gc]
@@ -187,7 +196,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eInstallGenComm           ... ', len(getattr(OptModel, f'eInstallGenComm_{p}_{sc}_{st}')), ' rows')
 
     def eInstallESSComm(OptModel,n,ec):
-        if (p,ec) not in mTEPES.pec or mTEPES.pIndBinStorInvest[ec] == 0:
+        if pSkipESSCommEc[ec]:
             return Constraint.Skip
         return OptModel.vCommitment[p,sc,n,ec] <= OptModel.vGenerationInvest[p,ec]
     setattr(OptModel, f'eInstallESSComm_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ec, rule=eInstallESSComm, doc='commitment if ESS unit [p.u.]'))
@@ -196,7 +205,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eInstallESSComm           ... ', len(getattr(OptModel, f'eInstallESSComm_{p}_{sc}_{st}')), ' rows')
 
     def eInstallGenCap(OptModel,n,gc):
-        if gc in mTEPES.bc or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] != 0.0 or mTEPES.pConstantVarCost[p,sc,n,gc] != 0.0) or mTEPES.pMaxPowerElec[p,sc,n,gc] == 0.0:
+        if pSkipGenCapGc[gc] or (mTEPES.pMinPowerElec[p,sc,n,gc] != 0.0 or mTEPES.pConstantVarCost[p,sc,n,gc] != 0.0) or mTEPES.pMaxPowerElec[p,sc,n,gc] == 0.0:
             return Constraint.Skip
         return OptModel.vTotalOutput   [p,sc,n,gc] / mTEPES.pMaxPowerElec [p,sc,n,gc] <= OptModel.vGenerationInvest[p,gc]
     setattr(OptModel, f'eInstallGenCap_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.gc, rule=eInstallGenCap, doc='output if installed gen unit [p.u.]'))
@@ -205,7 +214,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eInstallGenCap            ... ', len(getattr(OptModel, f'eInstallGenCap_{p}_{sc}_{st}')), ' rows')
 
     def eInstallConESS(OptModel,n,ec):
-        if (p,ec) not in mTEPES.pec or mTEPES.pMaxCharge[p,sc,n,ec] == 0.0:
+        if not pInPecEc[ec] or mTEPES.pMaxCharge[p,sc,n,ec] == 0.0:
             return Constraint.Skip
         return OptModel.vESSTotalCharge[p,sc,n,ec] / mTEPES.pMaxCharge[p,sc,n,ec] <= OptModel.vGenerationInvest[p,ec]
     setattr(OptModel, f'eInstallConESS_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ec, rule=eInstallConESS, doc='consumption if installed ESS unit [p.u.]'))
@@ -214,7 +223,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eInstallConESS            ... ', len(getattr(OptModel, f'eInstallConESS_{p}_{sc}_{st}')), ' rows')
 
     def eUninstallGenComm(OptModel,n,gd):
-        if gd in mTEPES.eh or gd not in mTEPES.nr or (p,gd) not in mTEPES.pgd or mTEPES.pMustRun[gd] or (mTEPES.pMinPowerElec[p,sc,n,gd] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gd] == 0.0):
+        if pSkipGenCommGd[gd] or (mTEPES.pMinPowerElec[p,sc,n,gd] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gd] == 0.0):
             return Constraint.Skip
         return OptModel.vCommitment[p,sc,n,gd]                                <= 1 - OptModel.vGenerationRetire[p,gd]
     setattr(OptModel, f'eUninstallGenComm_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.gd, rule=eUninstallGenComm, doc='commitment if uninstalled unit [p.u.]'))
@@ -223,7 +232,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eUninstallGenComm         ... ', len(getattr(OptModel, f'eUninstallGenComm_{p}_{sc}_{st}')), ' rows')
 
     def eUninstallGenCap(OptModel,n,gd):
-        if (p,gd) not in mTEPES.pgd or mTEPES.pMaxPowerElec[p,sc,n,gd] == 0.0:
+        if not pInPgdGd[gd] or mTEPES.pMaxPowerElec[p,sc,n,gd] == 0.0:
             return Constraint.Skip
         return OptModel.vTotalOutput[p,sc,n,gd] / mTEPES.pMaxPowerElec[p,sc,n,gd] <= 1 - OptModel.vGenerationRetire[p,gd]
     setattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.gd, rule=eUninstallGenCap, doc='output if uninstalled gen unit [p.u.]'))

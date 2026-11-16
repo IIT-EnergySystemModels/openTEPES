@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 12, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 Investment and retirement results.
 
@@ -107,7 +107,9 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
             # Saving and plotting generation investment cost
             OutputResults0 = OutputResults
-            OutputToFile   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,eb]() for p,eb in mTEPES.peb], index=mTEPES.peb)
+            # evaluate each discounted investment cost once; it is reused below by GenTechInvestCost
+            pGenInvCost    = {(p,eb): mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,eb]() for p,eb in mTEPES.peb}
+            OutputToFile   = pd.Series(data=[pGenInvCost[p,eb] for p,eb in mTEPES.peb], index=mTEPES.peb)
             OutputToFile   = OutputToFile.fillna(0).to_frame(name='MEUR').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'}).set_index(['Period', 'Generator'])
 
             OutputResults1 = pd.Series(data=[pGen2Tech[eb] for p,eb in mTEPES.peb], index=mTEPES.peb)
@@ -122,11 +124,13 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
             MarketResultsInv  = pd.concat([MarketResultsInv, OutputResults], axis=1)
 
-            GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,eb]() for      eb in                    mTEPES.eb if eb in g2t[gt] and (p,     eb) in mTEPES.peb  ) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
+            GenTechInvestCost = pd.Series(data=[sum(pGenInvCost[p,eb]                                             for      eb in                    mTEPES.eb if eb in g2t[gt] and (p,     eb) in mTEPES.peb  ) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
             GenTechInvestCost *= 1e3
+            # evaluate the discounted weight times duration once per load level instead of once per (load level, unit)
+            pWeightDur        = {(p,sc,n): mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n in mTEPES.psn}
             pTechInjection    = defaultdict(float)
             for p,sc,n,eb in mTEPES.psneb:
-                pTechInjection[p,pGen2Tech[eb]] += mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,eb]()
+                pTechInjection[p,pGen2Tech[eb]] += pWeightDur[p,sc,n] * OptModel.vTotalOutput[p,sc,n,eb]()
             GenTechInjection  = pd.Series(data=[pTechInjection[p,gt] for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
             GenTechInjection.name = 'Generation'
             MarketResultsInv  = pd.concat([MarketResultsInv, GenTechInjection], axis=1)
@@ -203,9 +207,9 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         OutputToFile.reset_index().pivot_table(index=['Period'], columns=['InitialNode','FinalNode','Circuit'], values='Investment Decision').rename_axis([None, None, None], axis=1).rename_axis(['Period'], axis=0).reset_index().oT.write(f'{_path}/oT_Result_NetworkInvestmentPerUnit_{CaseName}.csv', index=False, sep=',')
         # OutputToFile = OutputToFile.set_index(['Period', 'InitialNode', 'FinalNode', 'Circuit'])
 
-        # Ordering data to plot the investment decision
-        OutputResults1 = pd.Series(data=[lt for p,ni,nf,cc,lt in mTEPES.plc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=mTEPES.plc)
-        OutputResults1 = OutputResults1.to_frame(name='LineType')
+        # Ordering data to plot the investment decision; the line-type frame is reused by the MWkm table below
+        LineTypeFrame  = pd.Series(data=[lt for p,ni,nf,cc,lt in mTEPES.plc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=mTEPES.plc).to_frame(name='LineType')
+        OutputResults1 = LineTypeFrame
         OutputResults2 = OutputToFile.reset_index().set_index(['Period', 'InitialNode', 'FinalNode', 'Circuit'])
         OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
         OutputResults.index.names = ['Period', 'InitialNode', 'FinalNode', 'Circuit']
@@ -219,11 +223,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         OutputToFile = pd.Series(data=[OptModel.vNetworkInvest[p,ni,nf,cc]()*mTEPES.pLineNTCFrw[ni,nf,cc]*mTEPES.pLineLength[ni,nf,cc]() for p,ni,nf,cc in mTEPES.plc], index=mTEPES.plc)
         OutputToFile *= 1e3
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MWkm').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'InitialNode', 'level_2': 'FinalNode', 'level_3': 'Circuit'})
-        OutputToFile.reset_index().pivot_table(index=['Period'], columns=['InitialNode','FinalNode','Circuit'], values='MWkm').rename_axis([None,None,None], axis=1).rename_axis(['Period'], axis=0).reset_index().oT.write(f'{_path}/oT_Result_NetworkInvestmentMWkm_{CaseName}.csv', index=False, sep=',')
+        OutputToFile.pivot_table(index=['Period'], columns=['InitialNode','FinalNode','Circuit'], values='MWkm').rename_axis([None,None,None], axis=1).rename_axis(['Period'], axis=0).reset_index().oT.write(f'{_path}/oT_Result_NetworkInvestmentMWkm_{CaseName}.csv', index=False, sep=',')
 
         # Ordering data to plot the investment decision per kilometer
-        OutputResults1 = pd.Series(data=[lt for p,ni,nf,cc,lt in mTEPES.plc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=mTEPES.plc)
-        OutputResults1 = OutputResults1.to_frame(name='LineType')
+        OutputResults1 = LineTypeFrame
         OutputResults2 = OutputToFile.set_index(['Period', 'InitialNode', 'FinalNode', 'Circuit'])
         OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
         OutputResults.index.names = ['Period', 'InitialNode', 'FinalNode', 'Circuit']

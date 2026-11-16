@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
 (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
@@ -186,7 +186,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     # Membership is by physics, not by the technology string. A reactive-capable device with no active output — an SVC or a STATCOM entered the
     # obvious way — is a reactive-only device even when nobody typed 'SynchronousCondenser'. The test is on the rated power itself, not on absence
     # from mTEPES.g: g also excludes units for a blank node or an out-of-window period, which are not reactive-only devices at all. All THREE
-    # capabilities have to be zero — a charge-only ESS or a heat-only boiler has zero rated electric power but is emphatically not a condenser,
+    # capabilities have to be zero — a charge-only ESS or a heat-only boiler has zero-rated electric power but is emphatically not a condenser,
     # and treating one as such both drops it from the merit-order set go and, if it is a candidate, charges its cost twice: once through
     # vGenerationInvest and once through vSynchInvest, with two independent build decisions for one device.
     # The electric test is on the NAMEPLATE rating, not the derated one: pRatedMaxPowerElec is MaximumPower*(1-EFOR), which is also zero for a real
@@ -267,8 +267,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     #Reorder the elements
     par['pStageToLevel'] = [(p,sc,st,n) for (p,sc,st),n in par['pStageToLevel'].items()]
     mTEPES.s2n = Set(initialize=par['pStageToLevel'], doc='Load level to stage')
-    # all the stages must have the same duration
-    par['pStageDuration'] = pd.Series([sum(par['pDuration'][p,sc,n] for p,sc,st2,n in mTEPES.s2n if st2 == st) for st in mTEPES.st], index=mTEPES.st)
+    # all the stages must have the same duration; one pass over s2n accumulating per stage instead of a full scan per stage
+    pStageDurationSum = defaultdict(int)
+    for p,sc,st,n in mTEPES.s2n:
+        pStageDurationSum[st] += par['pDuration'][p,sc,n]
+    par['pStageDuration'] = pd.Series([pStageDurationSum[st] for st in mTEPES.st], index=mTEPES.st)
     for st in mTEPES.st:
         if mTEPES.st.ord(st) > 1 and par['pStageDuration'][st] != par['pStageDuration'][mTEPES.st.prev(st)]:
             raise ValueError(f'### Stage {st} has a duration of {par["pStageDuration"][st]} h, different from the previous stage; all stages must have the same duration')
@@ -726,10 +729,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     # initial inventory of the candidate storage units equal to its maximum capacity if the storage capacity is linked to the investment decision
     par['pInitialInventory'].update(pd.Series([par['pInitialInventory'][ec] if par['pIndBinStorInvest'][ec] == 0 else par['pRatedMaxStorage'][ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))
 
-    # parameter that allows the initial inventory to change with load level
-    par['pIniInventory']  = pd.DataFrame([par['pInitialInventory']]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.es)
+    # parameter that allows the initial inventory to change with load level (one ndarray row tiled |psn| times instead of realigning the same Series once per row)
+    par['pIniInventory']  = pd.DataFrame([par['pInitialInventory'].loc[list(mTEPES.es)].values]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.es)
     if par['pIndHydroTopology']:
-        par['pIniVolume'] = pd.DataFrame([par['pInitialVolume']   ]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.rs)
+        par['pIniVolume'] = pd.DataFrame([par['pInitialVolume'   ].loc[list(mTEPES.rs)].values]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.rs)
 
     # initial inventory must be between minimum and maximum
     # stage of each (p,sc,n), to check only load levels that belong to an active stage
@@ -890,42 +893,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
         # pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilonElec], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilonElec], dtype='float64'))
 
-        # merging positive and negative values of the demand
-        par['pDemandElec']        = par['pDemandElecPos'].where(par['pDemandElecNeg'] == 0.0, par['pDemandElecNeg'])
-
-        # Increase Maximum to reach minimum
-        # par['pMaxPowerElec']      = par['pMaxPowerElec'].where(par['pMaxPowerElec'] >= par['pMinPowerElec'], par['pMinPowerElec'])
-        # par['pMaxCharge']         = par['pMaxCharge'].where   (par['pMaxCharge']    >= par['pMinCharge'],    par['pMinCharge']   )
-
-        # Decrease minimum to reach maximum
-        par['pMinPowerElec']      = par['pMinPowerElec'].where(par['pMinPowerElec'] <= par['pMaxPowerElec'], par['pMaxPowerElec'])
-        par['pMinCharge'   ]      = par['pMinCharge'   ].where(par['pMinCharge'   ] <= par['pMaxCharge'   ], par['pMaxCharge'   ])
-
-        # calculate 2nd Blocks
-        par['pMaxPower2ndBlock' ] = par['pMaxPowerElec'] - par['pMinPowerElec']
-        par['pMaxCharge2ndBlock'] = par['pMaxCharge'   ] - par['pMinCharge'   ]
-
-        pMaxCapacityPeak          = pd.concat([par['pMaxPowerElec'].max(axis=0), par['pMaxCharge'].max(axis=0).reindex(par['pMaxPowerElec'].columns, fill_value=0.0)], axis=1).max(axis=1)
-        par['pMaxCapacity']       = pd.DataFrame([pMaxCapacityPeak] * len(par['pMaxPowerElec']), index=par['pMaxPowerElec'].index, columns=par['pMaxPowerElec'].columns)
-
-        if g2a[ar]:
-            par['pMaxPower2ndBlock' ][par['pMaxPower2ndBlock' ][[g for g in g2a[ar]]] < par['pEpsilonElec']] = 0.0
-            par['pMaxCharge2ndBlock'][par['pMaxCharge2ndBlock'][[g for g in g2a[ar]]] < par['pEpsilonElec']] = 0.0
-
         par['pLineNTCFrw'] = par['pLineNTCFrw'].where((par['pLineNTCFrw'] > par['pEpsilonElec']) | (par['pLineNTCFrw'] < -par['pEpsilonElec']), 0.0)
         par['pLineNTCBck'] = par['pLineNTCBck'].where((par['pLineNTCBck'] > par['pEpsilonElec']) | (par['pLineNTCBck'] < -par['pEpsilonElec']), 0.0)
-        # par['pLineNTCMax'] = par['pLineNTCFrw'].where( par['pLineNTCFrw'] > par['pLineNTCBck'], par['pLineNTCBck'])
-        par['pLineNTCMax'] = par['pLineNTCFrw'].where( par['pLineNTCFrw'].abs() >= par['pLineNTCBck'].abs(), par['pLineNTCBck']).abs()
-
-        par['pMaxNTCFrw'] = pd.DataFrame([[par['pLineNTCFrw'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
-        par['pMaxNTCBck'] = pd.DataFrame([[par['pLineNTCBck'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
-        if par['pIndVarTTC']:
-            par['pMaxNTCFrw'] = par['pVariableNTCFrw'].replace(0.0, par['pLineNTCFrw'])
-            par['pMaxNTCBck'] = par['pVariableNTCBck'].replace(0.0, par['pLineNTCBck'])
-            par['pMaxNTCFrw'] = par['pMaxNTCFrw'].where((par['pMaxNTCFrw'] > par['pEpsilonElec']) | (par['pMaxNTCFrw'] < -par['pEpsilonElec']), 0.0)
-            par['pMaxNTCBck'] = par['pMaxNTCBck'].where((par['pMaxNTCBck'] > par['pEpsilonElec']) | (par['pMaxNTCBck'] < -par['pEpsilonElec']), 0.0)
-        # par['pMaxNTCMax']     = par['pMaxNTCFrw'].where( par['pMaxNTCFrw'] >= par['pMaxNTCBck'], par['pMaxNTCBck'])
-        par['pMaxNTCMax']     = par['pMaxNTCFrw'].where( par['pMaxNTCFrw'].abs() >= par['pMaxNTCBck'].abs(), par['pMaxNTCBck']).abs()
 
         if par['pIndHydrogen']:
             par['pDemandH2Peak'][p,ar] = par['pDemandH2Pos' ].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
@@ -934,7 +903,6 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pDemandH2Neg' ]        [par['pDemandH2Neg' ][[nd for nd in d2a[ar]]] > -par['pEpsilonH2']] = 0.0
             par['pH2PipeNTCFrw']        [par['pH2PipeNTCFrw']                         <  par['pEpsilonH2']] = 0.0
             par['pH2PipeNTCBck']        [par['pH2PipeNTCBck']                         <  par['pEpsilonH2']] = 0.0
-            par['pDemandH2'    ]       = par['pDemandH2Pos' ].where(par['pDemandH2Neg'] == 0.0, par['pDemandH2Neg'])
 
         if par['pIndHeat']:
             par['pDemandHeatPeak'][p,ar] = par['pDemandHeatPos' ].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
@@ -943,7 +911,52 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pDemandHeatNeg' ]        [par['pDemandHeatNeg' ][[nd for nd in d2a[ar]]] > -par['pEpsilonHeat']] = 0.0
             par['pHeatPipeNTCFrw']        [par['pHeatPipeNTCFrw']                         <  par['pEpsilonHeat']] = 0.0
             par['pHeatPipeNTCBck']        [par['pHeatPipeNTCBck']                         <  par['pEpsilonHeat']] = 0.0
-            par['pDemandHeat'    ]       = par['pDemandHeatPos' ].where(par['pDemandHeatNeg'] == 0.0, par['pDemandHeatNeg'])
+
+    # these blocks were inside the (p,ar) loop above, where each iteration recomputed them from scratch and discarded the previous one; computed once here,
+    # after every area's zeroing has been applied, they yield exactly the frames the last iteration produced
+
+    # Increase Maximum to reach minimum
+    # par['pMaxPowerElec']      = par['pMaxPowerElec'].where(par['pMaxPowerElec'] >= par['pMinPowerElec'], par['pMinPowerElec'])
+    # par['pMaxCharge']         = par['pMaxCharge'].where   (par['pMaxCharge']    >= par['pMinCharge'],    par['pMinCharge']   )
+
+    # Decrease minimum to reach maximum
+    par['pMinPowerElec']      = par['pMinPowerElec'].where(par['pMinPowerElec'] <= par['pMaxPowerElec'], par['pMaxPowerElec'])
+    par['pMinCharge'   ]      = par['pMinCharge'   ].where(par['pMinCharge'   ] <= par['pMaxCharge'   ], par['pMaxCharge'   ])
+
+    # calculate 2nd Blocks
+    par['pMaxPower2ndBlock' ] = par['pMaxPowerElec'] - par['pMinPowerElec']
+    par['pMaxCharge2ndBlock'] = par['pMaxCharge'   ] - par['pMinCharge'   ]
+
+    pMaxCapacityPeak          = pd.concat([par['pMaxPowerElec'].max(axis=0), par['pMaxCharge'].max(axis=0).reindex(par['pMaxPowerElec'].columns, fill_value=0.0)], axis=1).max(axis=1)
+    par['pMaxCapacity']       = pd.DataFrame([pMaxCapacityPeak.values] * len(par['pMaxPowerElec']), index=par['pMaxPowerElec'].index, columns=par['pMaxPowerElec'].columns)
+
+    # epsilon-zeroing of the 2nd blocks once per (p,ar); the old in-loop recomputation discarded every iteration's thresholds but the last one's
+    for p,ar in mTEPES.par:
+        if g2a[ar]:
+            pEpsilonElecAr = par['pDemandElecPeak'][p,ar]*1e-5
+            par['pMaxPower2ndBlock' ][par['pMaxPower2ndBlock' ][[g for g in g2a[ar]]] < pEpsilonElecAr] = 0.0
+            par['pMaxCharge2ndBlock'][par['pMaxCharge2ndBlock'][[g for g in g2a[ar]]] < pEpsilonElecAr] = 0.0
+
+    # merging positive and negative values of the demand (moved out of the (p,ar) loop: only the last iteration's result was kept)
+    par['pDemandElec']        = par['pDemandElecPos'].where(par['pDemandElecNeg'] == 0.0, par['pDemandElecNeg'])
+    if par['pIndHydrogen']:
+        par['pDemandH2'    ]  = par['pDemandH2Pos'  ].where(par['pDemandH2Neg'  ] == 0.0, par['pDemandH2Neg'  ])
+    if par['pIndHeat']:
+        par['pDemandHeat'  ]  = par['pDemandHeatPos'].where(par['pDemandHeatNeg'] == 0.0, par['pDemandHeatNeg'])
+
+    # par['pLineNTCMax'] = par['pLineNTCFrw'].where( par['pLineNTCFrw'] > par['pLineNTCBck'], par['pLineNTCBck'])
+    par['pLineNTCMax'] = par['pLineNTCFrw'].where( par['pLineNTCFrw'].abs() >= par['pLineNTCBck'].abs(), par['pLineNTCBck']).abs()
+
+    # one row of values tiled |psn| times instead of 2 x |psn| x |la| scalar getitems
+    par['pMaxNTCFrw'] = pd.DataFrame([par['pLineNTCFrw'].loc[list(mTEPES.la)].values] * len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.la)
+    par['pMaxNTCBck'] = pd.DataFrame([par['pLineNTCBck'].loc[list(mTEPES.la)].values] * len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.la)
+    if par['pIndVarTTC']:
+        par['pMaxNTCFrw'] = par['pVariableNTCFrw'].replace(0.0, par['pLineNTCFrw'])
+        par['pMaxNTCBck'] = par['pVariableNTCBck'].replace(0.0, par['pLineNTCBck'])
+        par['pMaxNTCFrw'] = par['pMaxNTCFrw'].where((par['pMaxNTCFrw'] > par['pEpsilonElec']) | (par['pMaxNTCFrw'] < -par['pEpsilonElec']), 0.0)
+        par['pMaxNTCBck'] = par['pMaxNTCBck'].where((par['pMaxNTCBck'] > par['pEpsilonElec']) | (par['pMaxNTCBck'] < -par['pEpsilonElec']), 0.0)
+    # par['pMaxNTCMax']     = par['pMaxNTCFrw'].where( par['pMaxNTCFrw'] >= par['pMaxNTCBck'], par['pMaxNTCBck'])
+    par['pMaxNTCMax']     = par['pMaxNTCFrw'].where( par['pMaxNTCFrw'].abs() >= par['pMaxNTCBck'].abs(), par['pMaxNTCBck']).abs()
 
     # drop generators not g or es or eh or ch
     par['pVariableMinPowerElec'] = par['pVariableMinPowerElec'].loc[:,mTEPES.g ]
@@ -987,11 +1000,12 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     # computation of the power-to-heat ratio of the CHP units
     # heat ratio of boiler units is fixed to 1.0
     par['pPower2HeatRatio']   = pd.Series([1.0 if ch in mTEPES.bo else (par['pRatedMaxPowerElec'][ch]-par['pRatedMinPowerElec'][ch])/(par['pRatedMaxPowerHeat'][ch]-par['pRatedMinPowerHeat'][ch]) for ch in mTEPES.ch], index=mTEPES.ch)
-    par['pMinPowerHeat']      = pd.DataFrame([[par['pMinPowerElec']     [ch][p,sc,n]/par['pPower2HeatRatio'][ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.ch)
-    par['pMaxPowerHeat']      = pd.DataFrame([[par['pMaxPowerElec']     [ch][p,sc,n]/par['pPower2HeatRatio'][ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.ch)
-    par['pMinPowerHeat'].update(pd.DataFrame([[par['pRatedMinPowerHeat'][bo]                                             for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.bo))
-    par['pMaxPowerHeat'].update(pd.DataFrame([[par['pRatedMaxPowerHeat'][bo]                                             for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.bo))
-    par['pMaxPowerHeat'].update(pd.DataFrame([[par['pMaxCharge'][hp][p,sc,n]/par['pProductionFunctionHeat'][hp]  for hp in mTEPES.hp] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.hp))
+    # vectorized: three aligned divisions and two tiled rows instead of one column extraction plus scalar getitems per cell
+    par['pMinPowerHeat']      = par['pMinPowerElec'].loc[:,mTEPES.ch].div(par['pPower2HeatRatio'], axis=1)
+    par['pMaxPowerHeat']      = par['pMaxPowerElec'].loc[:,mTEPES.ch].div(par['pPower2HeatRatio'], axis=1)
+    par['pMinPowerHeat'].update(pd.DataFrame([par['pRatedMinPowerHeat'].loc[list(mTEPES.bo)].values]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.bo))
+    par['pMaxPowerHeat'].update(pd.DataFrame([par['pRatedMaxPowerHeat'].loc[list(mTEPES.bo)].values]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.bo))
+    par['pMaxPowerHeat'].update(par['pMaxCharge'].loc[:,mTEPES.hp].div(par['pProductionFunctionHeat'].loc[list(mTEPES.hp)], axis=1))
 
     # drop values not par, p, or ps
     par['pReserveMargin']    = par['pReserveMargin'].loc  [mTEPES.par]
@@ -1058,8 +1072,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         # drop reservoirs not rn
         par['pIndBinRsrvInvest']        = par['pIndBinRsrvInvest'].loc       [mTEPES.rn]
         par['pRsrInvestCost']           = par['pRsrInvestCost'].loc          [mTEPES.rn]
-        # maximum outflows depending on the downstream hydropower unit
-        par['pMaxOutflows'] = pd.DataFrame([[sum(par['pMaxPowerElec'][h][p,sc,n]/par['pProductionFunctionHydro'][h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) for rs in mTEPES.rs] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.rs)
+        # maximum outflows depending on the downstream hydropower unit; vectorized: scale each hydro column once and sum per reservoir,
+        # instead of one column extraction plus a membership test and a scalar getitem per (row, reservoir, hydro)
+        pHydroScaled        = par['pMaxPowerElec'].loc[:,mTEPES.h].div(par['pProductionFunctionHydro'], axis=1)
+        par['pMaxOutflows'] = pd.DataFrame({rs: pHydroScaled[[h for h in mTEPES.h if (rs,h) in mTEPES.r2h]].sum(axis=1) for rs in mTEPES.rs}, index=mTEPES.psn)
 
     if par['pIndHydrogen']:
         par['pDemandH2Peak']         = par['pDemandH2Peak'].loc        [mTEPES.par]
@@ -1475,57 +1491,59 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pHeatPipeLoInvest     = Param(mTEPES.hc, initialize=par['pHeatPipeLoInvest'].to_dict()    , within=NonNegativeReals, doc='Lower bound of the heat pipe investment decision', mutable=True)
         mTEPES.pHeatPipeUpInvest     = Param(mTEPES.hc, initialize=par['pHeatPipeUpInvest'].to_dict()    , within=NonNegativeReals, doc='Upper bound of the heat pipe investment decision', mutable=True)
 
-    # load levels multiple of cycles for each ESS/generator
-    mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pStorageTimeStep [es] == 0]
-    mTEPES.nesl         = [(n,el) for n,el in mTEPES.n*mTEPES.el if mTEPES.n.ord(n) % mTEPES.pStorageTimeStep [el] == 0]
-    mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) % mTEPES.pStorageTimeStep [ec] == 0]
-    mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
-    mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [g ] == 0]
+    # load levels multiple of cycles for each ESS/generator; ord() and the cycle Params evaluated once per element instead of once per pair
+    pOrdN  = {n: mTEPES.n.ord(n) for n in mTEPES.n}
+    pStCyc = {es: mTEPES.pStorageTimeStep [es] for es in mTEPES.es}
+    pOuCyc = {es: mTEPES.pOutflowsTimeStep[es] for es in mTEPES.es}
+    pEnCyc = {g:  mTEPES.pEnergyTimeStep  [g ] for g  in mTEPES.g }
+    mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if pOrdN[n] % pStCyc[es] == 0]
+    mTEPES.nesl         = [(n,el) for n,el in mTEPES.n*mTEPES.el if pOrdN[n] % pStCyc[el] == 0]
+    mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if pOrdN[n] % pStCyc[ec] == 0]
+    mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if pOrdN[n] % pOuCyc[es] == 0]
+    mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if pOrdN[n] % pEnCyc[g ] == 0]
     if par['pIndHydroTopology']:
+        # the reservoir time step only depends on the unit: computed once per unit instead of once per (load level, unit).
+        # four twin blocks with four different membership sets (h2r, r2h, p2r, r2p), written one by one on purpose
         if mTEPES.h2r:
-            mTEPES.nh2c = []
-            for n,h in mTEPES.n*mTEPES.h:
-                time_step = sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.h2r)
-                if time_step and mTEPES.n.ord(n) % time_step == 0:
-                    mTEPES.nh2c.append((n,h))
+            pResTimeStepH2C = {h: sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.h2r) for h in mTEPES.h}
+            mTEPES.nh2c = [(n,h) for n,h in mTEPES.n*mTEPES.h if pResTimeStepH2C[h] and pOrdN[n] % pResTimeStepH2C[h] == 0]
         else:
             mTEPES.nh2c = []
         if mTEPES.r2h:
-            mTEPES.nhc  = []
-            for n,h in mTEPES.n*mTEPES.h:
-                time_step = sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h)
-                if time_step and mTEPES.n.ord(n) % time_step == 0:
-                    mTEPES.nhc.append((n,h))
+            pResTimeStepHC  = {h: sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) for h in mTEPES.h}
+            mTEPES.nhc  = [(n,h) for n,h in mTEPES.n*mTEPES.h if pResTimeStepHC [h] and pOrdN[n] % pResTimeStepHC [h] == 0]
         else:
             mTEPES.nhc  = []
         if mTEPES.p2r:
-            mTEPES.np2c = []
-            for n,h in mTEPES.n*mTEPES.h:
-                time_step = sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r)
-                if time_step and mTEPES.n.ord(n) % time_step == 0:
-                    mTEPES.np2c.append((n,h))
+            pResTimeStepP2C = {h: sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) for h in mTEPES.h}
+            mTEPES.np2c = [(n,h) for n,h in mTEPES.n*mTEPES.h if pResTimeStepP2C[h] and pOrdN[n] % pResTimeStepP2C[h] == 0]
         else:
             mTEPES.np2c = []
         if mTEPES.r2p:
-            mTEPES.npc  = []
-            for n,h in mTEPES.n*mTEPES.h:
-                time_step = sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p)
-                if time_step and mTEPES.n.ord(n) % time_step == 0:
-                    mTEPES.npc.append((n,h))
+            pResTimeStepPC  = {h: sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) for h in mTEPES.h}
+            mTEPES.npc  = [(n,h) for n,h in mTEPES.n*mTEPES.h if pResTimeStepPC [h] and pOrdN[n] % pResTimeStepPC [h] == 0]
         else:
             mTEPES.npc  = []
-        mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) % mTEPES.pReservoirTimeStep[rs] == 0]
-        mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) % mTEPES.pReservoirTimeStep[rs] == 0]
-        mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) % mTEPES.pWaterOutTimeStep [rs] == 0]
+        pRsCyc = {rs: mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs}
+        pWoCyc = {rs: mTEPES.pWaterOutTimeStep [rs] for rs in mTEPES.rs}
+        mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if pOrdN[n] % pRsCyc[rs] == 0]
+        mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if pOrdN[n] % pRsCyc[rs] == 0]
+        mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if pOrdN[n] % pWoCyc[rs] == 0]
 
-    # ESS with outflows
-    mTEPES.eo     = [(p,sc,es) for p,sc,es in mTEPES.pses if sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn)]
+    # ESS with outflows; one groupby pass over each stacked series (the same values the Pyomo Params were initialized from)
+    # instead of a full element-by-element Param scan per (p,sc,unit)
+    pOutflowsSum  = par['pEnergyOutflows'].groupby(level=[0,1,3]).sum().to_dict()
+    mTEPES.eo     = [(p,sc,es) for p,sc,es in mTEPES.pses if pOutflowsSum.get((p,sc,es), 0.0)]
     if par['pIndHydroTopology']:
         # reservoirs with outflows
-        mTEPES.ro = [(p,sc,rs) for p,sc,rs in mTEPES.psrs if sum(mTEPES.pHydroOutflows [p,sc,n2,rs]() for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn)]
+        pHydroOutSum = par['pHydroOutflows'].groupby(level=[0,1,3]).sum().to_dict()
+        mTEPES.ro = [(p,sc,rs) for p,sc,rs in mTEPES.psrs if pHydroOutSum.get((p,sc,rs), 0.0)]
     # generators with min/max energy
-    mTEPES.gm     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMinEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn) and sum(mTEPES.pMaxPowerElec[p,sc,n2,g] for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn)]
-    mTEPES.gM     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMaxEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn) and sum(mTEPES.pMaxPowerElec[p,sc,n2,g] for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn)]
+    pMinEnergySum = par['pVariableMinEnergy'].groupby(level=[0,1,3]).sum().to_dict()
+    pMaxEnergySum = par['pVariableMaxEnergy'].groupby(level=[0,1,3]).sum().to_dict()
+    pMaxPowerSum  = par['pMaxPowerElec'     ].groupby(level=[0,1,3]).sum().to_dict()
+    mTEPES.gm     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if pMinEnergySum.get((p,sc,g ), 0.0) and pMaxPowerSum.get((p,sc,g ), 0.0)]
+    mTEPES.gM     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if pMaxEnergySum.get((p,sc,g ), 0.0) and pMaxPowerSum.get((p,sc,g ), 0.0)]
 
     # # if unit availability = 0 changed to 1
     # for g in mTEPES.g:
@@ -1549,18 +1567,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             if  mTEPES.pHeatPipeLength[ni,nf,cc]() == 0.0:
                 mTEPES.pHeatPipeLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
-    # initialize generation output, unit commitment and line switching
-    par['pInitialOutput'] = pd.DataFrame([[0.0]*len(mTEPES.g )]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.g )
-    par['pInitialUC']     = pd.DataFrame([[0  ]*len(mTEPES.g )]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.g )
-    par['pInitialSwitch'] = pd.DataFrame([[0  ]*len(mTEPES.la)]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.la)
-
-    par['pInitialOutput'] = filter_rows(par['pInitialOutput'], mTEPES.psng )
-    par['pInitialUC']     = filter_rows(par['pInitialUC']    , mTEPES.psng )
-    par['pInitialSwitch'] = filter_rows(par['pInitialSwitch'], mTEPES.psnla)
-
-    mTEPES.pInitialOutput = Param(mTEPES.psng , initialize=par['pInitialOutput'].to_dict(), within=NonNegativeReals, doc='unit initial output',     mutable=True)
-    mTEPES.pInitialUC     = Param(mTEPES.psng , initialize=par['pInitialUC'].to_dict()    , within=Binary,           doc='unit initial commitment', mutable=True)
-    mTEPES.pInitialSwitch = Param(mTEPES.psnla, initialize=par['pInitialSwitch'].to_dict(), within=Binary,           doc='line initial switching',  mutable=True)
+    # initialize generation output, unit commitment and line switching (a scalar initialize avoids building, stacking,
+    # filtering and dict-converting three psn x unit frames whose every value is the same zero)
+    mTEPES.pInitialOutput = Param(mTEPES.psng , initialize=0.0, within=NonNegativeReals, doc='unit initial output',     mutable=True)
+    mTEPES.pInitialUC     = Param(mTEPES.psng , initialize=0  , within=Binary,           doc='unit initial commitment', mutable=True)
+    mTEPES.pInitialSwitch = Param(mTEPES.psnla, initialize=0  , within=Binary,           doc='line initial switching',  mutable=True)
 
     # --- computed power transfer distribution factors ---------------------------------------------------------------------------------------------
     # Deliberately NOT indexed by load level. The factors depend on the topology, which is fixed for a period, so an

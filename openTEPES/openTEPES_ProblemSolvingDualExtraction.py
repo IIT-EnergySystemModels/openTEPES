@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 openTEPES.openTEPES_ProblemSolvingDualExtraction — fix-and-resolve pass that recovers shadow prices on a MIP solution.
 
@@ -54,13 +54,13 @@ def fix_for_duals(OptModel, mTEPES, p, sc) -> int:
                 nUnfixedVars += 1
     else:
         for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-            if (not var.is_continuous() and not var.is_fixed() and var.value is not None
-                    and var.index()[0] == p and var.index()[1] == sc
-                    and (len(var.index()) < 3 or var.index()[2] not in mTEPES.nn or var.index()[2] in mTEPES.na)):
-                relaxed.setdefault(id(var), (var, var.domain))
-                var.fixed  = True
-                var.domain = UnitInterval
-                nUnfixedVars += 1
+            if not var.is_continuous() and not var.is_fixed() and var.value is not None:
+                idx = var.index()
+                if idx[0] == p and idx[1] == sc and (len(idx) < 3 or idx[2] not in mTEPES.nn or idx[2] in mTEPES.na):
+                    relaxed.setdefault(id(var), (var, var.domain))
+                    var.fixed  = True
+                    var.domain = UnitInterval
+                    nUnfixedVars += 1
 
     # Continuous investment decisions are fixed to their optimal values regardless of NoRepetition; without
     # this the LP re-solve could revisit the investment plan, which would distort the duals on the operation
@@ -141,7 +141,10 @@ def collect_duals(OptModel, mTEPES) -> None:
     pDuals = {}
     for con in OptModel.component_objects(pyo.Constraint, active=True):
         if con.is_indexed():
-            for index in con:
-                pDuals[str(con.name) + str(index)] = OptModel.dual[con[index]]
+            # con.name rebuilds the qualified name walking the parent blocks on EVERY call: bind it once per component,
+            # and let items() hand over the data object instead of paying a second con[index] lookup per row
+            cname = con.name
+            for index, condata in con.items():
+                pDuals[cname + str(index)] = OptModel.dual[condata]
     mTEPES.pDuals.update(pDuals)
     OptModel.del_component(OptModel.dual)

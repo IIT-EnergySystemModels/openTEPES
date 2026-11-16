@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 """
 
 import time
@@ -529,11 +529,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         for n in range(par['pTimeStep']-2, -1, -1):
             par['pDuration'].iloc[range(n, n_levels, par['pTimeStep'])] = 0
 
-        for p,sc,n in par['pDuration'].index:
-            if par['pPeriodWeight'][p]    == 0.0:
-                par['pDuration'].loc[p,sc,n] = 0
-            if par['pScenProb'][p,sc]     == 0.0:
-                par['pDuration'].loc[p,sc,n] = 0
+        # zero the duration of load levels whose period weight or scenario probability is zero, as two vectorized masks instead of one scalar .loc write per load level
+        pDurIdx    = par['pDuration'].index
+        pWeightVal = par['pPeriodWeight'].reindex(pDurIdx.get_level_values(0)).to_numpy()
+        pProbVal   = par['pScenProb'   ].reindex(pd.MultiIndex.from_arrays([pDurIdx.get_level_values(0), pDurIdx.get_level_values(1)])).to_numpy()
+        par['pDuration'] = par['pDuration'].where((pWeightVal != 0.0) & (pProbVal != 0.0), 0)
 
     # remove load levels with duration 0 to determine min and max values correctly
     parDuration = par['pDuration']
@@ -802,10 +802,21 @@ def TightenACBounds(mTEPES, par, pIndLogConsole=0, dfs=None):
     pReleasable = set(mTEPES.lc) | set(mTEPES.ls) | {
         la for la in branches
         if par['pElecNetPeriodIni'][la] > pFirst or par['pElecNetPeriodFin'][la] < pLast}
-    incident = defaultdict(list)
+    # Branch constants (z2, smax, tap and the derived envelope terms) depend on the branch alone; computing them on every (sweep, node, incident
+    # branch) visit costs O(MAX_SWEEPS x 2 x |branches|) scalar pandas lookups. Compute them once per branch. A branch with smax <= 0 contributed
+    # nothing to the sweep (the inner loop skipped it), so it is left out of incident altogether.
+    incident   = defaultdict(list)
+    pBranchEnv = {}
     for la in branches:
         if la in pReleasable:
             continue
+        z2   = par['pLineR'][la] ** 2 + par['pLineX'][la] ** 2
+        z    = math.sqrt(z2)
+        smax = par['pLineSmax'][la] / pSBase * vmax / vmin
+        if smax <= 0.0:
+            continue
+        pTapF = par['pLineTapFactor'][la]
+        pBranchEnv[la] = (pTapF ** 2, 2.0 * smax * z, z2 * (smax / (vmin * pTapF)) ** 2)
         ni, nf, cc = la
         incident[ni].append(la)
         incident[nf].append(la)
@@ -825,15 +836,7 @@ def TightenACBounds(mTEPES, par, pIndLogConsole=0, dfs=None):
                 continue
             pNewLo, pNewHi = lo[nd], hi[nd]
             for la in incident[nd]:
-                z2 = par['pLineR'][la] ** 2 + par['pLineX'][la] ** 2
-                z  = math.sqrt(z2)
-                smax = par['pLineSmax'][la] / pSBase * vmax / vmin
-                if smax <= 0.0:
-                    continue
-                pTapF   = par['pLineTapFactor'][la]
-                pTap2   = pTapF ** 2
-                pSpan   = 2.0 * smax * z
-                pLossUb = z2 * (smax / (vmin * pTapF)) ** 2
+                pTap2, pSpan, pLossUb = pBranchEnv[la]
                 # The drop equation is w_j = w_i*f^2 - 2(rP+xQ) + z^2*l, with f = 1/tau. It is not symmetric once f differs from 1, so which end of
                 # the branch this node sits on decides whether f^2 multiplies or divides.
                 if la[0] == nd:                                     # nd sends: w_nd = (w_other + 2(rP+xQ) - z^2*l) / f^2
@@ -1105,8 +1108,11 @@ def ConfigureACData(mTEPES, dfs, par):
         raise ValueError(f'oT_Data_Network: AngMin must be below AngMax on line(s) {bad}')
 
     # --- branch index set ------------------------------------------------------------------------------------------------------------------------
-    mTEPES.psnlad = Set(doc='psn x DC branch', initialize=[(p,sc,n,ni,nf,cc) for p,sc,n in mTEPES.psn for ni,nf,cc in mTEPES.lad if (p,ni,nf,cc) in mTEPES.pla])
-    mTEPES.psnlaa = Set(doc='psn x AC branch', initialize=[(p,sc,n,ni,nf,cc) for p,sc,n in mTEPES.psn for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla])
+    # the (p, branch) membership test does not depend on (sc,n): prefilter once per period instead of once per (p,sc,n) tuple
+    pLadByP = {p: [(ni,nf,cc) for ni,nf,cc in mTEPES.lad if (p,ni,nf,cc) in mTEPES.pla] for p in mTEPES.p}
+    pLaaByP = {p: [(ni,nf,cc) for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla] for p in mTEPES.p}
+    mTEPES.psnlad = Set(doc='psn x DC branch', initialize=[(p,sc,n,ni,nf,cc) for p,sc,n in mTEPES.psn for ni,nf,cc in pLadByP[p]])
+    mTEPES.psnlaa = Set(doc='psn x AC branch', initialize=[(p,sc,n,ni,nf,cc) for p,sc,n in mTEPES.psn for ni,nf,cc in pLaaByP[p]])
 
     # --- cycles: not computed ---------------------------------------------------------------------------------------------------------------------
     # An earlier version built the cycle basis here for a cyclic angle constraint. That constraint is not built — with vTheta explicit the sum of angle
@@ -1168,17 +1174,19 @@ def ConfigureACData(mTEPES, dfs, par):
     pGenIn = pGenTable['InitialPeriod'].astype(float).fillna(0.0)
     pGenFi = pGenTable['FinalPeriod'  ].astype(float).fillna(0.0).replace(0.0, 3000.0)
 
-    mTEPES.psnsh = Set(doc='psn x shunt',                  initialize=[(p,sc,n,sh) for p,sc,n in mTEPES.psn for sh in sShunt
-                                                                       if par['pShuntPeriodIni'][sh] <= p and par['pShuntPeriodFin'][sh] >= p])
-    mTEPES.psnshw= Set(doc='psn x switchable shunt',       initialize=[(p,sc,n,sh) for p,sc,n in mTEPES.psn for sh in sShuntSw
-                                                                       if par['pShuntPeriodIni'][sh] <= p and par['pShuntPeriodFin'][sh] >= p])
+    # the period-window and (p, unit) membership tests do not depend on (sc,n): prefilter once per period instead of once per (p,sc,n) tuple
+    pShByP  = {p: [sh for sh in sShunt   if par['pShuntPeriodIni'][sh] <= p and par['pShuntPeriodFin'][sh] >= p] for p in mTEPES.p}
+    pShwByP = {p: [sh for sh in sShuntSw if par['pShuntPeriodIni'][sh] <= p and par['pShuntPeriodFin'][sh] >= p] for p in mTEPES.p}
+    mTEPES.psnsh = Set(doc='psn x shunt',                  initialize=[(p,sc,n,sh) for p,sc,n in mTEPES.psn for sh in pShByP[p]])
+    mTEPES.psnshw= Set(doc='psn x switchable shunt',       initialize=[(p,sc,n,sh) for p,sc,n in mTEPES.psn for sh in pShwByP[p]])
     mTEPES.pgq   = Set(doc='period x reactive unit',       initialize=[(p,gq) for p in mTEPES.p for gq in mTEPES.gq
                                                                        if pGenIn[gq] <= p and pGenFi[gq] >= p])
     mTEPES.psqc  = Set(doc='period x candidate condenser', initialize=[(p,sq) for p,sq in mTEPES.pgq if sq in mTEPES.sqc])
-    mTEPES.psngq = Set(doc='psn x reactive unit',          initialize=[(p,sc,n,gq) for p,sc,n in mTEPES.psn for gq in mTEPES.gq if (p,gq) in mTEPES.pgq])
-    mTEPES.psnsq = Set(doc='psn x synchronous condenser',  initialize=[(p,sc,n,sq) for p,sc,n in mTEPES.psn for sq in mTEPES.sq if (p,sq) in mTEPES.pgq])
-    mTEPES.psh   = Set(doc='period x shunt',               initialize=[(p,sh)      for p      in mTEPES.p   for sh in sShunt
-                                                                       if par['pShuntPeriodIni'][sh] <= p and par['pShuntPeriodFin'][sh] >= p])
+    pGqByP = {p: [gq for gq in mTEPES.gq if (p,gq) in mTEPES.pgq] for p in mTEPES.p}
+    pSqByP = {p: [sq for sq in mTEPES.sq if (p,sq) in mTEPES.pgq] for p in mTEPES.p}
+    mTEPES.psngq = Set(doc='psn x reactive unit',          initialize=[(p,sc,n,gq) for p,sc,n in mTEPES.psn for gq in pGqByP[p]])
+    mTEPES.psnsq = Set(doc='psn x synchronous condenser',  initialize=[(p,sc,n,sq) for p,sc,n in mTEPES.psn for sq in pSqByP[p]])
+    mTEPES.psh   = Set(doc='period x shunt',               initialize=[(p,sh)      for p      in mTEPES.p   for sh in pShByP[p]])
     mTEPES.pshc  = Set(doc='period x candidate shunt',     initialize=[(p,sh)      for p,sh   in mTEPES.psh if sh in mTEPES.shc])
 
     # --- reactive demand onto the model index ----------------------------------------------------------------------------------------------------

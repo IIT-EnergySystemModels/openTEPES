@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 20, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 System summary, flexibility, and reliability results.
 
@@ -29,15 +29,10 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     # %%  Power balance per period, scenario, and load level
     # incoming and outgoing lines (lin) (lout) and lines with losses (linl) (loutl)
     lin   = defaultdict(set)
-    linl  = defaultdict(set)
     lout  = defaultdict(set)
-    loutl = defaultdict(set)
     for ni,nf,cc in mTEPES.la:
         lin  [nf].add((ni,cc))
         lout [ni].add((nf,cc))
-    for ni,nf,cc in mTEPES.ll:
-        linl [nf].add((ni,cc))
-        loutl[ni].add((nf,cc))
 
     # generators to nodes (g2n)
     g2n = defaultdict(set)
@@ -57,22 +52,33 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     # Ratio Fossil Fuel Generation/Total Generation [%]
     # Fossil units are those with a positive emission rate. mTEPES.tr, used before, is every unit
     # with a non-zero operating cost, which also includes wind, solar, nuclear, hydro and storage.
-    TotalGeneration       = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng)
-    FossilFuelGeneration  = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng if mTEPES.pEmissionRate[g] > 0.0)
+    # one pass instead of two: the fossil-only sum re-read every variable and duration a second time
+    pDuration             = {(p,sc,n): mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n in mTEPES.psn}
+    pWeight               = {(p,sc):   mTEPES.pPeriodProb       [p,sc  ]() for p,sc   in mTEPES.ps }
+    pFossil               = {g for g in mTEPES.g if mTEPES.pEmissionRate[g] > 0.0}
+    TotalGeneration       = 0.0
+    FossilFuelGeneration  = 0.0
+    for p,sc,n,g in mTEPES.psng:
+        pEnergy               = OptModel.vTotalOutput[p,sc,n,g]()*pDuration[p,sc,n]
+        TotalGeneration      += pEnergy
+        if g in pFossil:
+            FossilFuelGeneration += pEnergy
     # CO2EmissionRate is optional and some cases leave it blank, including ones with fossil units.
     # Reporting 0 % there would read as a clean system rather than as missing data.
-    pAnyEmissionData      = any(mTEPES.pEmissionRate[g] > 0.0 for g in mTEPES.g)
+    pAnyEmissionData      = len(pFossil) > 0
     if not pAnyEmissionData:
         print('WARNING: no unit has a positive CO2EmissionRate; the fossil-fuel generation ratio is reported as NaN.')
     # Ratio Total Investments [%]
     # vTotalFElecCost now also carries the AC reactive-compensation investments, so the gate has to admit a case whose only candidate is a shunt or a
     # synchronous condenser. Without this the reported total investment cost silently omits them.
     pElecInvest = len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) > 0 or (mTEPES.pIndACPowerFlow() and len(mTEPES.shc) + len(mTEPES.sqc) > 0)
+    # evaluate each discounted generation investment cost once: xGenInvestCost is an Expression whose evaluation walks its tree, and it was re-evaluated in four sums below
+    pGenInvCost = {(p,gc): mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,gc]() for p,gc in mTEPES.pgc}
     TotalInvestmentCost   = (sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFElecCost  [p   ]()     for p          in mTEPES.p if pElecInvest) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHydroCost [p   ]()     for p          in mTEPES.p if mTEPES.rn) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFH2Cost    [p   ]()     for p          in mTEPES.p if mTEPES.pc) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHeatCost  [p   ]()     for p          in mTEPES.p if mTEPES.hc))
-    GenInvestmentCost      = sum(mTEPES.pDiscountedWeight[p]                                       * OptModel.xGenInvestCost   [p,gc]()     for p,gc       in mTEPES.pgc)
+    GenInvestmentCost      = sum(pGenInvCost[p,gc]                                                                                          for p,gc       in mTEPES.pgc)
     GenRetirementCost      = sum(mTEPES.pDiscountedWeight[p] * (mTEPES.pGenRetireCost   [gd]       -
                                                                 mTEPES.pGenOMFixedCost  [gd])      * OptModel.vGenerationRetire[p,gd]()     for p,gd       in mTEPES.pgd)
     if mTEPES.pIndHydroTopology():
@@ -94,11 +100,11 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         ReactiveInvestmentCost = 0.0
     # Ratio Generation Investment cost/ Generation Installed Capacity [MEUR-MW]
-    GenInvCostCapacity     = sum(mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,gc]()/mTEPES.pRatedMaxPowerElec[gc] for p,gc in mTEPES.pgc if mTEPES.pRatedMaxPowerElec[gc])
+    GenInvCostCapacity     = sum(pGenInvCost[p,gc]/mTEPES.pRatedMaxPowerElec[gc] for p,gc in mTEPES.pgc if mTEPES.pRatedMaxPowerElec[gc])
     # Ratio Additional Transmission Capacity-Length [MWkm]
     NetCapacityLength      = sum(mTEPES.pLineNTCMax[ni,nf,cc]*OptModel.vNetworkInvest[p,ni,nf,cc]()*mTEPES.pLineLength[ni,nf,cc]()          for p,ni,nf,cc in mTEPES.plc)
     # Ratio Network Investment Cost/Variable RES Injection [EUR/MWh]
-    VRESInjection = sum(OptModel.vTotalOutput[p,sc,n,gc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,gc in mTEPES.psngc if gc in mTEPES.re) if mTEPES.gc else 0.0
+    VRESInjection = sum(OptModel.vTotalOutput[p,sc,n,gc]()*pDuration[p,sc,n] for p,sc,n,gc in mTEPES.psngc if gc in mTEPES.re) if mTEPES.gc else 0.0
     if VRESInjection:
         NetInvCostVRESInsCap = NetInvestmentCost*1e6/VRESInjection
     else:
@@ -110,10 +116,10 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         # product already satisfies it. The stage and the node come from two maps built once, so each renewable injection is visited exactly one time
         pLevelToStg    = {(p,sc,n): st for p,sc,st,n in mTEPES.s2n}
         pGen2Node      = {g: nd for nd,g in mTEPES.n2g}
-        VRETechRevenue = sum(mTEPES.pDuals[f"eBalanceElec_{p}_{sc}_{pLevelToStg[p,sc,n]}('{n}', '{pGen2Node[gc]}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]()*OptModel.vTotalOutput[p,sc,n,gc]() for p,sc,n,gc in mTEPES.psnre if (p,sc,n) in pLevelToStg and gc in pGen2Node and pGen2Node[gc] in pNodeConnected)
+        VRETechRevenue = sum(mTEPES.pDuals[f"eBalanceElec_{p}_{sc}_{pLevelToStg[p,sc,n]}('{n}', '{pGen2Node[gc]}')"]/pWeight[p,sc]/pDuration[p,sc,n]*OptModel.vTotalOutput[p,sc,n,gc]() for p,sc,n,gc in mTEPES.psnre if (p,sc,n) in pLevelToStg and gc in pGen2Node and pGen2Node[gc] in pNodeConnected)
     else:
         VRETechRevenue = 0.0
-    VREInvCostCapacity = sum(mTEPES.pDiscountedWeight[p]*OptModel.xGenInvestCost[p,gc]() for p,gc in mTEPES.pgc if gc in mTEPES.re)
+    VREInvCostCapacity = sum(pGenInvCost[p,gc] for p,gc in mTEPES.pgc if gc in mTEPES.re)
 
     K01     = pd.Series(data={'Ratio Fossil Fuel Generation/Total Generation [%]'                       : (FossilFuelGeneration / TotalGeneration   *1e2) if pAnyEmissionData else math.nan}).to_frame(name='Value')
     if GenInvestmentCost:
@@ -165,10 +171,10 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     # LCOE per technology
     if mTEPES.gc:
-        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,gc]() for p,     gc in mTEPES.pgc   if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
+        GenTechInvestCost = pd.Series(data=[sum(pGenInvCost[p,gc] for p,gc in mTEPES.pgc if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         pTechInjection    = defaultdict(float)
         for p,sc,n,gc in mTEPES.psngc:
-            pTechInjection[pGen2Tech[gc]] += mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,gc]()
+            pTechInjection[pGen2Tech[gc]] += mTEPES.pDiscountedWeight[p] * pDuration[p,sc,n] * OptModel.vTotalOutput[p,sc,n,gc]()
         GenTechInjection  = pd.Series(data=[pTechInjection[gt] for gt in mTEPES.gt], index=mTEPES.gt)
         GenTechInvestCost *= 1e3
         GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh').rename_axis(['Technology'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyLCOE_{CaseName}.csv', index=True, sep=',')
@@ -178,7 +184,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * OptModel.xGenInvestCost[p,gb]()     for p,     gb in mTEPES.pgb   if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         pTechInjection    = defaultdict(float)
         for p,sc,n,gb in mTEPES.psngb:
-            pTechInjection[pGen2Tech[gb]] += mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutputHeat[p,sc,n,gb]()
+            pTechInjection[pGen2Tech[gb]] += mTEPES.pDiscountedWeight[p] * pDuration[p,sc,n] * OptModel.vTotalOutputHeat[p,sc,n,gb]()
         GenTechInjection  = pd.Series(data=[pTechInjection[gt] for gt in mTEPES.gt], index=mTEPES.gt)
         GenTechInvestCost *= 1e3
         GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh').rename_axis(['Technology'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyLCOH_{CaseName}.csv', index=True, sep=',')
@@ -235,45 +241,9 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     # StartTime = time.time()
     # print('Writing    generation summary results  ... ', round(WritingResultsTime), 's')
 
-    ndzn = pd.DataFrame(mTEPES.ndzn).set_index(0)
-    ndar = pd.DataFrame(mTEPES.ndar).set_index(0)
-    sPSNND             = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if nd in pNodeConnected]
-    OutputResults1     = pd.Series(data=[ ndzn[1][nd]                                                                                                                           for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='Zone'               )
-    OutputResults2     = pd.Series(data=[ ndar[1][nd]                                                                                                                           for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='Area'               )
-    OutputResults3     = pd.Series(data=[     OptModel.vENS       [p,sc,n,nd      ]()                                                      *mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='ENS [GWh]'          )
-    OutputResults4     = pd.Series(data=[-  mTEPES.pDemandElec    [p,sc,n,nd      ]()                                                        *mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerDemand [GWh]'  )
-    OutputResults5     = pd.Series(data=[-sum(OptModel.vFlowElec  [p,sc,n,nd,nf,cc]() for nf,cc in lout [nd] if (p,nd,nf,cc) in mTEPES.pla)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerFlowOut [GWh]' )
-    # Under DC the flow variable is lossless, so the power leaving ni and the power arriving at nd are the same number and the sending-end value is the
-    # only one available. Under AC they differ by the branch loss, and the arriving power is the negative of what leaves nd into the branch, which the
-    # model carries exactly as vFlowElecBck. Using the sending-end value there would overstate every node's inflow by its share of the losses.
-    if mTEPES.pIndACPowerFlow():
-        # AC branches use the receiving end; HVDC links have no vFlowElecBck and enter the AC balance with the sending-end flow exactly as they
-        # do under DC, so they need their own term or a node fed by HVDC reports no inflow at all.
-        OutputResults6 = pd.Series(data=[(-sum(OptModel.vFlowElecBck[p,sc,n,ni,nd,cc]() for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pla and (ni,nd,cc) in mTEPES.laa)
-                                          +sum(OptModel.vFlowElec   [p,sc,n,ni,nd,cc]() for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pla and (ni,nd,cc) in mTEPES.lad))*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerFlowIn [GWh]'  )
-    else:
-        OutputResults6 = pd.Series(data=[ sum(OptModel.vFlowElec  [p,sc,n,ni,nd,cc]() for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerFlowIn [GWh]'  )
-    if mTEPES.ll:
-        # under AC the loss is inside the flows already, so only DC branches contribute here
-        _lossOK = (lambda la: la in mTEPES.lad) if mTEPES.pIndACPowerFlow() else (lambda la: True)
-        OutputResults7 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll and _lossOK((nd,nf,cc)))*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='LineLossesOut [GWh]')
-        OutputResults8 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc]() for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll and _lossOK((ni,nd,cc)))*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='LineLossesIn [GWh]' )
-
-        OutputResults  = pd.concat([OutputResults1, OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7, OutputResults8], axis=1)
-    else:
-        OutputResults  = pd.concat([OutputResults1, OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6                                ], axis=1)
-
-    # eBalanceElecAC carries the active draw of a conducting shunt, so this frame needs it too or its rows sum to that draw instead of to zero. The
-    # variable exists only when some device has a non-zero Gshb.
-    if mTEPES.pIndACPowerFlow() and hasattr(OptModel, 'vPShunt'):
-        pShuntAt = defaultdict(list)
-        for nd, sh in mTEPES.n2sh:
-            pShuntAt[nd].append(sh)
-        OutputResults9 = pd.Series(data=[sum(OptModel.vPShunt[p,sc,n,sh]() for sh in pShuntAt[nd] if (p,sc,n,sh) in mTEPES.psnsh)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='ShuntDraw [GWh]')
-        OutputResults  = pd.concat([OutputResults, OutputResults9], axis=1)
-
-    # OutputResults.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Node'], axis=0).to_csv    (f'{_path}/oT_Result_SummaryNetwork_{CaseName}.csv',     sep=',')
-    # OutputResults.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Node'], axis=0).to_parquet(f'{_path}/oT_Result_SummaryNetwork_{CaseName}.parquet', engine='pyarrow')
+    # The whole per-node network-summary block that used to be computed here (OutputResults1..9 over sPSNND) was dead work: its only two writes, the
+    # to_csv and to_parquet of oT_Result_SummaryNetwork, were commented out, so six to nine full passes over (p,sc,n,nd) were computed and discarded
+    # on every run. Removed; git remembers the block if the writes are ever reactivated.
 
     WritingResultsTime = time.time() - StartTime
     print('Writing elect network summary results  ... ', round(WritingResultsTime), 's')
@@ -301,7 +271,9 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
     for nd,ar in mTEPES.ndar:
         d2a[ar].add(nd)
 
-    OutputToFile         = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]() for g in g2t[gt] if (p,g) in mTEPES.pg) for p,sc,n,gt in mTEPES.psngt], index=mTEPES.psngt)
+    # members of each technology available in each period, hoisted: the (p,g) membership test does not depend on (sc,n)
+    pTechGens            = {(p,gt): [g for g in g2t[gt] if (p,g) in mTEPES.pg] for p in mTEPES.p for gt in mTEPES.gt}
+    OutputToFile         = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]() for g in pTechGens[p,gt]) for p,sc,n,gt in mTEPES.psngt], index=mTEPES.psngt)
     OutputToFile *= 1e3
     # the mean per technology needs no pivot table: grouping by the technology level gives the same values. The .to_numpy() below is required -- without it pandas
     # aligns on a non-unique index and raises NotImplementedError, so the subtraction must be positional against the technology of each row
@@ -310,7 +282,8 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
     NetTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityTechnology_{CaseName}.csv', sep=',')
 
     if mTEPES.es:
-        OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,es]() for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,n,ot in mTEPES.psnot], index=mTEPES.psnot)
+        pTechESS     = {(p,ot): [es for es in o2e[ot] if (p,es) in mTEPES.pes] for p in mTEPES.p for ot in mTEPES.ot}
+        OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,es]() for es in pTechESS[p,ot]) for p,sc,n,ot in mTEPES.psnot], index=mTEPES.psnot)
         OutputToFile *= 1e3
         # same rewrite as above, keeping the sign convention: here the mean is negated and added instead of subtracted
         MeanESSTechnologyOutput = -OutputToFile.groupby(level=3).mean()
@@ -328,8 +301,10 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile *= 1e3
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityPNS_{CaseName}.csv', sep=',')
 
-    # laar is built requiring both line ends to be in the area, so 'nd in d2a[ar]' and 'nf in d2a[af]' are implied by 'af == ar' and only cost a set lookup each
-    OutputToFile = pd.Series(data=[sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc]() for nd,nf,cc,af in mTEPES.laar if af == ar and (p,nd,nf,cc) in mTEPES.pla)                for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar)
+    # laar is built requiring both line ends to be in the area, so the per-area lists partition exactly as the old 'af == ar' filter did; scanning the whole
+    # laar per (p,sc,n,ar) tuple repeated the pass |ar| times. The period membership stays inside the sum
+    pAreaLines   = {ar: [(nd,nf,cc) for nd,nf,cc,af in mTEPES.laar if af == ar] for ar in mTEPES.ar}
+    OutputToFile = pd.Series(data=[sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc]() for nd,nf,cc in pAreaLines[ar] if (p,nd,nf,cc) in mTEPES.pla)                for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar)
     OutputToFile = OutputToFile - OutputToFile.groupby(level=3).transform('mean')
     OutputToFile *= 1e3
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityNetwork_{CaseName}.csv', sep=',')
@@ -367,8 +342,10 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     pExistMaxPower = pd.Series(data=[mTEPES.pMaxPowerElec[p,sc,n,g ] for p,sc,n,g  in ExistCapacity], index=pd.Index(ExistCapacity))
     pExistMaxPower = _ensure_multiindex(pExistMaxPower, ['Period', 'Scenario', 'LoadLevel', 'Generator'])
     if mTEPES.gc:
+        # the investment decision only depends on (p, unit): evaluate it once instead of once per load level
+        pGenInvest    = {(p,gc): OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc}
         CandCapacity  = [(p,sc,n,gc) for p,sc,n,gc in mTEPES.psngc]
-        pCandMaxPower = pd.Series(data=[mTEPES.pMaxPowerElec[p,sc,n,g ] * OptModel.vGenerationInvest[p,g]() for p,sc,n,g in CandCapacity], index=pd.Index(CandCapacity))
+        pCandMaxPower = pd.Series(data=[mTEPES.pMaxPowerElec[p,sc,n,g ] * pGenInvest[p,g] for p,sc,n,g in CandCapacity], index=pd.Index(CandCapacity))
         pCandMaxPower = _ensure_multiindex(pCandMaxPower, ['Period', 'Scenario', 'LoadLevel', 'Generator'])
         pMaxPowerElec = pd.concat([pExistMaxPower, pCandMaxPower])
     else:

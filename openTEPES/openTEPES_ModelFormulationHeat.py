@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 openTEPES.openTEPES_ModelFormulationHeat — heat network operation: power-to-heat conversion, heat balance and heat-not-served cost.
 """
@@ -28,6 +28,14 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
         if g in mTEPES.chp:
             chp2n[nd].add(g)
 
+    # per-period prefilters, evaluated once instead of once per (load level, node) row. The skip keeps deciding on the UNFILTERED sets (ndHeat), so a
+    # node whose elements all fall outside the period still gets its balance row (vHeatNS against the demand), exactly as before
+    chp2nP  = {nd: [chp     for chp   in chp2n[nd] if (p,chp)      in mTEPES.pchp] for nd in mTEPES.nd}
+    houtP   = {nd: [(nf,cc) for nf,cc in hout [nd] if (p,nd,nf,cc) in mTEPES.pha ] for nd in mTEPES.nd}
+    hinP    = {nd: [(ni,cc) for ni,cc in hin  [nd] if (p,ni,nd,cc) in mTEPES.pha ] for nd in mTEPES.nd}
+    ndHeat  = [nd for nd in mTEPES.nd if len(chp2n[nd]) + len(hout[nd]) + len(hin[nd])]
+    ndHeatS = set(ndHeat)
+
     def eEnergy2Heat(OptModel,n,chp):
         if   (p,chp) in mTEPES.pchp and chp in mTEPES.ch and chp not in mTEPES.bo:
             return OptModel.vTotalOutputHeat[p,sc,n,chp] == OptModel.vTotalOutput   [p,sc,n,chp] / mTEPES.pPower2HeatRatio       [chp]
@@ -41,10 +49,10 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
         print('eEnergy2Heat              ... ', len(getattr(OptModel, f'eEnergy2Heat_{p}_{sc}_{st}')), ' rows')
 
     def eBalanceHeat(OptModel,n,nd):
-        if len(chp2n[nd]) + len(hout[nd]) + len(hin[nd]) == 0:
+        if nd not in ndHeatS:
             return Constraint.Skip
-        return (sum(OptModel.vTotalOutputHeat[p,sc,n,chp] for chp in chp2n[nd] if (p,chp) in mTEPES.pchp) + OptModel.vHeatNS[p,sc,n,nd] -
-                sum(OptModel.vFlowHeat[p,sc,n,nd,nf,cc] for nf,cc in hout[nd] if (p,nd,nf,cc) in mTEPES.pha) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in hin[nd] if (p,ni,nd,cc) in mTEPES.pha)) == mTEPES.pDemandHeat[p,sc,n,nd]
+        return (sum(OptModel.vTotalOutputHeat[p,sc,n,chp] for chp in chp2nP[nd]) + OptModel.vHeatNS[p,sc,n,nd] -
+                sum(OptModel.vFlowHeat[p,sc,n,nd,nf,cc] for nf,cc in houtP[nd]) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in hinP[nd])) == mTEPES.pDemandHeat[p,sc,n,nd]
     setattr(OptModel, f'eBalanceHeat_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceHeat, doc='Heat load generation balance [GW]'))
 
     if pIndLogConsole:
@@ -71,7 +79,7 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
         print('eHeatPipeCapacity2        ... ', len(getattr(OptModel, f'eHeatPipeCapacity2_{p}_{sc}_{st}')), ' rows')
 
     def eTotalRHeatCost(OptModel,n):
-        return OptModel.vTotalRHeatCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * sum(OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if len(chp2n[nd]) + len(hout[nd]) + len(hin[nd]))
+        return OptModel.vTotalRHeatCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * sum(OptModel.vHeatNS[p,sc,n,nd] for nd in ndHeat)
     setattr(OptModel, f'eTotalRHeatCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRHeatCost, doc='system reliability cost [MEUR]'))
 
     if pIndLogConsole:

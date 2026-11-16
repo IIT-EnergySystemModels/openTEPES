@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 25, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 Electric network operation results and network map.
 
@@ -425,7 +425,6 @@ def ACRelaxationDiagnostic(DirName, CaseName, OptModel, mTEPES):
 
     _path = _outdir(DirName, CaseName, mTEPES)
     StartTime = time.time()
-    pSBase = mTEPES.pSBase
 
     # Pyomo variable access is costly, so evaluate each index once and reuse.
     pW     = {k: OptModel.vW           [k]() for k in mTEPES.psnnd }
@@ -437,16 +436,20 @@ def ACRelaxationDiagnostic(DirName, CaseName, OptModel, mTEPES):
     # ---------------------------------------------------------------------------------------------------------------------------------------------
     # the relaxation diagnostic: everything ACNetworkOperationResults writes depends on this being small
     # ---------------------------------------------------------------------------------------------------------------------------------------------
-    pGap = {}
+    # branch constants hoisted out of the per-(p,sc,n,branch) loop: pSBase ** 2 used to dispatch a Pyomo operator per iteration,
+    # and pLineSmax/pLineTapFactor were re-indexed per tuple although they only depend on the branch
+    pGap    = {}
+    pSBase2 = mTEPES.pSBase() ** 2
+    pNormLa = {la: max(mTEPES.pLineSmax[la] ** 2, 1e-12) for la in mTEPES.laa}
+    pTap2La = {la: mTEPES.pLineTapFactor[la] ** 2         for la in mTEPES.laa}
     for k in mTEPES.psnlaa:
         p, sc, n, ni, nf, cc = k
-        pNorm = max(mTEPES.pLineSmax[ni,nf,cc] ** 2, 1e-12)
         if pMode == 1:
-            pGap[k] = (pW[p,sc,n,ni] * mTEPES.pLineTapFactor[ni,nf,cc] ** 2 * pCurr[k] * pSBase ** 2 - pPfr[k] ** 2 - pQfr[k] ** 2) / pNorm
+            pGap[k] = (pW[p,sc,n,ni] * pTap2La[ni,nf,cc] * pCurr[k] * pSBase2 - pPfr[k] ** 2 - pQfr[k] ** 2) / pNormLa[ni,nf,cc]
         elif pMode == 2:
             # the slack in vWre^2 + vWim^2 <= vW_i vW_j, the same quantity the cone relaxes, normalised the same way
             pGap[k] = (pW[p,sc,n,ni] * pW[p,sc,n,nf]
-                       - OptModel.vWre[k]() ** 2 - OptModel.vWim[k]() ** 2) * pSBase ** 2 / pNorm
+                       - OptModel.vWre[k]() ** 2 - OptModel.vWim[k]() ** 2) * pSBase2 / pNormLa[ni,nf,cc]
         else:
             pGap[k] = 0.0                                      # rectangular carries the exact products; there is no relaxation to measure
 
@@ -565,10 +568,11 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     # Apparent-power loading against the branch rating. This is the number the DC network map cannot produce, because under DC the binding limit is on
     # active power alone.
-    pLoading = {}
+    # the rating only depends on the branch: one Param lookup per branch instead of one per (p,sc,n,branch) tuple
+    pLoading  = {}
+    pRatingLa = {la: mTEPES.pLineSmax[la] for la in mTEPES.laa}
     for k in mTEPES.psnlaa:
-        ni, nf, cc = k[3:]
-        pRating = mTEPES.pLineSmax[ni,nf,cc]
+        pRating = pRatingLa[k[3:]]
         pLoading[k] = 100.0 * math.hypot(pPfr[k], pQfr[k]) / pRating if pRating > 0.0 else 0.0
     _pivot_branch(sBranch, [pLoading[k] for k in sBranch], '%', _path, CaseName, 'NetworkElecUtilizationAC')
 
@@ -622,15 +626,19 @@ def ACMarginalResults(DirName, CaseName, OptModel, mTEPES):
     # The test has to match eBalanceReact, which also builds on a non-zero reactive demand alone — the HVDC-fed node it was written for has no AC
     # branch, no shunt and no reactive unit, and omitting it here drops the marginal for exactly the node the constraint exists to cover.
     pNodeHasBalance = {}
+    # build each node set once: scanning laa / lad / n2sh / n2gq per node is O(|nd| x |set|), and the per-node psn scan of pReactiveDemand now runs only
+    # for the nodes that fail every O(1) membership test — an isolated node, which is the rare case rather than the common one.
+    # a converter model puts a reactive term on an HVDC terminal, so eBalanceReact builds there too.
+    # n2gq, not n2g filtered by gq: a synchronous condenser is not in mTEPES.g and so not in n2g, which would skip a node whose only reactive
+    # device is a condenser and leave its marginal unwritten.
+    pLaaNodes = {nd for ni,nf,cc in mTEPES.laa for nd in (ni,nf)}
+    pLadNodes = {nd for ni,nf,cc in mTEPES.lad for nd in (ni,nf)} if mTEPES.pIndACConverter() else set()
+    pShNodes  = {n2 for n2,sh in mTEPES.n2sh}
+    pGqNodes  = {n2 for n2,gq in mTEPES.n2gq}
     for nd in mTEPES.nd:
-        pHas = (any(nd == la[0] or nd == la[1] for la in mTEPES.laa)
-                or any(mTEPES.pReactiveDemand[p,sc,n,nd]() for p,sc,n in mTEPES.psn)
-                # a converter model puts a reactive term on an HVDC terminal, so eBalanceReact builds there too
-                or (mTEPES.pIndACConverter() and any(nd == la[0] or nd == la[1] for la in mTEPES.lad)))
+        pHas = nd in pLaaNodes or nd in pLadNodes or nd in pShNodes or nd in pGqNodes
         if not pHas:
-            # n2gq, not n2g filtered by gq: a synchronous condenser is not in mTEPES.g and so not in n2g, which would skip a node whose only reactive
-            # device is a condenser and leave its marginal unwritten.
-            pHas = any(nd == n2 for n2, sh in mTEPES.n2sh) or any(nd == n2 for n2, gq in mTEPES.n2gq)
+            pHas = any(mTEPES.pReactiveDemand[p,sc,n,nd]() for p,sc,n in mTEPES.psn)
         pNodeHasBalance[nd] = pHas
 
     sKeys, pValues = [], []

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 openTEPES.openTEPES_ProblemSolvingPersistent — persistent-solver lifecycle for ``appsi_gurobi`` and ``gurobi_persistent``.
 
@@ -17,6 +17,11 @@ import os
 
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
+
+try:
+    from          .openTEPES_ProblemSolvingDualExtraction import _FIX_REGISTRY, _INV_REGISTRY
+except ImportError:
+    from openTEPES.openTEPES_ProblemSolvingDualExtraction import _FIX_REGISTRY, _INV_REGISTRY
 
 
 def setup_solver(OptModel, SolverName: str, FileName: str, ncall: int, mTEPES):
@@ -94,5 +99,9 @@ def prepare_for_resolve(OptModel, Solver, SolverName: str) -> None:
         Solver.update_config.update_vars                          = True
         Solver.update_config.update_constraints                   = False
     elif SolverName == "gurobi_persistent":
-        for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
+        # Only the variables fix_for_duals touched (fixed binaries/integers + pinned investments) differ from the state the solver already holds
+        # after the initial solve, so push just those into Gurobi instead of walking every variable of the model.
+        for var, _prior in getattr(OptModel, _FIX_REGISTRY, {}).values():
+            Solver.update_var(var)
+        for var, _prior in getattr(OptModel, _INV_REGISTRY, {}).values():
             Solver.update_var(var)

@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 """
 
 import os
@@ -77,19 +77,21 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
 
     Solver = SolverFactory(SolverName)
 
-    pTotalOCost_it = pd.Series([0.0]*len(mMaster.itBd), index=mMaster.itBd)
+    # plain dicts keyed by (itBd, <candidate index>): every access below is scalar, and the former pandas Series over itBd*<set>
+    # materialized the tuple product twice (len and index) and paid a MultiIndex lookup per element
+    pTotalOCost_it = {itBd: 0.0 for itBd in mMaster.itBd}
 
     if len(mTEPES.gc):
-        pGenerationInvest             = pd.Series([0.0]*len(mMaster.itBd*mTEPES.pgc), index=mMaster.itBd*mTEPES.pgc)
-        pGenerationInvestMarginalG_it = pd.Series([0.0]*len(mMaster.itBd*mTEPES.pgc), index=mMaster.itBd*mTEPES.pgc)
+        pGenerationInvest             = {}
+        pGenerationInvestMarginalG_it = {}
     if len(mTEPES.gd):
-        pGenerationRetire             = pd.Series([0.0]*len(mMaster.itBd*mTEPES.pgd), index=mMaster.itBd*mTEPES.pgd)
-        pGenerationInvestMarginalR_it = pd.Series([0.0]*len(mMaster.itBd*mTEPES.pgd), index=mMaster.itBd*mTEPES.pgd)
+        pGenerationRetire             = {}
+        pGenerationInvestMarginalR_it = {}
     if len(mTEPES.ec):
-        pGenerationInvestMarginalE_it = pd.Series([0.0]*len(mMaster.itBd*mTEPES.pec), index=mMaster.itBd*mTEPES.pec)
+        pGenerationInvestMarginalE_it = {}
     if len(mTEPES.lc):
-        pNetworkInvest                = pd.Series([0.0]*len(mMaster.itBd*mTEPES.plc), index=mMaster.itBd*mTEPES.plc)
-        pNetworkInvestMarginalCap_it  = pd.Series([0.0]*len(mMaster.itBd*mTEPES.plc), index=mMaster.itBd*mTEPES.plc)
+        pNetworkInvest                = {}
+        pNetworkInvestMarginalCap_it  = {}
 
     # # launch processes to allow parallel solution. Only needed with pyro as solver manager factory
     # if pIndSequentialSolving == 0:

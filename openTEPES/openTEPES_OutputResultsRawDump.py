@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 
 Raw parameter, variable, set, and constraint dump.
 
@@ -53,13 +53,14 @@ def _write_var_to_db(con, var, name):
     name : str
         Variable/table name to use in the database.
     """
-    values = var.extract_values()
-    s = pd.Series(values, index=values.keys())
+    # one pass over the variable data: extract_values() plus the per-index bound lookups walked the index three times
+    rows = [(index, vd.value, vd.ub, vd.lb) for index, vd in var.items()]
+    s = pd.Series([r[1] for r in rows], index=[r[0] for r in rows])
     df = s.to_frame(name=name).reset_index()
     df = pd.concat(
         [
             df,
-            pd.DataFrame([dict(upper_bound=var[index].ub, lower_bound=var[index].lb) for index in var]),
+            pd.DataFrame([dict(upper_bound=r[2], lower_bound=r[3]) for r in rows]),
         ],
         axis=1,
     )

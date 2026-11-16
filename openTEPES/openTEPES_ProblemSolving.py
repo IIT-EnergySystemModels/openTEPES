@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 20, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -111,11 +111,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     # A MIP gets its duals later, from the fix-and-resolve LP pass below. The variable's value is deliberately NOT checked here: before the first solve every
     # value is None, so an investment MIP (whose binary variables have no starting value) would otherwise look like an LP, get the Suffix, and crash when HiGHS
     # is asked for duals it does not have for a MIP. Unit-commitment MIPs hid this because their binary variables are given starting values.
-    nIntegerVars = 0
-    for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-        if not var.is_continuous() and not var.is_fixed():
-            nIntegerVars += 1
-    if nIntegerVars == 0:
+    # Only existence matters, so any() stops at the first unfixed integer/binary variable instead of counting them across the whole model.
+    pHasUnfixedIntegerVars = any(not var.is_continuous() and not var.is_fixed() for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True))
+    if not pHasUnfixedIntegerVars:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
 
     # ---- Initial solve ----
