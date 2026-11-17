@@ -48,7 +48,11 @@ def test_electricity_term_does_use_the_duration():
     obj = (SRC.parent / "openTEPES_ModelFormulationObjective.py").read_text()
     i = obj.index("def eTotalRElecCost(")
     body = obj[i:obj.index("setattr", i)]
-    assert "pLoadLevelDuration" in body, (
+    # the line that prices vENS must carry the duration, read directly or from pDurN, which holds
+    # pLoadLevelDuration per load level
+    ens = next(line for line in body.splitlines() if "OptModel.vENS[" in line)
+    via_lookup = "pDurN[n]" in ens and re.search(r"pDurN\s*=\s*\{n:\s*mTEPES\.pLoadLevelDuration\[", obj)
+    assert "pLoadLevelDuration" in ens or via_lookup, (
         "vENS is in MW, so the electricity reliability cost must carry pLoadLevelDuration"
     )
 
@@ -63,6 +67,19 @@ def test_balance_and_cost_cover_the_same_nodes():
     """
     src = SRC.read_text()
     guards = re.findall(r"len\(l2n\[nd\]\)(?:\s*\+\s*len\(\w+\[nd\]\))+", src)
+    shared = re.search(r"(\w+)\s*=\s*\[nd for nd in mTEPES\.nd if len\(l2n\[nd\]\)", src)
+    if len(guards) == 1 and shared:
+        # one node list, built once and used by both: the two cannot disagree if both read it
+        name = shared.group(1)
+        balance = _body("eBalanceH2", code_only=True)
+        if f"nd not in {name}S" in balance:
+            assert re.search(rf"\b{name}S\s*=\s*set\({name}\)", src), f"{name}S must be the set of {name}"
+        else:
+            assert f"nd not in {name}" in balance, f"eBalanceH2 must skip the nodes outside {name}"
+        assert re.search(rf"\bfor nd in {name}\b", _body("eTotalRH2Cost", code_only=True)), (
+            f"eTotalRH2Cost must sum over {name}"
+        )
+        return
     assert len(guards) >= 2, "expected a guard on both eBalanceH2 and eTotalRH2Cost"
     sets = [frozenset(re.findall(r"len\((\w+)\[nd\]\)", g)) for g in guards]
     assert len(set(sets)) == 1, (

@@ -40,7 +40,9 @@ def test_pipe_only_output_blocks_are_guarded():
 def test_node_guards_include_the_source_set():
     """Every node filter must count reformers, or a reformer-only node vanishes from the report."""
     src = (PKG / "openTEPES_OutputResultsHydrogen.py").read_text()
-    guards = re.findall(r"len\(l2n\[nd\]\)(?:\s*\+\s*len\(\w+\[nd\]\))+", src)
+    # a guard is either a sum of lengths or a chain of "or" over the same sets
+    guards = (re.findall(r"len\(l2n\[nd\]\)(?:\s*\+\s*len\(\w+\[nd\]\))+", src)
+              + re.findall(r"\bl2n\[nd\](?:\s+or\s+\w+\[nd\])+", src))
     assert guards, "expected at least one node guard"
     for g in guards:
         assert "r2n" in g, f"guard omits the hydrogen source set: {g}"
