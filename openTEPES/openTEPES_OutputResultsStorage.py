@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 19, 2026
 
 Energy-storage and reservoir operation results.
 
@@ -155,25 +155,29 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     pEsActive  = {es for es in mTEPES.es if mTEPES.pTotalMaxCharge[es] or mTEPES.pTotalEnergyInflows[es]}
     pGenInvest = {(p,es): OptModel.vGenerationInvest[p,es]() for p,es in mTEPES.peb if es in mTEPES.ec}
     sPSNES = [(p,sc,n,es) for p,sc,n,es in mTEPES.ps*mTEPES.nesc if (p,es) in mTEPES.pes and es in pEsActive]
-    if pIndUnitOutput:
-        OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                                          for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
-        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationInventory_{CaseName}.csv', sep=',')
+    # an empty sPSNES (every ESS without charge capacity and without inflows, or storage cycles longer than the horizon) made pd.Index([]) a flat
+    # index, so reset_index() produced an 'index' column instead of level_0..3 and every pivot below crashed with KeyError: skip the inventory and
+    # spillage tables altogether, as the consumption block above already does with psnehc
+    if sPSNES:
+        if pIndUnitOutput:
+            OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                                          for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
+            OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationInventory_{CaseName}.csv', sep=',')
 
-        # Inventory-utilization denominator: candidate ESS scale their max storage by the build decision.
-        # Compute the scaling inline instead of mutating mTEPES.pMaxStorage, which used to leak the scaled
-        # value to any later read of the parameter (the mutation persisted past this function).
-        OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()/(mTEPES.pMaxStorage[p,sc,n,es]()*(pGenInvest[p,es] if (p,sc,n,es) in mTEPES.psnec else 1.0)+pEpsilon) for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
-        OutputToFile = OutputToFile.fillna(0.0)
-        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', dropna=False, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationInventoryUtilization_{CaseName}.csv', sep=',')
+            # Inventory-utilization denominator: candidate ESS scale their max storage by the build decision.
+            # Compute the scaling inline instead of mutating mTEPES.pMaxStorage, which used to leak the scaled
+            # value to any later read of the parameter (the mutation persisted past this function).
+            OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()/(mTEPES.pMaxStorage[p,sc,n,es]()*(pGenInvest[p,es] if (p,sc,n,es) in mTEPES.psnec else 1.0)+pEpsilon) for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
+            OutputToFile = OutputToFile.fillna(0.0)
+            OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', dropna=False, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationInventoryUtilization_{CaseName}.csv', sep=',')
 
-    OutputToFile = pd.Series(data=[OptModel.vESSSpillage[p,sc,n,es]()                                               for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
-    if pIndUnitOutput:
-        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationSpillage_{CaseName}.csv', sep=',')
+        OutputToFile = pd.Series(data=[OptModel.vESSSpillage[p,sc,n,es]()                                               for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
+        if pIndUnitOutput:
+            OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationSpillage_{CaseName}.csv', sep=',')
 
-    if pIndTechOutput:
-        # map each unit to its technology and aggregate, instead of building the (row x technology) cross product
-        OutputToFile = OutputToFile[[es in pEs2Tech for p,sc,n,es in OutputToFile.index]].rename(index=pEs2Tech, level=3).groupby(level=[0,1,2,3]).sum()
-        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologySpillage_{CaseName}.csv', sep=',')
+        if pIndTechOutput:
+            # map each unit to its technology and aggregate, instead of building the (row x technology) cross product
+            OutputToFile = OutputToFile[[es in pEs2Tech for p,sc,n,es in OutputToFile.index]].rename(index=pEs2Tech, level=3).groupby(level=[0,1,2,3]).sum()
+            OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologySpillage_{CaseName}.csv', sep=',')
 
     pSpillage1 = []
     pSpillage2 = []
@@ -237,23 +241,26 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
     pEpsilon = 1e-6
 
     VolumeConstraints = [(p,sc,n,rs) for p,sc,n,rs in mTEPES.ps*mTEPES.nrsc if (p,rs) in mTEPES.prs]
-    if pIndUnitOutput:
-        OutputToFile = pd.Series(data=[OptModel.vReservoirVolume[p,sc,n,rs]()                                         for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
-        OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ReservoirVolume_{CaseName}.csv', sep=',')
+    # twin of the sPSNES guard in ESSOperationResults: an empty VolumeConstraints (reservoir cycles longer than the horizon) made pd.Index([]) a flat
+    # index and every pivot below crashed with KeyError on 'level_0'
+    if VolumeConstraints:
+        if pIndUnitOutput:
+            OutputToFile = pd.Series(data=[OptModel.vReservoirVolume[p,sc,n,rs]()                                         for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
+            OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ReservoirVolume_{CaseName}.csv', sep=',')
 
-        OutputToFile = pd.Series(data=[OptModel.vReservoirVolume[p,sc,n,rs]()/(mTEPES.pMaxVolume[p,sc,n,rs]+pEpsilon) for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
-        OutputToFile = OutputToFile.fillna(0.0)
-        OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3', dropna=False, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ReservoirVolumeUtilization_{CaseName}.csv', sep=',')
+            OutputToFile = pd.Series(data=[OptModel.vReservoirVolume[p,sc,n,rs]()/(mTEPES.pMaxVolume[p,sc,n,rs]+pEpsilon) for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
+            OutputToFile = OutputToFile.fillna(0.0)
+            OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3', dropna=False, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ReservoirVolumeUtilization_{CaseName}.csv', sep=',')
 
-    OutputToFile = pd.Series(data=[OptModel.vReservoirSpillage[p,sc,n,rs]()                                           for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
-    if pIndUnitOutput:
-        OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ReservoirSpillage_{CaseName}.csv', sep=',')
+        OutputToFile = pd.Series(data=[OptModel.vReservoirSpillage[p,sc,n,rs]()                                           for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
+        if pIndUnitOutput:
+            OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ReservoirSpillage_{CaseName}.csv', sep=',')
 
-    if pIndTechOutput:
-        pRs2Tech  = {rs: ht for ht in mTEPES.ht for rs in o2rs[ht]}
-        pIdxPSNHT = pd.MultiIndex.from_tuples(mTEPES.psnht) if len(mTEPES.psnht) else None
-        OutputToFile = OutputToFile[[(n,rs) in mTEPES.nrsc and (p,rs) in mTEPES.prs and rs in pRs2Tech for p,sc,n,rs in OutputToFile.index]].rename(index=pRs2Tech, level=3).groupby(level=[0,1,2,3]).sum().reindex(pIdxPSNHT, fill_value=0.0)
-        OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyReservoirSpillage_{CaseName}.csv', sep=',')
+        if pIndTechOutput:
+            pRs2Tech  = {rs: ht for ht in mTEPES.ht for rs in o2rs[ht]}
+            pIdxPSNHT = pd.MultiIndex.from_tuples(mTEPES.psnht) if len(mTEPES.psnht) else None
+            OutputToFile = OutputToFile[[(n,rs) in mTEPES.nrsc and (p,rs) in mTEPES.prs and rs in pRs2Tech for p,sc,n,rs in OutputToFile.index]].rename(index=pRs2Tech, level=3).groupby(level=[0,1,2,3]).sum().reindex(pIdxPSNHT, fill_value=0.0)
+            OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyReservoirSpillage_{CaseName}.csv', sep=',')
 
     #%% outputting the water volume values
     sPSSTNES      = [(p,sc,st,n,rs) for p,sc,st,n,rs in mTEPES.s2n*mTEPES.rs if (p,sc,n,rs) in mTEPES.psnrs]

@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.19.1rc] - 2026-11-16 not released in PyPi
+## [4.19.1rc] - 2026-11-19 not released in PyPi
 
+- [FIXED] protect against ESS without charge capacity and without inflows.
 - [CHANGED] many changes in functions to improve computational performance
 - [FIXED] removed +1 in the lower index of the sum for the generator min up/down time and min line switch on/off state equations.
 - [ADDED] marginal files of the system balancing energy `oT_Result_MarginalBalancingEnergyUp` and `oT_Result_MarginalBalancingEnergyDown`.
