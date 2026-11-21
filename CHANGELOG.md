@@ -3,6 +3,11 @@
 ## [4.19.1rc] - 2026-11-19 not released in PyPi
 
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [FIXED] `openTEPES_run_status_<case>.json` reports the termination condition of the solver in `status`. It always said `optimal`.
+  It is `optimal` only if every solve of the run ended optimal, and `unknown` for the stage decomposition, which does not report one.
+- [FIXED] a solver that stops at its time or iteration limit is no longer reported as "Problem infeasible". The run still stops,
+  the message names the limit, and no infeasibility log is written.
+- [FIXED] the example in `cases/9n_duckdb/README.md` calls `openTEPES_run` with its five required arguments.
 - [CHANGED] many changes in functions to improve computational performance
 - [FIXED] removed +1 in the lower index of the sum for the generator min up/down time and min line switch on/off state equations.
 - [ADDED] marginal files of the system balancing energy `oT_Result_MarginalBalancingEnergyUp` and `oT_Result_MarginalBalancingEnergyDown`.

@@ -9,7 +9,7 @@ Point openTEPES at the `.duckdb` file (the case name inside it is `9n`):
 
 ```python
 from openTEPES.openTEPES import openTEPES_run
-openTEPES_run("openTEPES/cases/9n_duckdb", "9n.duckdb", SolverName="glpk")
+openTEPES_run("openTEPES/cases/9n_duckdb", "9n.duckdb", "glpk", 1, 0)
 ```
 
 Reading a `.duckdb` input needs the `duckdb` package (`pip install duckdb`). The results are identical to running the
