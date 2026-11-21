@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 21, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -91,6 +91,13 @@ def _solve_without_duals_if_unavailable(Solver, OptModel, **kwargs):
         return Solver.solve(OptModel, **kwargs)
 
 
+def _record_termination(mTEPES, pTermination):
+    """Keep the termination condition of every solve on the model, so the run status file can report what the solver said."""
+    if not hasattr(mTEPES, 'pTerminationConditions'):
+        mTEPES.pTerminationConditions = []
+    mTEPES.pTerminationConditions.append(str(pTermination))
+
+
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
     print("Problem solving                        ####", ncall)
     _path = os.path.join(DirName, CaseName)
@@ -131,13 +138,19 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         SolverResults = _solve_without_duals_if_unavailable(Solver, OptModel, **_solve_kwargs)
         SolverResults = fallback_if_stalled(Solver, OptModel, SolverName, ncall, SolverResults, _solve_kwargs)
 
-    print("Termination condition: ", SolverResults.solver.termination_condition)
-    if (SolverResults.solver.termination_condition == TerminationCondition.infeasible
-            or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit
-            or SolverResults.solver.termination_condition == TerminationCondition.maxIterations):
+    pTermination = SolverResults.solver.termination_condition
+    print("Termination condition: ", pTermination)
+    _record_termination(mTEPES, pTermination)
+    if pTermination == TerminationCondition.infeasible:
         logging.basicConfig(filename=f"{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log", level=logging.INFO)
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
         raise ValueError(f"### Problem infeasible for period {p}, scenario {sc}, stage {st}")
+    # A limit says nothing about feasibility: the solver ran out of time or iterations before it finished. The run still
+    # stops, as it did before, but the message names the limit and no infeasibility log is written.
+    if pTermination in (TerminationCondition.maxTimeLimit, TerminationCondition.maxIterations):
+        pLimit = 'time' if pTermination == TerminationCondition.maxTimeLimit else 'iteration'
+        raise ValueError(f"### Solver stopped at its {pLimit} limit before solving the problem for period {p}, scenario {sc}, stage {st}. "
+                         f"The problem was not found infeasible; raise the limit or relax the solver tolerances.")
 
     # ---- Fix integers + investments; re-solve as LP to recover duals ----
     nUnfixedVars = fix_for_duals(OptModel, mTEPES, p, sc)
@@ -154,6 +167,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                                          keepfiles=False, load_solutions=True, save_results=False)
         else:
             SolverResults = _solve_without_duals_if_unavailable(Solver, OptModel, tee=True, report_timing=True)
+        _record_termination(mTEPES, SolverResults.solver.termination_condition)
 
     # ---- Collect duals into mTEPES.pDuals (used by MarginalResults / EconomicResults) ----
     collect_duals(OptModel, mTEPES)

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 19, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 21, 2026
 """
 
 # import dill as pickle
@@ -163,6 +163,17 @@ def ValidateConfiguration(mTEPES, pIndCycleFlow):
 
     if pProblems:
         raise ValueError('The options of this case cannot be combined:\n' + '\n'.join(f'  {i}. {t}' for i, t in enumerate(pProblems, 1)))
+
+
+def RunStatus(pTerminationConditions):
+    """Status of a finished run, from the termination condition of each of its solves.
+
+    'optimal' only if every solve ended optimal. Otherwise the first condition that is not, for example 'feasible' or
+    'locallyOptimal'. 'unknown' if no solve reported one, which is the case for the stage decomposition.
+    """
+    if not pTerminationConditions:
+        return 'unknown'
+    return next((c for c in pTerminationConditions if c != 'optimal'), 'optimal')
 
 
 def ReportConfiguration(mTEPES):
@@ -528,7 +539,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "case":               CaseName,
         "dir":                DirName,
         "out":                _OutPath,
-        "status":             "optimal",
+        "status":             RunStatus(getattr(mTEPES, "pTerminationConditions", [])),
         "total_cost_meur":    _TotalCost,
         "ens_mwh":            _EnsMwh,
         "hue_h":              _HueH,
