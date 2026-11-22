@@ -321,9 +321,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     #%% model declaration
     mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.1rc - November 19, 2026')
-    # In DuckDB-input mode _path may not exist on disk (the case lives in the DB, not in a directory). Ensure the version-log target exists.
-    os.makedirs(_path, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.1rc - November 19, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    # Every file the run writes, logs included, goes to the output directory: the case directory unless out_path is given. Set here,
+    # before the first log is written, and created, since an in-memory source has no case directory on disk.
+    mTEPES.pOutputPath = _OutPath
+    os.makedirs(_OutPath, exist_ok=True)
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.1rc - November 19, 2026', file=open(f'{_OutPath}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 
@@ -397,7 +399,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # iterative formulation and solve for every stage of the year. The per-stage operation model and the two solve paths (deterministic per scenario,
     # or one joint stochastic solve) live in openTEPES_ProblemSolvingStageIter; this is a pure extraction, so results are unchanged.
-    StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _path, pIndCycleFlow)
+    StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _OutPath, pIndCycleFlow)
 
     # The relaxed AC optimum is a LOWER bound on the true one, and how much lower depends entirely on whether the cone came out tight. This pass holds
     # the plan the relaxed solve produced and re-solves the network at the exact equality, so the reported operating point satisfies the AC equations.
@@ -434,8 +436,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # Only pIndPlotOutput is still read directly (via _extras below); every other output category is dispatched straight from _flags through OUTPUT_REGISTRY.
     pIndPlotOutput                  = _flags["plots"]
 
-    # Tell OutputResults functions where to write (used by _outdir helper). Setting on mTEPES avoids changing 14 function signatures.
-    mTEPES.pOutputPath = _OutPath
+    # Tell OutputResults functions in which format to write; where to write is mTEPES.pOutputPath, set above. Setting on mTEPES avoids changing 14 function signatures.
     mTEPES.pOutputBackend = output_format
 
     # Output results to CSV files. Dispatched via OUTPUT_REGISTRY (defined at module top): each entry fires when its category flag is truthy AND

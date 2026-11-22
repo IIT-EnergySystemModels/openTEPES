@@ -692,6 +692,20 @@ def test_run_status_separates_solver_time_from_reading_and_building(case_7d_syst
 
 @pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_out_path_receives_the_logs_and_the_case_directory_is_left_unchanged(case_7d_system, tmp_path):
+    """With out_path, the version log and the solver log are written there, and nothing is added to the case directory."""
+    d = case_7d_system
+    case_dir = os.path.join(d["DirName"], d["CaseName"])
+    out_dir  = tmp_path / "out"
+    before = set(os.listdir(case_dir))
+    openTEPES_run(d["DirName"], d["CaseName"], d["SolverName"], 0, 0, out_path=str(out_dir))
+    assert set(os.listdir(case_dir)) == before
+    assert (out_dir / f"openTEPES_version_{d['CaseName']}.log").is_file()
+    assert list(out_dir.glob(f"openTEPES_{d['SolverName']}_{d['CaseName']}_*.log"))
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
 def test_mode_a_runner_multi_case_and_error(case_7d_system, tmp_path):
     """A multi-case serial sweep preserves input order, isolates outputs, and captures a bad case."""
     d = case_7d_system

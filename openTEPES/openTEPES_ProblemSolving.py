@@ -139,7 +139,7 @@ def _record_termination(mTEPES, pTermination):
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
     print("Problem solving                        ####", ncall)
-    _path = os.path.join(DirName, CaseName)
+    _path = getattr(mTEPES, 'pOutputPath', None) or os.path.join(DirName, CaseName)
     StartTime = time.time()
 
     FileName = f"{_path}/openTEPES_{SolverName}_{CaseName}_{p}_{sc}_{st}.log"
