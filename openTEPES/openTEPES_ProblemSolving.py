@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 21, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -47,13 +47,40 @@ except ImportError:
 _DUALS_UNAVAILABLE = re.compile(r"Unable to retrieve attribute '(Pi|QCPi)'")
 
 
-def _stopped_at_a_limit(Solver):
-    """True if the last HiGHS solve stopped at its time, iteration or solution limit."""
+def _highs_status(Solver):
+    """Name of the model status of the last HiGHS solve, for example 'kTimeLimit', or None for any other solver."""
     try:
         pStatus = Solver._solver_model.getModelStatus()
     except AttributeError:
-        return False
-    return getattr(pStatus, 'name', str(pStatus)) in ('kTimeLimit', 'kIterationLimit', 'kSolutionLimit')
+        return None
+    return getattr(pStatus, 'name', str(pStatus))
+
+
+def _stopped_at_a_limit(Solver):
+    """True if the last HiGHS solve stopped at its time, iteration or solution limit."""
+    return _highs_status(Solver) in ('kTimeLimit', 'kIterationLimit', 'kSolutionLimit')
+
+
+_HIGHS_TERMINATION = {'kInfeasible':            TerminationCondition.infeasible,
+                      'kUnboundedOrInfeasible': TerminationCondition.infeasibleOrUnbounded,
+                      'kTimeLimit':             TerminationCondition.maxTimeLimit,
+                      'kIterationLimit':        TerminationCondition.maxIterations,
+                      'kSolutionLimit':         TerminationCondition.maxIterations}
+
+
+def _termination_without_solution(Solver, pError):
+    """Termination condition of a solve that ended without a solution to load, or None if it cannot be told.
+
+    Pyomo raises before ProblemSolving can read the termination condition when there is no solution to load: HiGHS
+    raises NoFeasibleSolutionError, and the Gurobi shell interface raises "Cannot load a SolverResults object with bad
+    status: aborted". For HiGHS the model status says why. The Gurobi shell interface keeps no results, so 'aborted'
+    is returned: the solver stopped early, at a limit or on an interrupt, before it found a feasible solution.
+    """
+    if isinstance(pError, NoFeasibleSolutionError):
+        return _HIGHS_TERMINATION.get(_highs_status(Solver))
+    if isinstance(pError, ValueError) and 'bad status: aborted' in str(pError):
+        return 'aborted'
+    return None
 
 
 def _solve_with_hipo_fallback(Solver, OptModel, **kwargs):
@@ -147,16 +174,27 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         SolverResults = fallback_if_stalled(Solver, OptModel, SolverName, ncall, SolverResults, _solve_kwargs)
     else:
         _solve_kwargs = dict(tee=True, report_timing=True)
-        SolverResults = _solve_without_duals_if_unavailable(Solver, OptModel, **_solve_kwargs)
-        SolverResults = fallback_if_stalled(Solver, OptModel, SolverName, ncall, SolverResults, _solve_kwargs)
+        try:
+            SolverResults = _solve_without_duals_if_unavailable(Solver, OptModel, **_solve_kwargs)
+            SolverResults = fallback_if_stalled(Solver, OptModel, SolverName, ncall, SolverResults, _solve_kwargs)
+        except (NoFeasibleSolutionError, ValueError) as pError:
+            pTermination = _termination_without_solution(Solver, pError)
+            if pTermination is None:
+                raise
+            SolverResults = None
 
-    pTermination = SolverResults.solver.termination_condition
+    if SolverResults is not None:
+        pTermination = SolverResults.solver.termination_condition
     print("Termination condition: ", pTermination)
     _record_termination(mTEPES, pTermination)
-    if pTermination == TerminationCondition.infeasible:
+    if pTermination in (TerminationCondition.infeasible, TerminationCondition.infeasibleOrUnbounded):
         logging.basicConfig(filename=f"{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log", level=logging.INFO)
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
-        raise ValueError(f"### Problem infeasible for period {p}, scenario {sc}, stage {st}")
+        pWhat = 'infeasible' if pTermination == TerminationCondition.infeasible else 'infeasible or unbounded'
+        raise ValueError(f"### Problem {pWhat} for period {p}, scenario {sc}, stage {st}")
+    if pTermination == 'aborted':
+        raise ValueError(f"### Solver stopped before it found a feasible solution for period {p}, scenario {sc}, stage {st}, "
+                         f"at a limit or on an interrupt (status 'aborted'). The problem was not found infeasible; see the solver log.")
     # A limit says nothing about feasibility: the solver ran out of time or iterations before it finished. The run still
     # stops, as it did before, but the message names the limit and no infeasibility log is written.
     if pTermination in (TerminationCondition.maxTimeLimit, TerminationCondition.maxIterations):
