@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
 """
 
 import os
@@ -105,7 +105,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
     elif mTEPES.pIndSequentialSolving() == 3:
         print('Solving stages by sensitivity analysis ****')
 
-    _path = os.path.join(DirName, CaseName)
+    _path = getattr(mTEPES, 'pOutputPath', None) or os.path.join(DirName, CaseName)
 
     # investment-constraint shadow-price accumulators (Benders cuts); always defined (empty if no candidates) so they can be passed to AccumulateBendersDuals
     pGenerationInvestMarginalG = pd.Series([0.0]*len(mTEPES.pgc), index=mTEPES.pgc)

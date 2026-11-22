@@ -1653,7 +1653,7 @@ def ACConeWarmStart(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogCons
         pDual = None
 
     pConeSolver = 'gurobi' if SolverFactory('gurobi').available(exception_flag=False) else SolverName
-    FileName    = os.path.join(DirName, CaseName, f'openTEPES_{pConeSolver}_cone_{CaseName}{pSuffix}.log')
+    FileName    = os.path.join(getattr(mTEPES, 'pOutputPath', None) or os.path.join(DirName, CaseName), f'openTEPES_{pConeSolver}_cone_{CaseName}{pSuffix}.log')
     # Gurobi's barrier failed at its second iteration on 6 of 24 day-bundles of a 695-bus case with the presets; presolve
     # off solved three of them and the dual reductions switched back on the other three. Each attempt that fails costs seconds.
     pAttempts = [{}, {'Presolve': 0}, {'DualReductions': 1}] if pConeSolver == 'gurobi' else [{}]

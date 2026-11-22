@@ -3,6 +3,8 @@
 ## [4.19.1rc] - 2026-11-19 not released in PyPi
 
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [FIXED] with `--out`, the version log, the solver logs, the infeasibility log, the LP files and the decomposition files are written
+  to the output directory. They were written to the case directory, which a run with `--out` should leave unchanged.
 - [FIXED] `solve_seconds` in `openTEPES_run_status_<case>.json` counts only the time spent solving. It also counted reading the data
   and building the model. Two new fields, `read_seconds` and `build_seconds`, report those. The four parts add up to `total_seconds`.
 - [FIXED] with HiGHS, an infeasible problem is reported as "Problem infeasible" and writes the infeasibility log, and a limit

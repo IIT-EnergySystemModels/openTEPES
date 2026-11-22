@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
 
 openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-solve driver.
 
@@ -87,7 +87,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
     """Run the per-stage formulate-and-solve loop in place on ``mTEPES``.
 
     ``mTEPES`` must already carry the objective, the investment constraints, ``First_st`` / ``Last_st`` and an
-    initialized ``pDuals`` dict (all set up by ``openTEPES_run`` before this call). ``_path`` is the case path
+    initialized ``pDuals`` dict (all set up by ``openTEPES_run`` before this call). ``_path`` is the output path
     used for optional LP-file dumps; ``pIndCycleFlow`` toggles the cycle-flow network formulation.
     """
     # initialize the set of load levels up to the current stage

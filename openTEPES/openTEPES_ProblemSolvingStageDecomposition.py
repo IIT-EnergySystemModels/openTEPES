@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
 """
 
 import os
@@ -21,7 +21,7 @@ except ImportError:
 
 def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, _path, pIndCycleFlow):
     print('Time Benders decomposition             ****')
-    _path = os.path.join(DirName, CaseName)
+    _path = getattr(mTEPES, 'pOutputPath', None) or os.path.join(DirName, CaseName)
     # function-entry instant, on its own name: StartTime is reset by the LP-writing phase inside the loop, so the final total must not read it
     FuncStartTime = time.time()
 
