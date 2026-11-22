@@ -3,6 +3,8 @@
 ## [4.19.1rc] - 2026-11-19 not released in PyPi
 
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [FIXED] `openTEPES_ProblemSolvingResolve` run directly imports its two helper modules from the package, as every other module does.
+  It loaded them as stand-alone modules, so a process that also imported the package held two copies of each.
 - [FIXED] the sweep merger `openTEPES_ResultAggregate` no longer imports from `_output_parity_test`, the tool that compares the
   result files of two runs. The four helpers that name the result files moved into the merger, and the tool imports them from there.
 - [CHANGED] the version and its date are set once, in `openTEPES/__init__.py`. The banner, the model name, the version log, the run
