@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 21, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
 """
 
 # import dill as pickle
@@ -335,10 +335,14 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         raise ValueError(f'### Invalid Yes/No option value {e.args[0]!r} for pIndOutputResults or pIndLogConsole; accepted values: {list(idxDict)}') from None
 
     mTEPES.pBdTol = 1e-6
+    # Seconds spent in the solver, added up by ProblemSolving and by the AC restoration. The run status reports it apart from reading and building.
+    mTEPES.pSolveSeconds = 0.0
 
     # Reading sets and parameters. InputData also stores dfs/par on mTEPES (mTEPES.dFrame / mTEPES.dPar) for backward compatibility,
     # but DataConfiguration takes them explicitly to avoid that coupling.
+    _ReadStart = time.time()
     dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=option_overrides)
+    _ReadSeconds = time.time() - _ReadStart
 
     # How the problem is SOLVED, as opposed to what is modeled. These four were literals in this file until now, so a
     # case could not select any of them: the four stage-solving strategies below were all implemented and none reachable.
@@ -492,7 +496,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # Run-status sentinel JSON — small machine-readable record of this run. Let's downstream tools detect a fresh run and read top-level adequacy / cost numbers without parsing CSVs.
     _OutputSeconds = time.time() - _OutputStart
     _TotalSeconds  = time.time() - InitialTime
-    _SolveSeconds  = max(_TotalSeconds - _OutputSeconds, 0.0)
+    # Building is what remains: setting up the data, writing the model and the per-stage operation models, and fixing values between stages.
+    _SolveSeconds  = mTEPES.pSolveSeconds
+    _BuildSeconds  = max(_TotalSeconds - _ReadSeconds - _SolveSeconds - _OutputSeconds, 0.0)
     try:
         _TotalCost = float(mTEPES.eTotalSCost.expr() if hasattr(mTEPES, "eTotalSCost") else getattr(mTEPES, "vTotalSCost", lambda: float("nan"))())
     except Exception:
@@ -543,6 +549,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "total_cost_meur":    _TotalCost,
         "ens_mwh":            _EnsMwh,
         "hue_h":              _HueH,
+        "read_seconds":       round(_ReadSeconds,   2),
+        "build_seconds":      round(_BuildSeconds,  2),
         "solve_seconds":      round(_SolveSeconds,  2),
         "output_seconds":     round(_OutputSeconds, 2),
         "total_seconds":      round(_TotalSeconds,  2),

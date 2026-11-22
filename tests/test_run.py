@@ -677,6 +677,21 @@ def test_mode_a_runner_serial_parity(case_7d_system, tmp_path):
 
 @pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_run_status_separates_solver_time_from_reading_and_building(case_7d_system, tmp_path):
+    """solve_seconds counts only the solver. Reading, building, solving and writing add up to the run time."""
+    import json
+    d = case_7d_system
+    openTEPES_run(d["DirName"], d["CaseName"], d["SolverName"], 0, 0, out_path=str(tmp_path))
+    with open(tmp_path / f"openTEPES_run_status_{d['CaseName']}.json") as f:
+        status = json.load(f)
+    parts = [status[k] for k in ("read_seconds", "build_seconds", "solve_seconds", "output_seconds")]
+    assert all(t >= 0 for t in parts)
+    assert status["read_seconds"] > 0 and status["solve_seconds"] > 0
+    assert sum(parts) == pytest.approx(status["total_seconds"], abs=0.05)
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
 def test_mode_a_runner_multi_case_and_error(case_7d_system, tmp_path):
     """A multi-case serial sweep preserves input order, isolates outputs, and captures a bad case."""
     d = case_7d_system

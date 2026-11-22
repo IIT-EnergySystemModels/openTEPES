@@ -234,6 +234,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     #         OptModel.vTotalRHeatCost[p,sc,n].fix(OptModel.vTotalRHeatCost[p,sc,n]())
 
     SolvingTime = time.time() - StartTime
+    mTEPES.pSolveSeconds = getattr(mTEPES, 'pSolveSeconds', 0.0) + SolvingTime
 
     # ---- Cost-summary report (stays inline; moves to Layer 6 results/ in a follow-on PR) ----
     print            ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost(), ' Constraints', OptModel.model().nconstraints(), ' Variables', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, ' Seconds', round(SolvingTime))

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -3004,7 +3004,9 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     pWantDuals = bool(getattr(mTEPES, 'pDuals', None))
     if pWantDuals and not hasattr(OptModel, 'dual'):
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
+    pSolveStart = time.time()
     Results = Solver.solve(OptModel, load_solutions=False, tee=bool(pIndLogConsole))
+    mTEPES.pSolveSeconds = getattr(mTEPES, 'pSolveSeconds', 0.0) + time.time() - pSolveStart
     pStatus = str(Results.solver.termination_condition)
 
     if pStatus not in ('optimal', 'locallyOptimal', 'feasible'):
