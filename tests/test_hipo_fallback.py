@@ -58,3 +58,29 @@ def test_a_solver_with_no_method_option_is_not_solved_again():
     with pytest.raises(NoFeasibleSolutionError):
         _solve_without_duals_if_unavailable(solver, object())
     assert solver.methods == [None]
+
+
+class _HighsStatus:
+    """Stand-in for highspy's model, reporting the status HiGHS ended with."""
+
+    def __init__(self, name):
+        self.name = name
+
+    def getModelStatus(self):
+        return self
+
+
+@pytest.mark.parametrize("status", ["kTimeLimit", "kIterationLimit", "kSolutionLimit"])
+def test_a_hipo_solve_stopped_by_a_limit_is_not_solved_again(status):
+    solver = _Solver("hipo")
+    solver._solver_model = _HighsStatus(status)
+    with pytest.raises(NoFeasibleSolutionError):
+        _solve_without_duals_if_unavailable(solver, object())
+    assert solver.methods == ["hipo"]
+
+
+def test_a_hipo_solve_that_failed_for_another_reason_is_still_solved_again():
+    solver = _Solver("hipo")
+    solver._solver_model = _HighsStatus("kSolveError")
+    assert _solve_without_duals_if_unavailable(solver, object()) == "results"
+    assert solver.methods == ["hipo", "choose"]

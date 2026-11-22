@@ -3,6 +3,8 @@
 ## [4.19.1rc] - 2026-11-19 not released in PyPi
 
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [FIXED] a HiPO solve stopped at its time, iteration or solution limit is no longer solved again with `solver = choose`.
+  The fallback is kept for the other HiPO failures. A user-set iteration limit was overridden by a full re-solve.
 - [FIXED] `openTEPES_run_status_<case>.json` reports the termination condition of the solver in `status`. It always said `optimal`.
   It is `optimal` only if every solve of the run ended optimal, and `unknown` for the stage decomposition, which does not report one.
 - [FIXED] a solver that stops at its time or iteration limit is no longer reported as "Problem infeasible". The run still stops,

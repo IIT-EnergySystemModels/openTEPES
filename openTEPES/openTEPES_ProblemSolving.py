@@ -47,6 +47,15 @@ except ImportError:
 _DUALS_UNAVAILABLE = re.compile(r"Unable to retrieve attribute '(Pi|QCPi)'")
 
 
+def _stopped_at_a_limit(Solver):
+    """True if the last HiGHS solve stopped at its time, iteration or solution limit."""
+    try:
+        pStatus = Solver._solver_model.getModelStatus()
+    except AttributeError:
+        return False
+    return getattr(pStatus, 'name', str(pStatus)) in ('kTimeLimit', 'kIterationLimit', 'kSolutionLimit')
+
+
 def _solve_with_hipo_fallback(Solver, OptModel, **kwargs):
     """Solve, and if HiGHS's HiPO method returns no solution, solve again and let HiGHS choose the method.
 
@@ -60,6 +69,9 @@ def _solve_with_hipo_fallback(Solver, OptModel, **kwargs):
     except NoFeasibleSolutionError:
         # Pyomo's HiGHS options object does not return set values through .get(), so test membership and index it
         if 'solver' not in Solver.options or Solver.options['solver'] != 'hipo':
+            raise
+        # A solve stopped by a limit is not a HiPO failure. Solving again would hit the same limit and double the time.
+        if _stopped_at_a_limit(Solver):
             raise
         print('### WARNING: HiGHS (HiPO) returned no solution. Solving again and letting HiGHS choose the method.')
         Solver.options['solver'] = 'choose'
