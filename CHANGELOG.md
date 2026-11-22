@@ -3,6 +3,9 @@
 ## [4.19.1rc] - 2026-11-19 not released in PyPi
 
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [FIXED] with HiGHS, an infeasible problem is reported as "Problem infeasible" and writes the infeasibility log, and a limit
+  reached before any feasible point is named. Pyomo's `NoFeasibleSolutionError` stopped the run first. A Gurobi shell solve
+  aborted before any feasible point is no longer reported as "bad status: aborted".
 - [FIXED] a HiPO solve stopped at its time, iteration or solution limit is no longer solved again with `solver = choose`.
   The fallback is kept for the other HiPO failures. A user-set iteration limit was overridden by a full re-solve.
 - [FIXED] `openTEPES_run_status_<case>.json` reports the termination condition of the solver in `status`. It always said `optimal`.

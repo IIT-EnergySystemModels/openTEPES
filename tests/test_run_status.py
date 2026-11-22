@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import pyomo.environ as pyo
 import pytest
+from pyomo.contrib.solver.common.util import NoFeasibleSolutionError
 from pyomo.opt import TerminationCondition
 
 import openTEPES.openTEPES_ProblemSolving as oPS
@@ -51,3 +52,58 @@ def test_an_infeasible_problem_is_still_called_infeasible(monkeypatch, tmp_path)
     with pytest.raises(ValueError, match="Problem infeasible"):
         _solve(tmp_path, mTEPES)
     assert mTEPES.pTerminationConditions == ["infeasible"]
+
+
+class _HighsModel:
+    """Stand-in for the highspy model Pyomo keeps on the solver, reporting the status HiGHS ended with."""
+
+    def __init__(self, name):
+        self.name = name
+
+    def getModelStatus(self):
+        return self
+
+
+def _raise_on_solve(monkeypatch, pError, pHighsStatus=None):
+    """Make the solve raise ``pError``, as Pyomo does when it has no solution to load."""
+    pSolver = SimpleNamespace(_solver_model=_HighsModel(pHighsStatus)) if pHighsStatus else SimpleNamespace()
+    monkeypatch.setattr(oPS, "setup_solver", lambda *args: pSolver)
+    monkeypatch.setattr(oPS, "apply_solver_options", lambda *args: {})
+
+    def _solve(*args, **kwargs):
+        raise pError
+    monkeypatch.setattr(oPS, "_solve_without_duals_if_unavailable", _solve)
+
+
+@pytest.mark.parametrize("pStatus, pLimit", [("kTimeLimit", "time limit"), ("kIterationLimit", "iteration limit")])
+def test_a_highs_limit_without_a_feasible_point_names_the_limit(monkeypatch, tmp_path, pStatus, pLimit):
+    _raise_on_solve(monkeypatch, NoFeasibleSolutionError(), pStatus)
+    with pytest.raises(ValueError, match=pLimit):
+        _solve(tmp_path)
+    assert not list((tmp_path / "case").glob("openTEPES_infeasibilities_*.log"))
+
+
+def test_an_infeasible_problem_on_highs_logs_the_infeasible_constraints(monkeypatch, tmp_path):
+    _raise_on_solve(monkeypatch, NoFeasibleSolutionError(), "kInfeasible")
+    pLogged = []
+    monkeypatch.setattr(oPS, "log_infeasible_constraints", lambda OptModel, **kwargs: pLogged.append(OptModel))
+    with pytest.raises(ValueError, match="Problem infeasible for"):
+        _solve(tmp_path)
+    assert len(pLogged) == 1
+
+
+def test_a_gurobi_shell_abort_is_not_called_infeasible(monkeypatch, tmp_path):
+    _raise_on_solve(monkeypatch, ValueError("Cannot load a SolverResults object with bad status: aborted"))
+    with pytest.raises(ValueError, match="before it found a feasible solution") as pError:
+        _solve(tmp_path)
+    assert "Problem infeasible" not in str(pError.value)
+
+
+@pytest.mark.parametrize("pError, pHighsStatus", [(NoFeasibleSolutionError(), "kSolveError"),
+                                                  (NoFeasibleSolutionError(), None),
+                                                  (ValueError("some other error"), None)])
+def test_any_other_error_is_raised_unchanged(monkeypatch, tmp_path, pError, pHighsStatus):
+    _raise_on_solve(monkeypatch, pError, pHighsStatus)
+    with pytest.raises(type(pError)) as pRaised:
+        _solve(tmp_path)
+    assert pRaised.value is pError
