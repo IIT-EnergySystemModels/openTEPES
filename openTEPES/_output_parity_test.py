@@ -25,56 +25,18 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+# The result-file naming helpers belong to the sweep merger, which uses them to read results; this tool shares them.
+try:
+    from .openTEPES_ResultAggregate import _result_files, _result_stem, _infer_case_tokens, _strip_case_suffix
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from openTEPES.openTEPES_ResultAggregate import _result_files, _result_stem, _infer_case_tokens, _strip_case_suffix
+
 # How close two numbers must be to count as equal. The same case solved
 # twice should match much more tightly than this; the small margin just
 # absorbs rounding from writing numbers out to CSV and reading them back.
 RTOL = 1e-9
 ATOL = 1e-9
-
-
-def _result_files(out_dir: Path) -> list[Path]:
-    """Every oT_Result_*.csv / .csv.gz in a case output directory, sorted."""
-    files = list(out_dir.glob("oT_Result_*.csv")) + list(out_dir.glob("oT_Result_*.csv.gz"))
-    return sorted(files, key=lambda p: p.name)
-
-
-def _result_stem(name: str) -> str:
-    """``oT_Result_GenerationInvestment_9n.csv`` -> ``GenerationInvestment_9n``."""
-    stem = name[: -len(".csv.gz")] if name.endswith(".csv.gz") else name[: -len(".csv")]
-    return stem[len("oT_Result_"):] if stem.startswith("oT_Result_") else stem
-
-
-def _infer_case_tokens(stems: list[str]) -> list[str]:
-    """Find the case name shared by all result file names.
-
-    Result files are named ``oT_Result_<Table>_<CaseName>``. The table part
-    is different in every file, but the case name at the end is the same. So
-    the words (split on ``_``) that all the names share at the end are the
-    case name. This works even when the case name has underscores in it, such
-    as ``SE2035_EP_G0``. Returns [] if there is nothing shared (only one
-    file), in which case the names are left as they are.
-    """
-    if len(stems) < 2:
-        return []
-    token_lists = [s.split("_") for s in stems]
-    common: list[str] = []
-    for tail in zip(*(reversed(t) for t in token_lists)):
-        if len(set(tail)) == 1:
-            common.append(tail[0])
-        else:
-            break
-    # Keep at least the first word of each name, so a table whose name happens
-    # to match the case name is not erased completely.
-    if common and len(common) >= min(len(t) for t in token_lists):
-        common = common[: -1]
-    return list(reversed(common))
-
-
-def _strip_case_suffix(stem: str, case_tokens: list[str]) -> str:
-    if not case_tokens:
-        return stem
-    suffix = "_" + "_".join(case_tokens)
-    return stem[: -len(suffix)] if stem.endswith(suffix) else stem
 
 
 def _serialise_csv(path: Path) -> dict[str, Any]:

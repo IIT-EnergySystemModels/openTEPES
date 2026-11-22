@@ -3,6 +3,8 @@
 ## [4.19.1rc] - 2026-11-19 not released in PyPi
 
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [FIXED] the sweep merger `openTEPES_ResultAggregate` no longer imports from `_output_parity_test`, the tool that compares the
+  result files of two runs. The four helpers that name the result files moved into the merger, and the tool imports them from there.
 - [CHANGED] the version and its date are set once, in `openTEPES/__init__.py`. The banner, the model name, the version log, the run
   status file and the documentation read them from there; they were also typed in seven other places.
 - [FIXED] with `--out`, the version log, the solver logs, the infeasibility log, the LP files and the decomposition files are written

@@ -84,3 +84,14 @@ def test_case_suffix_with_underscores_is_normalised(tmp_path):
     a, b = snapshot(str(tmp_path / "A")), snapshot(str(tmp_path / "B"))
     assert set(a["tables"]) == {"Foo", "BarResults"} == set(b["tables"])
     assert compare_snapshots(a, b) == []
+
+
+def test_the_sweep_merger_does_not_depend_on_this_tool():
+    """openTEPES_ResultAggregate imports, and names a result table, with this tool unavailable."""
+    import subprocess
+    import sys
+    code = ("import sys; sys.modules['openTEPES._output_parity_test'] = None; "
+            "import openTEPES.openTEPES_ResultAggregate as a; "
+            "print(a._strip_case_suffix('GenerationInvestment_SE2035_EP_G0', ['SE2035', 'EP', 'G0']))")
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True).stdout.strip()
+    assert out == "GenerationInvestment"
