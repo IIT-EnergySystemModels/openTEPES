@@ -11,8 +11,10 @@ project = 'openTEPES'
 copyright = '2026, Universidad Pontificia Comillas'
 author = 'Andres Ramos'
 
-# The short X.Y version
-version = 'version 4.19.1rc'
+# The short X.Y version, read from the package without importing it, since importing it needs Pyomo and the solvers
+import os, re
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'openTEPES', '__init__.py')) as f:
+    version = 'version ' + re.search(r'^__version__\s*=\s*"([^"]+)"', f.read(), re.M).group(1)
 # The full version, including alpha/beta/rc tags
 release = ''
 
@@ -93,13 +95,13 @@ html_static_path = []
 #
 # html_sidebars = {}
 html_theme = 'alabaster'
-html_title = 'version 4.19.1rc'
+html_title = version
 html_logo  = '../img/openTEPES.png'
 html_last_updated_fmt = ''
 html_show_sphinx = False
 html_theme_options = {
     'analytics_id': 'UA-515200-2',  #  Provided by Google in your dashboard
-    'description': 'version 4.19.1rc',
+    'description': version,
     'body_max_width': 'none',
     'page_width': 'auto',
     'font_family': 'Georgia',

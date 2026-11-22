@@ -13,6 +13,7 @@ from   pyomo.environ import ConcreteModel, Param, Binary, NonNegativeIntegers
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative imports below have no parent package;
 # fall back to absolute package imports in that case.
 try:
+    from          .                                      import __version__, __version_date__
     from          .openTEPES_InputData                   import InputData
     from          .openTEPES_DataConfiguration           import DataConfiguration
     from          .openTEPES_SettingUpVariables          import SettingUpVariables
@@ -35,6 +36,7 @@ try:
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES                                       import __version__, __version_date__
     from openTEPES.openTEPES_InputData                   import InputData
     from openTEPES.openTEPES_DataConfiguration           import DataConfiguration
     from openTEPES.openTEPES_SettingUpVariables          import SettingUpVariables
@@ -54,6 +56,9 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsEconomic       import MarginalResults, CostSummaryResults, EconomicResults
     from openTEPES.openTEPES_OutputResultsSummary        import OperationSummaryResults, FlexibilityResults, ReliabilityResults
     from openTEPES.openTEPES_OutputResultsSink           import ResultSink, set_active_sink, clear_active_sink
+
+# The model name, the first line of the console output and the version log
+BANNER = f'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version {__version__} - {__version_date__}'
 
 
 # Output categories selectable via --results CLI flag. Keys map to the pIndXxxResults flags inside openTEPES_run.
@@ -320,12 +325,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.1rc - November 19, 2026')
+    mTEPES = ConcreteModel(BANNER)
     # Every file the run writes, logs included, goes to the output directory: the case directory unless out_path is given. Set here,
     # before the first log is written, and created, since an in-memory source has no case directory on disk.
     mTEPES.pOutputPath = _OutPath
     os.makedirs(_OutPath, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.1rc - November 19, 2026', file=open(f'{_OutPath}/openTEPES_version_{CaseName}.log','w'))
+    print(BANNER, file=open(f'{_OutPath}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 
@@ -558,7 +563,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "solver":             SolverName,
         "solver_version":     _SolverVersion,
         "backend":            getattr(mTEPES, "pOutputBackend", "csv"),
-        "opentepes_version":  "4.19.1rc",
+        "opentepes_version":  __version__,
         "run_started_utc":    _RunStartedUtc,
         "run_finished_utc":   datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds") + "Z",
         "outputs_enabled":    [k for k, v in _flags.items() if v],
