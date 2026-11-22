@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 19, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -690,11 +690,11 @@ import time
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative import below has no parent package; fall back to an absolute package import in that case.
 try:
-    from .openTEPES import openTEPES_run, OUTPUT_CATEGORIES, OUTPUT_ALIASES, DEFAULT_GZIP_PATTERNS
+    from .openTEPES import openTEPES_run, OUTPUT_CATEGORIES, OUTPUT_ALIASES, DEFAULT_GZIP_PATTERNS, BANNER
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES import openTEPES_run, OUTPUT_CATEGORIES, OUTPUT_ALIASES, DEFAULT_GZIP_PATTERNS
+    from openTEPES.openTEPES import openTEPES_run, OUTPUT_CATEGORIES, OUTPUT_ALIASES, DEFAULT_GZIP_PATTERNS, BANNER
 
 
 GREEN  = "\033[32m"
@@ -880,6 +880,6 @@ def main():
     return model
 
 if __name__ == '__main__':
-    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.1rc - November 19, 2026' + RESET)
+    print(GREEN + BANNER + RESET)
     print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
     model = main()

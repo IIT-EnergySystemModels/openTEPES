@@ -31,6 +31,9 @@ Attributes
 __version__ : str
     The model version, and the version the package publishes: ``pyproject.toml`` declares it dynamic and reads it from
     here, so this is the one place it is set.
+__version_date__ : str
+    The release date of that version. The banner, the model name, the version log, the run status file and the
+    documentation all read both from here.
 
 The package re-exports the modules below, so every public name in them is reachable as ``openTEPES.<name>``. They are
 imported in the order the model is built:
@@ -50,7 +53,8 @@ imported in the order the model is built:
 ``openTEPES_ResultAggregate``       aggregation across the tables
 ==================================  ===========================================================================
 """
-__version__ = "4.19.1rc"
+__version__      = "4.19.1rc"
+__version_date__ = "November 19, 2026"
 
 from .openTEPES_Main                              import main
 from .openTEPES                                   import *
