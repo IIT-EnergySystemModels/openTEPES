@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
 
 openTEPES.openTEPES_ProblemSolvingResolve — Mode C post-build hot-swap re-solve.
 
@@ -19,12 +19,12 @@ from pyomo.core.expr import identify_mutable_parameters
 try:
     from .openTEPES_ProblemSolvingDualExtraction import unfix_for_duals
     from .openTEPES_ProblemSolvingWarmSweep import enabled as _warm_resolve_enabled, resolve_persistent
-except ImportError:  # direct run: no parent package
+except ImportError:  # direct run: no parent package, so import from the package, as the other modules do
     import os
     import sys
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from openTEPES_ProblemSolvingDualExtraction import unfix_for_duals
-    from openTEPES_ProblemSolvingWarmSweep import enabled as _warm_resolve_enabled, resolve_persistent
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_ProblemSolvingDualExtraction import unfix_for_duals
+    from openTEPES.openTEPES_ProblemSolvingWarmSweep import enabled as _warm_resolve_enabled, resolve_persistent
 
 
 def _live_mutable_params(OptModel) -> set[str]:
