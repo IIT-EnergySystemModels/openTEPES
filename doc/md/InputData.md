@@ -18,7 +18,15 @@ import duckdb
 con = duckdb.connect("cases/9n.duckdb", read_only=True)
 con.execute("SHOW TABLES").df()                       # one table per input, plus schema_metadata
 con.execute("SELECT Value FROM schema_metadata WHERE Key = 'source_case'").fetchone()   # the case name
+con.execute("SELECT * FROM demand_long WHERE Node = 'Node_1'").df()   # the demand of one node, one row per hour
 ```
+
+Each table has the columns of its CSV file, so a time series keeps one column per node, unit or area. For each such time series a view named
+`<table>_long` holds the same data with one row per value, which is easier to filter by node, unit or area. Two kinds of table are stored with
+one row per value instead: the tables with a multi-level header (`VariableTTCFrw`, `VariableTTCBck`, `VariablePTDF`), and a time series with two
+column names that differ only in case, since DuckDB column names ignore case. The `table_layout` table records which layout each table uses.
+Files written before version 4.19.1 store every time series with one row per value; they are still read, and the converter writes the
+new layout.
 
 Two tools in `scripts/openTEPES_DuckDB/` convert a case between the two forms. `Tool_CSV_to_DuckDB` writes a CSV case to a `.duckdb`, and `Tool_DuckDB_to_CSV`
 exports a `.duckdb` back to CSV folders:

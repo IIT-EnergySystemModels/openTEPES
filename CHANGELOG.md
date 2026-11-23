@@ -3,6 +3,11 @@
 ## [4.19.1rc] - 2026-11-19 not released in PyPi
 
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [CHANGED] `Tool_CSV_to_DuckDB` stores each table with the columns of its CSV file, so a time series keeps one column per node,
+  unit or area. It stored one row per value, which made the file 2.6 to 3.6 times the size of the CSV case and its reading 6 to 28 times
+  slower. On RTS-GMLC_6y the file goes from 711 MB to 55 MB and reading it from 40.7 s to 1.0 s, against 1.5 s for the CSV case.
+  A view `<table>_long` gives each time series one row per value for SQL queries. Files in the earlier layout are still read.
+  The bundled `cases/9n_duckdb/9n.duckdb` is regenerated, from 20 MB to 14 MB.
 - [FIXED] `openTEPES_ProblemSolvingResolve` run directly imports its two helper modules from the package, as every other module does.
   It loaded them as stand-alone modules, so a process that also imported the package held two copies of each.
 - [FIXED] the sweep merger `openTEPES_ResultAggregate` no longer imports from `_output_parity_test`, the tool that compares the

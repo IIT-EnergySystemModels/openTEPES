@@ -3,9 +3,18 @@ Tool_CSV_to_DuckDB — write an openTEPES CSV case to a ``.duckdb`` input file.
 
 Offline case-prep utility (not part of the core model). The inverse of ``Tool_DuckDB_to_CSV`` and of the in-package
 ``openTEPES_InputDuckDBSource`` reader: read every ``oT_Data_*`` / ``oT_Dict_*`` CSV of a case and store it in the
-long / key-value / passthrough shape the DuckDB backend reads back. Both sides are driven by the same
-``openTEPES_InputSchema.TABLE_SPECS``, so the writer and the reader cannot drift. A ``schema_metadata`` table records
-the case name, which ``DuckDBSource`` requires.
+DuckDB file. Both sides are driven by the same ``openTEPES_InputSchema.TABLE_SPECS``, so the writer and the reader
+cannot drift. A ``schema_metadata`` table records the case name, which ``DuckDBSource`` requires.
+
+Each table is stored with the columns of its CSV file (the wide layout of schema version 2): a time series keeps one
+column per node, unit or area. Two kinds of table are stored long instead, one row per value:
+
+  * the tables with a multi-level header (``VariableTTC*``, ``VariablePTDF``), whose column names have several parts;
+  * a time series with two entity names that differ only in case, because DuckDB column names ignore case and DuckDB
+    would rename the second column.
+
+The ``table_layout`` table records the layout of each time series and single-row table. For every time series stored
+wide, a view ``<table>_long`` gives the same data one row per value, for SQL queries by node, unit or area.
 
 The metadata is deliberately limited to the case name and schema version — no timestamp or absolute path — so the
 same CSV case always produces the same tables (a regenerated DB compares equal to a committed one, input for input).
@@ -65,6 +74,17 @@ def _wide_multilevel_to_long(df: pd.DataFrame, entity_cols: list[str], value: st
     return long_df
 
 
+def _store_long(df: pd.DataFrame) -> bool:
+    """True if two column names differ only in case. DuckDB column names ignore case, so a wide table would rename one
+    of the two columns and change an entity name."""
+    names = [str(c).lower() for c in df.columns]
+    return len(names) != len(set(names))
+
+
+def _quote(name: str) -> str:
+    return '"' + str(name).replace('"', '""') + '"'
+
+
 def _detect_case_name(case_dir: Path) -> str | None:
     """The case name is the ``X`` in ``oT_Data_Parameter_X.csv`` (same rule as CSVSource)."""
     for p in case_dir.glob("oT_Data_Parameter_*.csv"):
@@ -91,6 +111,7 @@ def write_case(case_dir, db_path=None, case_name: str | None = None) -> Path:
         db_path.unlink()
 
     con = duckdb.connect(str(db_path))
+    layout: dict[str, str] = {}
     try:
         for stem_prefix, table_name, kind, kwargs in TABLE_SPECS:
             csv_path = case_dir / f"{stem_prefix}_{case_name}.csv"
@@ -100,22 +121,36 @@ def write_case(case_dir, db_path=None, case_name: str | None = None) -> Path:
                 n = len(kwargs["entity_cols"])
                 raw = pd.read_csv(csv_path, encoding="utf-8-sig", header=list(range(n)), index_col=[0, 1, 2])
                 df = _wide_multilevel_to_long(raw, **kwargs)
+                layout[table_name] = "long"
             else:
                 raw = pd.read_csv(csv_path, encoding="utf-8-sig")
                 if kind == PASSTHROUGH:
                     df = raw
-                elif kind == WIDE_TO_LONG:
-                    df = _wide_to_long(raw, **kwargs)
-                elif kind == UNPIVOT_SINGLE_ROW:
-                    df = _unpivot_single_row(raw, **kwargs)
+                elif kind in (WIDE_TO_LONG, UNPIVOT_SINGLE_ROW):
+                    if not _store_long(raw):
+                        df = raw
+                        layout[table_name] = "wide"
+                    elif kind == WIDE_TO_LONG:
+                        df = _wide_to_long(raw, **kwargs)
+                        layout[table_name] = "long"
+                    else:
+                        df = _unpivot_single_row(raw, **kwargs)
+                        layout[table_name] = "long"
                 else:
                     raise ValueError(f"unknown spec kind for {stem_prefix}: {kind}")
             con.register("__df", df)
             con.execute(f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM __df")
             con.unregister("__df")
+            if kind == WIDE_TO_LONG and layout[table_name] == "wide":
+                # the first three columns are the time keys; take them by position, since some cases leave their header blank
+                keys = ", ".join(_quote(c) for c in raw.columns[:3])
+                con.execute(f"CREATE OR REPLACE VIEW {table_name}_long AS UNPIVOT {table_name} ON COLUMNS(* EXCLUDE ({keys})) "
+                            f"INTO NAME {_quote(kwargs['entity'])} VALUE {_quote(kwargs['value'])}")
 
+        con.execute("CREATE OR REPLACE TABLE table_layout (TableName VARCHAR, Layout VARCHAR)")
+        con.executemany("INSERT INTO table_layout VALUES (?, ?)", sorted(layout.items()))
         con.execute("CREATE OR REPLACE TABLE schema_metadata (Key VARCHAR, Value VARCHAR)")
-        for k, v in (("schema_version", "1"), ("source_case", case_name)):
+        for k, v in (("schema_version", "2"), ("source_case", case_name)):
             con.execute("INSERT INTO schema_metadata VALUES (?, ?)", (k, v))
     finally:
         con.close()
