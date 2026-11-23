@@ -29,7 +29,7 @@ from pyomo.util.infeasible import log_infeasible_constraints
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
 try:
-    from          .openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
+    from          .openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals, fix_stage_costs
     from          .openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
     from          .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from          .openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
@@ -37,7 +37,7 @@ try:
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
+    from openTEPES.openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals, fix_stage_costs
     from openTEPES.openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
     from openTEPES.openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from openTEPES.openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
@@ -231,9 +231,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if mTEPES.pIndHeat():
         pStageCostVars.append(OptModel.vTotalRHeatCost)
     for n in mTEPES.n:
-        for Var in pStageCostVars:
-            VarData = Var[p,sc,n]
-            VarData.fix(VarData())
+        fix_stage_costs(OptModel, (Var[p,sc,n] for Var in pStageCostVars))
 
     SolvingTime = time.time() - StartTime
     mTEPES.pSolveSeconds = getattr(mTEPES, 'pSolveSeconds', 0.0) + SolvingTime
