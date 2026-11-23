@@ -714,6 +714,8 @@ parser.add_argument('--option',        type=str, default=None,  action='append',
                                                                       "without copying it: --option IndACPowerFlow=0 for DC, =1 for branch flow, =3 for rectangular."))
 parser.add_argument('--no-plots',                default=False, help="Disable HTML plot output (overrides 'plots' in --results).", action="store_true")
 parser.add_argument('--out',           type=str, default=None,  help="Output directory for oT_Result_*.csv and oT_Plot_*.html. Default: <dir>/<case>.")
+parser.add_argument('--output-format', type=str, default='csv', choices=['csv', 'duckdb', 'both'],
+                    help="Format of the result tables: 'csv' (default) writes oT_Result_*.csv, 'duckdb' writes one oT_Results_<case>.duckdb, 'both' writes both.")
 parser.add_argument('--gzip-large-csvs',         default=False, help="After writing results, gzip every oT_Result_*.csv whose name starts with one of the prefixes given by --gzip-patterns. Default: off (CSVs written plain). NOTE: .csv.gz files cannot be opened directly in Excel; pandas reads them natively.", action="store_true")
 parser.add_argument('--gzip-patterns', type=str, default=None,  help=("Comma-separated list of name-prefixes (after the leading 'oT_Result_') selecting which result CSVs to gzip. Used with --gzip-large-csvs. Default: " + ",".join(DEFAULT_GZIP_PATTERNS) + "."))
 def _positive_int(value: str) -> int:
@@ -853,7 +855,8 @@ def main():
 
     model = openTEPES_run(args.dir, args.case, args.solver, args.result, args.log,
                           output_spec=output_spec, out_path=args.out,
-                          gzip_patterns=gzip_patterns, option_overrides=pOverrides or None)
+                          gzip_patterns=gzip_patterns, output_format=args.output_format,
+                          option_overrides=pOverrides or None)
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))

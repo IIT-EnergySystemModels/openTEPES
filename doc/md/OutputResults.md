@@ -89,7 +89,7 @@ Uganda 2030 Electric System (118 generators, 49 nodes, 205 lines), one scenario 
 The model also generates some additional plots.
 
 The processed result tables can be written as CSV files (the default), a **DuckDB** database, or both. Pass `output_format="csv"`, `"duckdb"`, or `"both"` to
-`openTEPES_run` (or to `openTEPES_Runner.run`). With DuckDB on, the case also writes one `oT_Results_<CaseName>.duckdb` holding one table per result file. A
+`openTEPES_run` (or to `openTEPES_Runner.run`), or `--output-format csv`, `duckdb` or `both` on the command line. With DuckDB on, the case also writes one `oT_Results_<CaseName>.duckdb` holding one table per result file. A
 `"csv"` run is byte-identical to earlier versions, so switching format changes only where the results are stored, not their values. One database per case keeps
 a parameter sweep single-writer-safe; see {doc}`Sweeps`.
 

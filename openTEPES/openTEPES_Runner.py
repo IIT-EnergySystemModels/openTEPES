@@ -8,9 +8,14 @@ Mode A (``mode="pre-build"``, RFC §4.1): each case loads its own source, builds
 Mode B (``mode="in-memory"``, RFC §4.2): the baseline case is read once into RAM and every case re-uses it through an ``InMemorySource`` plus an overlay,
 so the sweep pays the I/O once and only rebuilds + solves per worker (forked workers share the baseline frames copy-on-write).
 Mode C (post-build hot-swap) lives in ``openTEPES_ProblemSolvingResolve``.
+
+Run as a module, it is the command line for a Mode A sweep, for example:
+
+    python -m openTEPES.openTEPES_Runner 9n sSEP --dir openTEPES/cases --solver highs --out out --aggregate-to out/sweep
 """
 from __future__ import annotations
 
+import argparse
 import glob
 import json
 import os
@@ -259,3 +264,52 @@ def run(cases, solver_name, *, mode="pre-build", backend="serial", n_workers=1,
             aggregate(sources, out_path=aggregate_to, to=output_format, labels=labels)
 
     return records
+
+
+def _parser():
+    p = argparse.ArgumentParser(prog="python -m openTEPES.openTEPES_Runner",
+                                description="Solve several openTEPES cases, one after another or in parallel. Each case reads its own inputs.")
+    p.add_argument("cases", nargs="+", help="Case names under --dir: CSV case directories or .duckdb files.")
+    p.add_argument("--dir", default=".", help="Directory that holds the cases. Default: the current directory.")
+    p.add_argument("--solver", default="highs", help="Solver name. Default: highs.")
+    p.add_argument("--backend", default="serial", choices=["serial", "multiprocessing", "joblib"],
+                   help="Run the cases one after another (serial, the default) or in parallel.")
+    p.add_argument("--workers", type=int, default=1, help="Number of cases solved at the same time by a parallel backend. Default: 1.")
+    p.add_argument("--out", default=None,
+                   help="Output directory; each case writes to <out>/<case>. Default: each case writes to its own case directory.")
+    p.add_argument("--output-format", default="csv", choices=["csv", "duckdb", "both"],
+                   help="Format of the result tables of each case and of the merged tables. Default: csv.")
+    p.add_argument("--aggregate-to", default=None,
+                   help="Directory for the merged tables: one table per result, with a column naming the case.")
+    p.add_argument("--log", action="store_true", help="Print the time and the number of rows of each step to the console.")
+    return p
+
+
+def main(argv=None):
+    """Command line for a Mode A sweep. Prints one line per case and returns 1 if any case failed, else 0."""
+    try:
+        from .openTEPES_Cases import Case
+    except ImportError:
+        from openTEPES.openTEPES_Cases import Case
+    args = _parser().parse_args(argv)
+    cases = []
+    for name in args.cases:
+        label = name[:-len(".duckdb")] if name.endswith(".duckdb") else name
+        out_path = os.path.join(args.out, label) if args.out else None
+        cases.append(Case(args.dir, name, out_path=out_path, label=label))
+    records = run(cases, args.solver, backend=args.backend, n_workers=args.workers,
+                  pIndLogConsole=int(args.log), output_format=args.output_format, aggregate_to=args.aggregate_to)
+    for rec in records:
+        parts = [f"{rec.get('label')}: {rec.get('status')}"]
+        if rec.get("error"):
+            parts.append(rec["error"])
+        if isinstance(rec.get("total_cost_meur"), (int, float)):
+            parts.append(f"{rec['total_cost_meur']:.6g} MEUR")
+        if isinstance(rec.get("total_seconds"), (int, float)):
+            parts.append(f"{rec['total_seconds']:.1f} s")
+        print(", ".join(parts))
+    return 1 if any(rec.get("status") == "error" for rec in records) else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

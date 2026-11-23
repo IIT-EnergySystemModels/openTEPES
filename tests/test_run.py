@@ -728,6 +728,20 @@ def test_mode_a_runner_multi_case_and_error(case_7d_system, tmp_path):
 
 @pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_the_sweep_command_solves_a_case_and_writes_duckdb_results(case_7d_system, tmp_path):
+    """python -m openTEPES.openTEPES_Runner with --output-format duckdb writes a result DuckDB file, no result CSV,
+    and the merged tables."""
+    d = case_7d_system
+    code = openTEPES_Runner.main([d["CaseName"], "--dir", d["DirName"], "--solver", d["SolverName"],
+                                  "--out", str(tmp_path), "--output-format", "duckdb",
+                                  "--aggregate-to", str(tmp_path / "sweep")])
+    assert code == 0
+    assert (tmp_path / d["CaseName"] / f"oT_Results_{d['CaseName']}.duckdb").is_file()
+    assert not list((tmp_path / d["CaseName"]).glob("oT_Result_*.csv"))
+    assert (tmp_path / "sweep" / "oT_Sweep.duckdb").is_file()
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
 def test_mode_a_runner_multiprocessing(case_7d_system, tmp_path):
     """The multiprocessing backend returns the same per-case summaries, in input order."""
     d = case_7d_system
