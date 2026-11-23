@@ -11,7 +11,7 @@ from collections import defaultdict
 from pyomo.environ import Constraint, Objective, minimize
 
 try:
-    from .openTEPES_SettingUpVariables          import VoltagePenaltyOn
+    from          .openTEPES_SettingUpVariables import VoltagePenaltyOn
 except ImportError:
     from openTEPES.openTEPES_SettingUpVariables import VoltagePenaltyOn
 

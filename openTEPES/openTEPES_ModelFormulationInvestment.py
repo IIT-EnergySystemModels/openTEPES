@@ -19,7 +19,7 @@ def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
     pIndElecInvest = len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) > 0 or (mTEPES.pIndACPowerFlow() and len(mTEPES.shc) + len(mTEPES.sqc) > 0)
 
     def eTotalICost(OptModel):
-        if not (mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc or pIndElecInvest):
+        if not (pIndElecInvest or mTEPES.rn or mTEPES.pc or mTEPES.hc):
             return Constraint.Skip
         vICost = 0.0
         if pIndElecInvest:
