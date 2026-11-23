@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -223,15 +223,17 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     collect_duals(OptModel, mTEPES)
 
     # save values of each stage
-    # for n in mTEPES.n:
-    #     OptModel.vTotalGCost        [p,sc,n].fix(OptModel.vTotalGCost    [p,sc,n]())
-    #     OptModel.vTotalCCost        [p,sc,n].fix(OptModel.vTotalCCost    [p,sc,n]())
-    #     OptModel.vTotalECost        [p,sc,n].fix(OptModel.vTotalECost    [p,sc,n]())
-    #     OptModel.vTotalRElecCost    [p,sc,n].fix(OptModel.vTotalRElecCost[p,sc,n]())
-    #     if mTEPES.pIndHydrogen():
-    #         OptModel.vTotalRH2Cost  [p,sc,n].fix(OptModel.vTotalRH2Cost  [p,sc,n]())
-    #     if mTEPES.pIndHeat():
-    #         OptModel.vTotalRHeatCost[p,sc,n].fix(OptModel.vTotalRHeatCost[p,sc,n]())
+    # the option flags and the component handles do not depend on the load level, and each variable was indexed twice with the same key
+    # (once to read, once to fix): resolve the flags and handles once and bind each VarData once per (variable, load level)
+    pStageCostVars = [OptModel.vTotalGCost, OptModel.vTotalCCost, OptModel.vTotalECost, OptModel.vTotalNCost, OptModel.vTotalRElecCost]
+    if mTEPES.pIndHydrogen():
+        pStageCostVars.append(OptModel.vTotalRH2Cost)
+    if mTEPES.pIndHeat():
+        pStageCostVars.append(OptModel.vTotalRHeatCost)
+    for n in mTEPES.n:
+        for Var in pStageCostVars:
+            VarData = Var[p,sc,n]
+            VarData.fix(VarData())
 
     SolvingTime = time.time() - StartTime
     mTEPES.pSolveSeconds = getattr(mTEPES, 'pSolveSeconds', 0.0) + SolvingTime

@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.19.1rc] - 2026-11-19 not released in PyPi
+## [4.19.1rc] - 2026-11-23 not released in PyPi
 
+- [FIXED] save the per load level cost results for every stage to print them in cost summary.
 - [FIXED] protect against ESS without charge capacity and without inflows.
 - [CHANGED] `Tool_CSV_to_DuckDB` stores each table with the columns of its CSV file, not one row per value. On RTS-GMLC_6y the
   file goes from 711 MB to 55 MB and reading it from 40.7 s to 1.0 s. Files in the earlier layout are still read.

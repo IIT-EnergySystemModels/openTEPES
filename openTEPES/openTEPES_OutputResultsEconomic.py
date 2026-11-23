@@ -317,31 +317,31 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     # SysCost       = pd.Series(data=[                                                                  OptModel.vTotalSCost()                                                                                         ], index=['']    ).to_frame(name='Total          System Cost').stack()
-    GenInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(                                       OptModel.xGenInvestCost   [p,gc  ]()  for gc   in mTEPES.gc    if (p,gc) in mTEPES.pgc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Generation').stack()
+    GenInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(                                       OptModel.xGenInvestCost   [p,gc  ]()   for gc   in mTEPES.gc   if (p,gc) in mTEPES.pgc)       for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Generation').stack()
     GenRetCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum((mTEPES.pGenRetireCost [gd] -
-                                                                         mTEPES.pGenOMFixedCost[gd])         * OptModel.vGenerationRetire[p,gd  ]()  for gd   in mTEPES.gd    if (p,gd) in mTEPES.pgd)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Retirement Cost Generation').stack()
-    NetInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost   [lc]          * OptModel.vNetworkInvest   [p,lc  ]()  for lc   in mTEPES.lc    if (p,lc) in mTEPES.plc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Network'   ).stack()
+                                                                         mTEPES.pGenOMFixedCost[gd])         * OptModel.vGenerationRetire[p,gd  ]()   for gd   in mTEPES.gd   if (p,gd) in mTEPES.pgd)       for p in mTEPES.p], index=mTEPES.p).to_frame(name='Retirement Cost Generation').stack()
+    NetInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost   [lc]          * OptModel.vNetworkInvest   [p,lc  ]()   for lc   in mTEPES.lc   if (p,lc) in mTEPES.plc)       for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Network'   ).stack()
     if mTEPES.pIndHydroTopology():
-        RsrInvCost  = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost  [rc]          * OptModel.vReservoirInvest [p,rc  ]()  for rc   in mTEPES.rn    if (p,rc) in mTEPES.prc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
+        RsrInvCost  = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost  [rc]          * OptModel.vReservoirInvest [p,rc  ]()   for rc   in mTEPES.rn   if (p,rc) in mTEPES.prc)       for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
     else:
-        RsrInvCost  = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
+        RsrInvCost  = pd.Series(data=[0.0                                                                                                                                                                    for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
     if mTEPES.pIndHydrogen():
-        H2InvCost   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pH2PipeFixedCost  [ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc]() for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc)   for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
+        H2InvCost   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pH2PipeFixedCost  [ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc]()   for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
     else:
-        H2InvCost   = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
+        H2InvCost   = pd.Series(data=[0.0                                                                                                                                                                     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
     if mTEPES.pIndHeat():
         HeatInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc]() for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
     else:
         HeatInvCost = pd.Series(data=[0.0                                                                                                                                                                     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
     # cache the (scenario, load level) product once; it is reused by every operation-cost series below instead of rebuilding the Pyomo set product for each period and each cost
     pScenFactor = {(p,sc): mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() for p,sc in mTEPES.ps}
-    pSNofP          = {p: [(sc,n) for sc in mTEPES.sc if (p,sc) in mTEPES.ps for n in mTEPES.n] for p in mTEPES.p}
+    pSNofP      = {p: [(sc,n) for sc in mTEPES.sc if (p,sc) in mTEPES.ps for n in mTEPES.n] for p in mTEPES.p}
     # evaluate each duration (mutable Param) once instead of once per element in the series below
-    pDur            = {(p,sc,n): mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n in mTEPES.psn}
-    GenCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalGCost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Generation' ).stack()
-    ConCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalCCost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Consumption').stack()
-    EmiCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalECost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission Cost'             ).stack()
-    NetCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalNCost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Network'    ).stack()
+    pDur        = {(p,sc,n): mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n in mTEPES.psn}
+    GenCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalGCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Generation' ).stack()
+    ConCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalCCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Consumption').stack()
+    EmiCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalECost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission Cost'             ).stack()
+    NetCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalNCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Network'    ).stack()
 
     # The AC reactive investments have their own row: their cost is inside vTotalFElecCost and therefore inside the reported total, so without a row
     # here the summary no longer adds up to the total system cost.
@@ -356,24 +356,24 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     # is 14.43 MEUR against a 45.56 MEUR system cost — and its row is named so that nobody adds it into the total. It is a numerical device, not
     # money. See the pEpsilonCurrent block in openTEPES_ModelFormulationObjective.
     if mTEPES.pIndACPowerFlow() == 1:                          # the current penalty prices vCurr, which only branch flow has
-        pEpsCurr = mTEPES.pEpsilonCurrent()
-        CurrPen  = pd.Series(data=[sum(pScenFactor[p,sc] * pEpsCurr * pDur[p,sc,n] * sum(OptModel.vCurr[p,sc,n,ni,nf,cc]() for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla) for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
+        pEpsCurr    = mTEPES.pEpsilonCurrent()
+        CurrPen     = pd.Series(data=[sum(pScenFactor[p,sc] * pEpsCurr * pDur[p,sc,n] * sum(OptModel.vCurr[p,sc,n,ni,nf,cc]() for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla) for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
     else:
-        CurrPen  = pd.Series(data=[0.0                                                                                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
+        CurrPen     = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
     # The voltage setpoint penalty, reported beside the current penalty and for the same reason: it steers the solve and is not money.
     if VoltagePenaltyOn(mTEPES):
-        VoltPen  = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalVPenalty[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Voltage Penalty (not in total)').stack()
+        VoltPen     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalVPenalty[p,sc,n]()                                                                                         for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Voltage Penalty (not in total)').stack()
     else:
-        VoltPen  = pd.Series(data=[0.0 for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Voltage Penalty (not in total)').stack()
-    ElecRelCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRElecCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost'          ).stack()
+        VoltPen     = pd.Series(data=[0.0 for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Voltage Penalty (not in total)').stack()
+    ElecRelCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRElecCost[p,sc,n]()                                                                                        for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost'          ).stack()
     if mTEPES.pIndHydrogen():
-        H2RelCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
+        H2RelCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n]()                                                                                        for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
     else:
-        H2RelCost   = pd.Series(data=[0.0                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
+        H2RelCost   = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
     if mTEPES.pIndHeat():
-        HeatRelCost = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
+        HeatRelCost = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n]()                                                                                        for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     else:
-        HeatRelCost = pd.Series(data=[0.0                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
+        HeatRelCost = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     # The two AC rows are added only on an AC case. Emitting them as zeros everywhere changed the shape of a file every existing case writes.
     pRows          = [GenInvCost, GenRetCost, NetInvCost] + ([ReactInvCost] if mTEPES.pIndACPowerFlow() else []) + [RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost] + ([CurrPen] if mTEPES.pIndACPowerFlow() == 1 else []) + ([VoltPen] if VoltagePenaltyOn(mTEPES) else []) + [ElecRelCost, H2RelCost, HeatRelCost]
     CostSummary    = pd.concat(pRows).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})
