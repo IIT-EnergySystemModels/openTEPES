@@ -27,6 +27,7 @@ from pyomo.environ import UnitInterval
 # the relaxed binaries and (var, prior fixed flag) for the investments.
 _FIX_REGISTRY = "_pDualFixRelaxed"
 _INV_REGISTRY = "_pDualFixInvest"
+_COST_REGISTRY = "_pStageCostFix"
 
 
 def _registry(OptModel, name) -> dict:
@@ -35,6 +36,25 @@ def _registry(OptModel, name) -> dict:
         reg = {}
         setattr(OptModel, name, reg)
     return reg
+
+
+def fix_stage_costs(OptModel, variables) -> None:
+    """Pin solved stage costs while recording which variables were already fixed."""
+    fixed = _registry(OptModel, _COST_REGISTRY)
+    for var in variables:
+        fixed.setdefault(id(var), (var, var.fixed))
+        var.fix(var())
+
+
+def unfix_stage_costs(OptModel) -> int:
+    """Release stage-cost variables pinned after solving, preserving prior fixes."""
+    n = 0
+    for var, was_fixed in _registry(OptModel, _COST_REGISTRY).values():
+        if not was_fixed:
+            var.unfix()
+            n += 1
+    _registry(OptModel, _COST_REGISTRY).clear()
+    return n
 
 
 def fix_for_duals(OptModel, mTEPES, p, sc) -> int:
@@ -108,10 +128,10 @@ def fix_for_duals(OptModel, mTEPES, p, sc) -> int:
 
 
 def unfix_for_duals(OptModel) -> int:
-    """Undo ``fix_for_duals``: restore the relaxed domains and release what it fixed. Returns the count.
+    """Undo solve-time fixes that prevent a new solve. Returns the number of variables released.
 
-    Only what ``fix_for_duals`` changed is touched, so a decision the case itself fixed stays fixed. Safe to
-    call on a model that was never solved, where it does nothing.
+    Only what ``fix_for_duals`` and ``fix_stage_costs`` changed is touched, so decisions fixed before
+    those passes stay fixed. Safe to call on a model that was never solved, where it does nothing.
     """
     n = 0
     for var, prior_domain in _registry(OptModel, _FIX_REGISTRY).values():
@@ -124,6 +144,7 @@ def unfix_for_duals(OptModel) -> int:
             n += 1
     _registry(OptModel, _FIX_REGISTRY).clear()
     _registry(OptModel, _INV_REGISTRY).clear()
+    n += unfix_stage_costs(OptModel)
     return n
 
 
