@@ -824,7 +824,7 @@ def test_restoration_is_skipped_when_nothing_to_restore(tmp_path):
 
 
 @pytest.mark.solve
-def test_restoration_makes_the_relaxation_exact(tmp_path):
+def test_restoration_makes_the_relaxation_exact(tmp_path, capsys):
     """The whole point: after the pass the cone is closed and the cost is the cost of the plan, not below it.
 
     On a case whose cone is already tight the restoration should barely move the objective. It must never move it DOWN:
@@ -837,6 +837,9 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
     # pass with no CI coverage at all even though the pass itself already runs on ipopt.
     dir_name, case = _tiny_ac_case(tmp_path, "9n_restore")
     mTEPES = _run_or_skip(str(dir_name), case, "ipopt", 0, 0)
+
+    assert "the AC restoration did not converge" not in capsys.readouterr().out
+    assert all(not mTEPES.vTotalGCost[k].fixed for k in mTEPES.psn)
 
     pSBase = mTEPES.pSBase
     pWorst = 0.0

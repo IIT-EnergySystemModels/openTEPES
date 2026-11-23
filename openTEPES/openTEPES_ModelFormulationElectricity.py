@@ -15,6 +15,13 @@ import numpy    as np
 from collections   import defaultdict, deque
 from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, NonNegativeReals, Objective, SolverFactory, Suffix, tan, sin, sqrt, value
 
+try:
+    from .openTEPES_ProblemSolvingDualExtraction import unfix_stage_costs
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_ProblemSolvingDualExtraction import unfix_stage_costs
+
 
 def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Inertia, oper resr, demand constraints ****')
@@ -2972,6 +2979,9 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     if not nRows:
         print('### WARNING: AC restoration found no relaxed current constraints to replace; nothing was done.')
         return None
+
+    # The restored operating point must be able to change the stage costs pinned after the relaxed solve.
+    unfix_stage_costs(OptModel)
 
     # Exactly one objective may be active for the solve. If that one is a per-stage eTotalOCost, which is the state the Benders path can leave behind,
     # the restoration would minimise the stage objective rather than the system one. The default path arrives with eTotalSCost active, so this does not
