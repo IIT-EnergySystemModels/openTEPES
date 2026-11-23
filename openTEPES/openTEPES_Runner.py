@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 19, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2026
 
 openTEPES.openTEPES_Runner — Mode A and Mode B sweep runner.
 
@@ -23,9 +23,9 @@ import sys
 from contextlib import contextmanager
 
 try:
-    from .openTEPES import openTEPES_run
-    from .openTEPES_ResultAggregate import aggregate
-    from .openTEPES_ProblemSolvingTuning import _threads
+    from          .openTEPES import openTEPES_run
+    from          .openTEPES_ResultAggregate import aggregate
+    from          .openTEPES_ProblemSolvingTuning import _threads
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -46,21 +46,18 @@ def _status_dir(case):
 def _read_status(case):
     """Return the case's ``openTEPES_run_status_*.json``: a summary dict, not the model.
 
-    The model cannot cross a worker process boundary, so every backend returns
-    the JSON ``openTEPES_run`` already persists. CSV cases name it after the
+    The model cannot cross a worker process boundary, so every backend returns the JSON ``openTEPES_run`` already persists. CSV cases name it after the
     case; DuckDB inputs use the embedded name, hence the glob fallback.
     """
     out_dir = _status_dir(case)
     candidate = os.path.join(out_dir, f"openTEPES_run_status_{case.case_name}.json")
     if not os.path.exists(candidate):
-        matches = sorted(glob.glob(os.path.join(out_dir, "openTEPES_run_status_*.json")),
-                         key=os.path.getmtime)
+        matches = sorted(glob.glob(os.path.join(out_dir, "openTEPES_run_status_*.json")), key=os.path.getmtime)
         candidate = matches[-1] if matches else None
     if candidate and os.path.exists(candidate):
         with open(candidate) as handle:
             return json.load(handle)
-    return {"case": case.case_name, "dir": case.dir_name, "status": "unknown",
-            "error": "status JSON not found after run"}
+    return {"case": case.case_name, "dir": case.dir_name, "status": "unknown", "error": "status JSON not found after run"}
 
 
 def _run_one(case, solver_name, output_spec, gzip_patterns, pIndOutputResults, pIndLogConsole, output_format):
@@ -92,9 +89,8 @@ def _run_one_in_memory(case, baseline, solver_name, output_spec, gzip_patterns,
                        pIndOutputResults, pIndLogConsole, output_format):
     """Mode B worker: build from the shared in-memory baseline plus this case's overlay, then solve.
 
-    ``baseline`` is an ``InMemorySource`` materialised once by the master; ``with_overlay`` shares its
-    frames, so a forked worker perturbs only a few tables and rebuilds — no CSV re-read. Module-level so
-    it pickles for the multiprocessing and joblib backends.
+    ``baseline`` is an ``InMemorySource`` materialized once by the master; ``with_overlay`` shares its frames, so a forked worker perturbs only a few tables
+    and rebuilds — no CSV re-read. Module-level so it pickles for the multiprocessing and joblib backends.
     """
     try:
         source = baseline.with_overlay(case.overlay) if case.overlay else baseline
@@ -121,8 +117,8 @@ def _run_one_in_memory(case, baseline, solver_name, output_spec, gzip_patterns,
 def _worker_thread_budget(backend, n_workers):
     """Give each worker its slice of the thread budget for the duration of the sweep.
 
-    Workers call ``_threads()`` in their own process, so each would otherwise take the full default
-    and the sweep would ask for ``n_workers`` machines. A count the user set is left alone.
+    Workers call ``_threads()`` in their own process, so each would otherwise take the full default and the sweep would ask for ``n_workers`` machines.
+    A count the user set is left alone.
     """
     chosen = os.environ.get("OTEPES_THREADS", "").strip()
     if backend == "serial" or n_workers <= 1 or chosen:
@@ -143,8 +139,8 @@ def _run_in_memory(cases, solver_name, *, backend, n_workers, output_spec, gzip_
                    pIndOutputResults, pIndLogConsole, output_format):
     """Mode B dispatch: read each distinct baseline once, then run every case from it. Returns one summary per case."""
     try:
-        from .openTEPES_InputSource import open_source
-        from .openTEPES_InMemorySource import InMemorySource
+        from          .openTEPES_InputSource import open_source
+        from          .openTEPES_InMemorySource import InMemorySource
     except ImportError:
         from openTEPES.openTEPES_InputSource import open_source
         from openTEPES.openTEPES_InMemorySource import InMemorySource
@@ -170,8 +166,8 @@ def _run_in_memory(cases, solver_name, *, backend, n_workers, output_spec, gzip_
         return [_run_one_in_memory(*args) for args in work]
     if backend == "multiprocessing":
         import multiprocessing as mp
-        # fork shares the baseline frames copy-on-write (the Mode B win); on Windows fall back to the default
-        # start method, which pickles the baseline once per task — still no CSV re-read, just without COW.
+        # fork shares the baseline frames copy-on-write (the Mode B win); on Windows fall back to the default start method, which pickles the baseline
+        # once per task — still no CSV re-read, just without COW.
         ctx = mp.get_context("fork") if sys.platform != "win32" else mp.get_context()
         with ctx.Pool(processes=n_workers) as pool:
             return pool.starmap(_run_one_in_memory, work)
@@ -189,27 +185,20 @@ def run(cases, solver_name, *, mode="pre-build", backend="serial", n_workers=1,
         output_format="csv", aggregate_to=None):
     """Run ``Case`` objects through ``openTEPES_run`` and return one summary per case.
 
-    ``mode`` is ``"pre-build"`` (Mode A, each case reads its own source) or
-    ``"in-memory"`` (Mode B, the baseline is read once and re-used through an
-    overlay). ``backend`` is ``"serial"`` (default, no extra dependency),
-    ``"multiprocessing"`` (stdlib ``Pool``), or ``"joblib"``. ``output_spec``,
-    ``gzip_patterns``, ``pIndOutputResults`` and ``pIndLogConsole`` pass through to
-    ``openTEPES_run``. Summaries keep input order on every backend; a failed case
-    carries ``status="error"``.
+    ``mode`` is ``"pre-build"`` (Mode A, each case reads its own source) or ``"in-memory"`` (Mode B, the baseline is read once and re-used through an
+    overlay). ``backend`` is ``"serial"`` (default, no extra dependency), ``"multiprocessing"`` (stdlib ``Pool``), or ``"joblib"``. ``output_spec``,
+    ``gzip_patterns``, ``pIndOutputResults`` and ``pIndLogConsole`` pass through to ``openTEPES_run``. Summaries keep input order on every backend; a
+    failed case carries ``status="error"``.
 
-    Mode A rejects ``Case.overlay``; Mode B uses it (a dict mapping a data-table
-    stem to a number / callable / DataFrame, see ``InMemorySource``) and requires a
-    distinct ``out_path`` per case.
+    Mode A rejects ``Case.overlay``; Mode B uses it (a dict mapping a data-table stem to a number / callable / DataFrame, see ``InMemorySource``) and
+    requires a distinct ``out_path`` per case.
 
-    A parallel sweep splits the solver thread budget across its ``n_workers``, so they ask for one
-    machine between them, not one each. ``--threads`` / ``OTEPES_THREADS`` overrides that.
+    A parallel sweep splits the solver thread budget across its ``n_workers``, so they ask for one machine between them, not one each.
+    ``--threads`` / ``OTEPES_THREADS`` overrides that.
 
-    ``output_format`` (``"csv"`` / ``"duckdb"`` / ``"both"``) selects each case's
-    result format (see ``openTEPES_run``); each worker writes its own per-case
-    DuckDB so a parallel sweep stays single-writer-safe. ``aggregate_to``, if set
-    to a directory, merges the solved cases after the sweep into one long table per
-    result type (``oT_Sweep_*``) tagged by case label, via
-    ``openTEPES_ResultAggregate.aggregate``; failed cases are skipped.
+    ``output_format`` (``"csv"`` / ``"duckdb"`` / ``"both"``) selects each case's result format (see ``openTEPES_run``); each worker writes its own per-case
+    DuckDB so a parallel sweep stays single-writer-safe. ``aggregate_to``, if set to a directory, merges the solved cases after the sweep into one long
+    table per result type (``oT_Sweep_*``) tagged by case label, via ``openTEPES_ResultAggregate.aggregate``; failed cases are skipped.
     """
     cases = list(cases)
 
@@ -235,10 +224,9 @@ def run(cases, solver_name, *, mode="pre-build", backend="serial", n_workers=1,
                 records = [_run_one(*args) for args in work]
             elif backend == "multiprocessing":
                 import multiprocessing as mp
-                # Start the workers fresh. A forked worker inherits the parent's solver globals, and HiGHS fixes its
-                # thread count on the first solve and then refuses to change it — so a parent that has already solved
-                # would hand the worker a scheduler it cannot resize to its slice of the budget. Mode A re-reads its
-                # inputs per case anyway, so it has nothing to gain from fork.
+                # Start the workers fresh. A forked worker inherits the parent's solver globals, and HiGHS fixes its thread count on the first solve
+                # and then refuses to change it — so a parent that has already solved would hand the worker a scheduler it cannot resize to its slice
+                # of the budget. Mode A re-reads its inputs per case anyway, so it has nothing to gain from fork.
                 ctx = mp.get_context("spawn")
                 with ctx.Pool(processes=n_workers) as pool:
                     records = pool.starmap(_run_one, work)
