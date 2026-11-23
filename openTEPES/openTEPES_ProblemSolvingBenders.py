@@ -38,6 +38,14 @@ import time
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
 
+try:
+    from .openTEPES_ProblemSolvingDualExtraction import unfix_stage_costs
+except ImportError:  # direct run: no parent package, so import from the package, as the other modules do
+    import os
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_ProblemSolvingDualExtraction import unfix_stage_costs
+
 
 _BENDERS_PARAM_ATTR = "_benders_x_param"
 _BENDERS_CONSTR_ATTR = "_benders_fix_constr"
@@ -104,6 +112,7 @@ def lshaped(mTEPES, solver_name: str = "highs", max_iter: int = 20, tol: float =
         ``wall_clock_s`` (total seconds).
     """
     t0 = time.time()
+    unfix_stage_costs(mTEPES)
 
     candidates = list(mTEPES.plc)
     if not candidates:

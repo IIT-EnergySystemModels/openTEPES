@@ -27,6 +27,8 @@ from pyomo.environ import UnitInterval
 # the relaxed binaries and (var, prior fixed flag) for the investments.
 _FIX_REGISTRY = "_pDualFixRelaxed"
 _INV_REGISTRY = "_pDualFixInvest"
+_STAGE_COST_VARS = ("vTotalGCost", "vTotalCCost", "vTotalECost", "vTotalNCost", "vTotalRElecCost",
+                    "vTotalRH2Cost", "vTotalRHeatCost")
 
 
 def _registry(OptModel, name) -> dict:
@@ -124,6 +126,21 @@ def unfix_for_duals(OptModel) -> int:
             n += 1
     _registry(OptModel, _FIX_REGISTRY).clear()
     _registry(OptModel, _INV_REGISTRY).clear()
+    return n
+
+
+def unfix_stage_costs(OptModel) -> int:
+    """Release the per-load-level cost variables pinned after a stage solve for later re-optimisation."""
+    n = 0
+    for name in _STAGE_COST_VARS:
+        component = getattr(OptModel, name, None)
+        if component is None:
+            continue
+        values = component.values() if component.is_indexed() else (component,)
+        for var in values:
+            if var.fixed:
+                var.unfix()
+                n += 1
     return n
 
 
