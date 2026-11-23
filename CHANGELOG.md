@@ -4,6 +4,8 @@
 
 - [FIXED] save the per load level cost results for every stage to print them in cost summary.
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [ADDED] `--output-format csv|duckdb|both` in `openTEPES_Main`, and a command line for a sweep:
+  `python -m openTEPES.openTEPES_Runner <cases> --dir ... --out ... --aggregate-to ...`. Both were available only from Python.
 - [CHANGED] `Tool_CSV_to_DuckDB` stores each table with the columns of its CSV file, not one row per value. On RTS-GMLC_6y the
   file goes from 711 MB to 55 MB and reading it from 40.7 s to 1.0 s. Files in the earlier layout are still read.
 - [FIXED] `openTEPES_ProblemSolvingResolve` run directly imports its two helper modules from the package, as every other module does.

@@ -43,6 +43,16 @@ summary = openTEPES_Runner.run(cases, solver_name="gurobi",
                                mode="pre-build", backend="multiprocessing", n_workers=8)
 ```
 
+The same sweep runs from the command line. Each case writes to `<out>/<case>`, and the command prints one line per case and exits with
+code 1 if any case failed:
+
+```bash
+python -m openTEPES.openTEPES_Runner SE2035_low SE2035_ref SE2035_high --dir cases --solver gurobi \
+    --backend multiprocessing --workers 8 --out out --output-format duckdb --aggregate-to out/sweep
+```
+
+The command line runs Mode A only, since a Mode B overlay is a Python value.
+
 **Backends.** `backend="serial"` (default, no extra dependency) runs the cases one after another; `"multiprocessing"` spreads them across a standard-library
 `Pool` of `n_workers`; `"joblib"` uses `joblib.Parallel` (an optional dependency — `pip install joblib`). All three preserve input order in the returned list.
 

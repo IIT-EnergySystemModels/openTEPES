@@ -10,8 +10,9 @@ relative-import path. This test runs every ``openTEPES_*.py`` module as ``__main
 fallback path is checked on every CI run, catching a broken guard, a missing import, or a circular import before
 a user hits it in an editor. No model is solved, so it runs in the fast (non-solve) CI job.
 
-``openTEPES_Main.py`` is excluded because it has an active ``if __name__ == "__main__"`` block that would launch
-the command-line interface rather than just import.
+``openTEPES_Main.py`` and ``openTEPES_Runner.py`` are excluded because each has an active ``if __name__ == "__main__"``
+block that would launch a command-line interface instead of only importing. ``test_direct_run_imports.py`` still runs
+them under another name, so their import fallback is checked.
 """
 import runpy
 from pathlib import Path
@@ -22,7 +23,7 @@ PKG_DIR = Path(__file__).resolve().parent.parent / "openTEPES"
 
 # Modules with an active __main__ block that does real work (not just imports) — running them as __main__ would
 # execute that work, not test the import guard.
-EXCLUDE = {"openTEPES_Main.py"}
+EXCLUDE = {"openTEPES_Main.py", "openTEPES_Runner.py"}
 
 MODULES = sorted(p.name for p in PKG_DIR.glob("openTEPES_*.py") if p.name not in EXCLUDE)
 
