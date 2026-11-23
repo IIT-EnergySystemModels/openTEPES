@@ -222,18 +222,18 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     # ---- Collect duals into mTEPES.pDuals (used by MarginalResults / EconomicResults) ----
     collect_duals(OptModel, mTEPES)
 
-    # save values of each stage
-    # the option flags and the component handles do not depend on the load level, and each variable was indexed twice with the same key
-    # (once to read, once to fix): resolve the flags and handles once and bind each VarData once per (variable, load level)
+    # save values of each stage WITHOUT fixing the variables: they stay free for later solves, and the stage-solve values are kept on
+    # mTEPES.pStageCostValues keyed by (cost variable name, p, sc, n), accumulated across stages like mTEPES.pDuals
     pStageCostVars = [OptModel.vTotalGCost, OptModel.vTotalCCost, OptModel.vTotalECost, OptModel.vTotalNCost, OptModel.vTotalRElecCost]
     if mTEPES.pIndHydrogen():
         pStageCostVars.append(OptModel.vTotalRH2Cost)
     if mTEPES.pIndHeat():
         pStageCostVars.append(OptModel.vTotalRHeatCost)
+    if not hasattr(mTEPES, 'pStageCostValues'):
+        mTEPES.pStageCostValues = {}
     for n in mTEPES.n:
         for Var in pStageCostVars:
-            VarData = Var[p,sc,n]
-            VarData.fix(VarData())
+            mTEPES.pStageCostValues[Var.name,p,sc,n] = Var[p,sc,n]()
 
     SolvingTime = time.time() - StartTime
     mTEPES.pSolveSeconds = getattr(mTEPES, 'pSolveSeconds', 0.0) + SolvingTime
