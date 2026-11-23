@@ -3,6 +3,8 @@
 ## [4.19.1rc] - 2026-11-19 not released in PyPi
 
 - [FIXED] protect against ESS without charge capacity and without inflows.
+- [CHANGED] `Tool_CSV_to_DuckDB` stores each table with the columns of its CSV file, not one row per value. On RTS-GMLC_6y the
+  file goes from 711 MB to 55 MB and reading it from 40.7 s to 1.0 s. Files in the earlier layout are still read.
 - [FIXED] `openTEPES_ProblemSolvingResolve` run directly imports its two helper modules from the package, as every other module does.
   It loaded them as stand-alone modules, so a process that also imported the package held two copies of each.
 - [FIXED] the sweep merger `openTEPES_ResultAggregate` no longer imports from `_output_parity_test`, the tool that compares the

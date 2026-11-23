@@ -29,6 +29,15 @@ The reverse tool exports a `.duckdb` back to CSV:
 python scripts/openTEPES_DuckDB/Tool_DuckDB_to_CSV.py openTEPES/cases/9n_duckdb/9n.duckdb --out openTEPES/cases/9n_from_db
 ```
 
+Each table has the columns of its CSV file. For each time series, a view `<table>_long` gives the same data with one row
+per value, for SQL queries by node, unit or area:
+
+```python
+import duckdb
+con = duckdb.connect("openTEPES/cases/9n_duckdb/9n.duckdb", read_only=True)
+con.execute("SELECT * FROM demand_long WHERE Node = 'Node_1'").df()
+```
+
 ## Note
 
 Every other `.duckdb` is git-ignored, because a DuckDB case is a generated artefact — the CSV folders are the

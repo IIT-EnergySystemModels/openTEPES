@@ -8,6 +8,10 @@ the import is lazy and the ``_HAS_DUCKDB`` flag is consulted by ``Source.open_so
 
 The DB is opened read-only. ``schema_metadata.source_case`` is consulted at connection time so the case name follows the same rule as the CSV backend
 (``oT_Data_Parameter_*.csv`` filename for CSV, ``schema_metadata`` for DuckDB).
+
+Two layouts are read. A file of schema version 2 has a ``table_layout`` table, and a table it marks ``wide`` holds the columns of its CSV file and is
+read as it is. A file of schema version 1 has no ``table_layout``: its time series are stored one row per value and its single-row tables as
+``(Name, Value)`` rows, and both are rebuilt into the CSV shape on read.
 """
 from __future__ import annotations
 
@@ -60,6 +64,10 @@ class DuckDBSource(InputSource):
         # Pre-fetch existing DB table names (cheap; speeds up the list_data_stems / table-presence checks called many times).
         rows = self._con.execute("SELECT table_name FROM information_schema.tables").fetchall()
         self._existing_tables: set[str] = {r[0] for r in rows}
+        # Layout of each time series and single-row table; empty for a schema-version-1 file, where all of them are long.
+        self._layout: dict[str, str] = {}
+        if "table_layout" in self._existing_tables:
+            self._layout = dict(self._con.execute("SELECT TableName, Layout FROM table_layout").fetchall())
 
     @property
     def dir_name(self) -> str:
@@ -120,11 +128,18 @@ class DuckDBSource(InputSource):
                 return df
             return _apply_index(df, stem)
 
+        wide = self._layout.get(db_table) == "wide"
+
         if kind == WIDE_TO_LONG:
-            df = self._reconstruct_wide(db_table, **kwargs)
+            if wide:
+                df = self._con.execute(f"SELECT * FROM {db_table}").df()
+            else:
+                df = self._reconstruct_wide(db_table, **kwargs)
             return _apply_index(df, stem)
 
         if kind == UNPIVOT_SINGLE_ROW:
+            if wide:
+                return self._con.execute(f"SELECT * FROM {db_table}").df()
             return self._reconstruct_single_row(db_table, **kwargs)
 
         if kind == WIDE_MULTILEVEL_TO_LONG:
