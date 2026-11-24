@@ -114,6 +114,114 @@ def test_angles_available_tolerates_a_node_with_no_ac_branch(tmp_path):
     assert angles_available(mTEPES, mTEPES, *first)
 
 
+def test_rectangular_model_fixes_an_angle_in_every_synchronous_area(tmp_path):
+    """A node no AC branch reaches gets an angle reference of its own in rectangular coordinates.
+
+    Only the reference node had one. Rotating the voltage of the pole changes no flow, so the pole's angle was a free direction
+    of the NLP and Ipopt met a singular problem. The angle is fixed at zero and the magnitude stays free within the band.
+    """
+    d, n = _with_dc_only_node(tmp_path, "9n_AC_pole_rect")
+    opt = pd.read_csv(os.path.join(d, n, f"oT_Data_Option_{n}.csv"))
+    opt["IndACPowerFlow"] = 3
+    _write(d, n, "Option", opt)
+    mTEPES, _, _ = _build(d, n, with_vars=True)
+
+    ref = mTEPES.rf.first()
+    for p, sc, nn in mTEPES.psn:
+        assert mTEPES.vVim[p, sc, nn, "DCpole"].fixed and mTEPES.vVim[p, sc, nn, "DCpole"].value == 0.0
+        assert not mTEPES.vVre[p, sc, nn, "DCpole"].fixed
+        assert mTEPES.vVre[p, sc, nn, "DCpole"].lb == pytest.approx(mTEPES.pVMinBus["DCpole"])
+        # the rest of 9n_AC is one synchronous area with the reference node: no other angle is fixed
+        assert {nd for nd in mTEPES.nd if mTEPES.vVim[p, sc, nn, nd].fixed} == {ref, "DCpole"}
+
+
+def _with_dc_only_area(tmp_path, name):
+    """9n_AC with buses 7, 8 and 9 joined to the rest only through DC: the three AC branches that cross over are made DC.
+
+    That is the shape of an AC area behind HVDC, such as Western Denmark in a Nordic case. Inside the area 7-8 and 8-9 stay AC,
+    so bus 8 has the most AC branches there and is the anchor."""
+    d, n = _clone(tmp_path, "9n_AC", name)
+    net = pd.read_csv(os.path.join(d, n, f"oT_Data_Network_{n}.csv"))
+    cut = {("Node_6", "Node_7"), ("Node_6", "Node_8"), ("Node_4", "Node_9")}
+    net.loc[[(a, b) in cut for a, b in zip(net.InitialNode, net.FinalNode)], "LineType"] = "DC"
+    _write(d, n, "Network", net)
+    opt = pd.read_csv(os.path.join(d, n, f"oT_Data_Option_{n}.csv"))
+    opt["IndACPowerFlow"] = 3
+    _write(d, n, "Option", opt)
+    return d, n
+
+
+def test_an_area_behind_hvdc_is_anchored_at_its_best_connected_bus(tmp_path):
+    """One angle per area: bus 8 is fixed, buses 7 and 9 stay free, and the area is found again with the same anchor."""
+    from openTEPES.openTEPES_ModelFormulationElectricity import _SynchronousAreaAnchors
+
+    d, n = _with_dc_only_area(tmp_path, "9n_AC_area_build")
+    mTEPES, _, _ = _build(d, n, with_vars=True)
+    assert mTEPES.rf.first() == "Node_4"
+    for p in mTEPES.p:
+        assert _SynchronousAreaAnchors(mTEPES, p) == {"Node_8": ["Node_7", "Node_8", "Node_9"]}
+    for p, sc, nn in mTEPES.psn:
+        assert {nd for nd in mTEPES.nd if mTEPES.vVim[p, sc, nn, nd].fixed} == {"Node_4", "Node_8"}
+
+
+def test_rotating_an_area_to_its_anchor_changes_no_flow(tmp_path):
+    """The cone start rotates each area so that its anchor has angle zero. The magnitudes and every V_i conj(V_j), which
+    is all a flow depends on, stay as they were, and the anchor angle is fixed again."""
+    import cmath
+    from openTEPES.openTEPES_ModelFormulationElectricity import _AnchorAreaAngles, _SynchronousAreaAnchors
+
+    d, n = _with_dc_only_area(tmp_path, "9n_AC_area_rotate")
+    mTEPES, _, _ = _build(d, n, with_vars=True)
+    p, sc, _ = next(iter(mTEPES.psn))
+    pAnchors = _SynchronousAreaAnchors(mTEPES, p)
+    pStart = {"Node_7": cmath.rect(1.02, 0.31), "Node_8": cmath.rect(0.99, 0.42), "Node_9": cmath.rect(1.01, 0.37)}
+    for nn in mTEPES.n:
+        mTEPES.vVim[p, sc, nn, "Node_8"].unfix()
+        for nd, v in pStart.items():
+            mTEPES.vVre[p, sc, nn, nd].set_value(v.real)
+            mTEPES.vVim[p, sc, nn, nd].set_value(v.imag)
+
+    _AnchorAreaAngles(mTEPES, mTEPES, p, sc, pAnchors)
+
+    for nn in mTEPES.n:
+        V = {nd: complex(mTEPES.vVre[p, sc, nn, nd].value, mTEPES.vVim[p, sc, nn, nd].value) for nd in pStart}
+        assert mTEPES.vVim[p, sc, nn, "Node_8"].fixed and mTEPES.vVim[p, sc, nn, "Node_8"].value == 0.0
+        assert V["Node_8"].real == pytest.approx(0.99)
+        for i in pStart:
+            assert abs(V[i]) == pytest.approx(abs(pStart[i]))
+            for j in pStart:
+                assert V[i] * V[j].conjugate() == pytest.approx(pStart[i] * pStart[j].conjugate())
+
+
+@pytest.mark.solve
+def test_an_area_behind_hvdc_reaches_the_same_optimum_from_every_start(tmp_path):
+    """The flat start, the cone start and the power flow start all reach one optimum on a case with an AC area behind HVDC,
+    and the anchor ends the solve with angle zero. The two cone starts free the anchor angle and fix it again."""
+    if not SolverFactory("ipopt").available(exception_flag=False):
+        pytest.skip("ipopt is not available")
+    from openTEPES.openTEPES import openTEPES_run
+
+    pCost = {}
+    for pStart in (0, 1, 2):
+        d, n = _with_dc_only_area(tmp_path / f"s{pStart}", f"9n_AC_area_start{pStart}")
+        _first_hours(d, n, hours=2)
+        opt = pd.read_csv(os.path.join(d, n, f"oT_Data_Option_{n}.csv"))
+        opt["IndACConeStart"] = pStart
+        _write(d, n, "Option", opt)
+        try:
+            mTEPES = openTEPES_run(d, n, "ipopt", pIndOutputResults=0, pIndLogConsole=0)
+        except Exception as e:
+            if "size-limited" in str(e) or "too large" in str(e).lower():
+                pytest.skip("the solver licence cannot take a model this size")
+            raise
+        pCost[pStart] = mTEPES.vTotalSCost()
+        for p, sc, nn in mTEPES.psn:
+            assert mTEPES.vVim[p, sc, nn, "Node_8"].fixed and mTEPES.vVim[p, sc, nn, "Node_8"].value == 0.0
+            assert mTEPES.vVre[p, sc, nn, "Node_8"].value >= mTEPES.pVMinBus["Node_8"] - 1e-6
+    for pStart in (1, 2):
+        assert pCost[pStart] == pytest.approx(pCost[0], rel=1e-4), f"start {pStart} gives {pCost[pStart]}, the flat start {pCost[0]}"
+
+
 def test_angles_available_still_refuses_an_unset_ac_node(tmp_path):
     """A node that an AC branch does touch must still carry an angle.
 

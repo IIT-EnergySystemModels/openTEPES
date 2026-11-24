@@ -2,6 +2,9 @@
 
 ## [4.19.1rc] - 2026-11-23 not released in PyPi
 
+- [FIXED] the rectangular AC model fixes an angle in every synchronous area, not only at the reference node. An area joined to
+  the rest only through HVDC, or a bus no AC branch reaches, was free to rotate, and the NLP was singular. On a Nordic case with
+  45 such areas, Ipopt goes from 505 and 769 iterations at the acceptable level to 142 and 191, optimal, at the same cost.
 - [FIXED] save the per load level cost results for every stage to print them in cost summary.
 - [FIXED] protect against ESS without charge capacity and without inflows.
 - [ADDED] `--output-format csv|duckdb|both` in `openTEPES_Main`, and a command line for a sweep:
