@@ -1360,6 +1360,34 @@ def _tap(mTEPES, la):
     return mTEPES.pLineTapFactor[la]
 
 
+def _SynchronousAreaAnchors(mTEPES, p):
+    """The parts of the AC network of period p that do not hold the reference node, as {anchor bus: buses of the part}.
+
+    A part is joined to the rest only through HVDC, or is a bus no AC branch reaches. Its anchor is its bus with the most AC
+    neighbours, the first by name among equals, so the choice does not depend on the order of the input."""
+    pGraph = nx.Graph()
+    pGraph.add_nodes_from(mTEPES.nd)
+    pGraph.add_edges_from((ni, nf) for ni, nf, cc in mTEPES.laa if (p, ni, nf, cc) in mTEPES.pla)
+    pRef = mTEPES.rf.first()
+    return {max(sorted(pArea), key=pGraph.degree): sorted(pArea) for pArea in nx.connected_components(pGraph) if pRef not in pArea}
+
+
+def _AnchorAreaAngles(OptModel, mTEPES, p, sc, pAnchors):
+    """Rotate the start voltages of each part of pAnchors so that its anchor bus has angle zero, and fix that angle again.
+
+    The cone projection and the power flow start set each part's angles from a reference of their own choosing, so the start
+    is rotated afterwards to agree with the angle the model fixes. A rotation of a whole part changes no flow."""
+    for n in mTEPES.n:
+        for pAnchor, pBuses in pAnchors.items():
+            pTheta = math.atan2(OptModel.vVim[p,sc,n,pAnchor].value or 0.0, OptModel.vVre[p,sc,n,pAnchor].value or 1.0)
+            c, s = math.cos(pTheta), math.sin(pTheta)
+            for nd in pBuses:
+                pRe, pIm = OptModel.vVre[p,sc,n,nd].value or 0.0, OptModel.vVim[p,sc,n,nd].value or 0.0
+                OptModel.vVre[p,sc,n,nd].set_value(  pRe * c + pIm * s)
+                OptModel.vVim[p,sc,n,nd].set_value(- pRe * s + pIm * c)
+            OptModel.vVim[p,sc,n,pAnchor].fix(0.0)
+
+
 def SettingUpVariablesBIM(OptModel, mTEPES, pMode=None):
     """Declare the bus-injection voltage variables. Returns the number of variables fixed.
 
@@ -1405,6 +1433,19 @@ def SettingUpVariablesBIM(OptModel, mTEPES, pMode=None):
             OptModel.vVre[p,sc,n,ref].fix(mTEPES.pVNom())
             OptModel.vVim[p,sc,n,ref].fix(0.0)
             nFixed += 2
+        # Every other synchronous area (a part of the network joined to the reference only through HVDC, or a bus with no AC branch)
+        # needs an angle reference of its own: without one, rotating all its voltages leaves every flow unchanged and the NLP is singular.
+        # Only the angle is fixed there; the magnitude stays free within the bus's band, and with the imaginary part at zero the real
+        # part is the magnitude, so it is bounded below by the band floor.
+        for p in mTEPES.p:
+            pAnchors = list(_SynchronousAreaAnchors(mTEPES, p))
+            for sc, n in ((sc, n) for pp, sc, n in mTEPES.psn if pp == p):
+                for nd in pAnchors:
+                    OptModel.vVim[p,sc,n,nd].fix(0.0)
+                    OptModel.vVre[p,sc,n,nd].setlb(mTEPES.pVMinBus[nd])
+                    nFixed += 1
+            if pAnchors:
+                print(f'Angle reference added in {len(pAnchors)} synchronous areas without the reference node, period {p}')
 
     print('Setting up BIM variables               ... ', round(time.time() - StartTime), 's')
     return nFixed
@@ -1676,10 +1717,16 @@ def ACConeWarmStart(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogCons
         if not hasattr(mTEPES, 'pACConeBound'):
             mTEPES.pACConeBound = {}
         mTEPES.pACConeBound[(p, sc, st)] = pBound
+        # the angle references of the parts without the reference node are freed while the start is computed, see _AnchorAreaAngles
+        pAnchors = _SynchronousAreaAnchors(mTEPES, p)
+        for n in mTEPES.n:
+            for pAnchor in pAnchors:
+                OptModel.vVim[p,sc,n,pAnchor].unfix()
         nSet = _ProjectConeToVoltages(OptModel, mTEPES, p, sc)
         print(f'AC cone lower bound                    ... {pBound:.6f} MEUR, {nSet} bus voltages set from it')
         if mTEPES.pIndACConeStart() == 2:
             _PowerFlowFromProjection(OptModel, mTEPES, p, sc, st)
+        _AnchorAreaAngles(OptModel, mTEPES, p, sc, pAnchors)
     else:
         print('### WARNING: the cone warm start found no cone solution; the rectangular model starts from the flat profile.')
 
