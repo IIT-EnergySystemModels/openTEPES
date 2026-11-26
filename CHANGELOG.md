@@ -2,6 +2,9 @@
 
 ## [4.19.1rc] - 2026-11-23 not released in PyPi
 
+- [FIXED] when the scenarios of an operation model are solved separately, the cost summary reports the expected cost, weighted by the
+  input probabilities, as the objective, the run status and the marginal prices do. It summed the scenarios with probability 1.0,
+  e.g., twice the expected cost for two scenarios of probability 0.5. Cases with one scenario per period are unchanged.
 - [FIXED] when each period is solved separately, the cost summary and `total_cost_meur` in the run status include every period.
   Previously, they reported the last period only, since each subsequent solve set the cost of the earlier periods to zero. The cost
   of each solve is now stored and restored once all solves are complete. The results of a joint solve are unchanged.

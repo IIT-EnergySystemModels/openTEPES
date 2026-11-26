@@ -7,13 +7,12 @@ openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-sol
 builds the operation constraints for the stage, and calls ``ProblemSolving`` once the stage's part of the model is in place.
 Two solve paths are preserved exactly as they were inside ``openTEPES_run``:
 
-  * **no expansion / no system limits** — each scenario is solved on its own as a deterministic operation model (``pScenProb`` is set to 1.0
-    for that single scenario, the solve runs, then its constraints are deactivated);
+  * **no expansion / no system limits** — each scenario is solved on its own as an operation model, then its constraints are deactivated;
   * **with expansion decisions or a system emission / RES-energy limit** — one joint stochastic solve is run at the last ``(period, scenario)``
     over all stages, using the input scenario probabilities.
 
-After the loop it rebuilds the full stage / load-level sets, reactivates every constraint, and restores the scenario probabilities so the output
-writers report the intended (per-scenario sum, or expected-value) cost.
+After the loop it rebuilds the full stage / load-level sets and reactivates every constraint. In both paths the objective weights each scenario
+by its input probability, and the output writers report the expected cost with the same weights.
 
 This is a pure move out of ``openTEPES_run`` — the loop body is unchanged, so results are identical. It sets up the seam that later
 orchestration drivers (Mode C re-solve, sector / time decomposition) build on.
@@ -187,9 +186,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                         print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
                     # there are no expansion decisions, or they are ignored (it is an operation model), or there are no system emission or minimum RES constraints
-                    mTEPES.pScenProb[p,sc] = 1.0
                     ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
-                    mTEPES.pScenProb[p,sc] = 0.0
 
                     # deactivate the constraints of the previous period and scenario
                     # c.name rebuilds the qualified name on every call: cache (component, name) pairs once, refreshed when new components appear;
@@ -254,14 +251,12 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                             StartTime         = time.time()
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-                        mTEPES.pScenProb[p,sc] = 1.0
                         # there are system emission or RES requirement constraints
                         if mTEPES.pIndSectorDecomposition() and len(mTEPES.psnel):
                             ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
                             SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
                         else:
                             ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
-                        mTEPES.pScenProb[p,sc] = 0.0
 
                         # deactivate the constraints of the previous period and scenario
                         # c.name rebuilds the qualified name on every call: cache (component, name) pairs once, refreshed when new components appear;
@@ -385,27 +380,5 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
     for c in mTEPES.component_objects(pyo.Constraint):
         c.activate()
 
-    # Output convention follows the two intended modes:
-    #   - Case 2 (no expansion decisions): the per-scenario solve loop above
-    #     used pScenProb=1.0 for each scenario individually. Reset all
-    #     probabilities to 1.0 so cost-summary writers aggregate the
-    #     independent deterministic solves as a sum.
-    #   - Case 1 (with expansion decisions): the joint solve at the last
-    #     (p,sc) used the input probabilities to minimise probability-
-    #     weighted expected cost. Preserve those probabilities so the
-    #     output reports that same expected cost — otherwise the writers
-    #     would over-count by ~N_scenarios.
-    _hasExpansion = (
-            (sum(1 for _ in mTEPES.peb) > 0 and mTEPES.pIndBinGenInvest()     < 2)
-        or  (sum(1 for _ in mTEPES.pgd) > 0 and mTEPES.pIndBinGenRetire()     < 2)
-        or  (sum(1 for _ in mTEPES.prc) > 0 and mTEPES.pIndBinRsrInvest()     < 2)
-        or  (sum(1 for _ in mTEPES.plc) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
-        or  (sum(1 for _ in mTEPES.ppc) > 0 and mTEPES.pIndBinNetH2Invest()   < 2)
-        or  (sum(1 for _ in mTEPES.phc) > 0 and mTEPES.pIndBinNetHeatInvest() < 2)
-        or  (mTEPES.pIndACPowerFlow() and sum(1 for _ in mTEPES.pshc) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
-        or  (mTEPES.pIndACPowerFlow() and sum(1 for _ in mTEPES.psqc) > 0 and mTEPES.pIndBinGenInvest()     < 2)
-    )
-    if not _hasExpansion:
-        # assign probability 1 to all the periods and scenarios
-        for p,sc in mTEPES.ps:
-            mTEPES.pScenProb[p,sc] = 1.0
+    # The scenario probabilities are left at their input values. The objective weights every scenario by them in both solve paths, since its
+    # coefficients are fixed when the objective is built, so the output writers report the expected cost, as the objective and the duals do.
