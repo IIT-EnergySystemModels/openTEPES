@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 26, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -137,6 +137,23 @@ def _record_termination(mTEPES, pTermination):
     mTEPES.pTerminationConditions.append(str(pTermination))
 
 
+def restore_stage_costs(OptModel, mTEPES):
+    """Restore the stored operation cost values to the variables, and update the total system cost accordingly.
+
+    When each period and scenario is solved separately, its constraints are deactivated after its solve; however, its cost variables remain in the
+    total system cost, and each subsequent solve sets them to zero. Restoring the stored values once all solves are complete provides every result
+    writer with the cost of every period. After a joint solve, the stored values equal the variables and nothing changes.
+    """
+    pChanged = False
+    for (pName,p,sc,n), pValue in getattr(mTEPES, 'pStageCostValues', {}).items():
+        pVarData = getattr(OptModel, pName)[p,sc,n]
+        if pVarData.value != pValue:
+            pVarData.set_value(pValue, skip_validation=True)
+            pChanged = True
+    if pChanged:
+        OptModel.vTotalSCost.set_value(pyo.value(OptModel.eTotalTCost.expr.args[1]), skip_validation=True)
+
+
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
     print("Problem solving                        ####", ncall)
     _path = getattr(mTEPES, 'pOutputPath', None) or os.path.join(DirName, CaseName)
@@ -223,12 +240,17 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     collect_duals(OptModel, mTEPES)
 
     # save values of each stage WITHOUT fixing the variables: they stay free for later solves, and the stage-solve values are kept on
-    # mTEPES.pStageCostValues keyed by (cost variable name, p, sc, n), accumulated across stages like mTEPES.pDuals
+    # mTEPES.pStageCostValues keyed by (cost variable name, p, sc, n), accumulated across stages like mTEPES.pDuals. Every cost variable in the
+    # total system cost is kept, including the hydrogen source cost and the AC penalties, since restore_stage_costs writes them all back
     pStageCostVars = [OptModel.vTotalGCost, OptModel.vTotalCCost, OptModel.vTotalECost, OptModel.vTotalNCost, OptModel.vTotalRElecCost]
     if mTEPES.pIndHydrogen():
         pStageCostVars.append(OptModel.vTotalRH2Cost)
+        pStageCostVars.append(OptModel.vTotalH2SrcCost)
     if mTEPES.pIndHeat():
         pStageCostVars.append(OptModel.vTotalRHeatCost)
+    for pName in ('vTotalNPenalty', 'vTotalVPenalty'):
+        if hasattr(OptModel, pName):
+            pStageCostVars.append(getattr(OptModel, pName))
     if not hasattr(mTEPES, 'pStageCostValues'):
         mTEPES.pStageCostValues = {}
     for n in mTEPES.n:
