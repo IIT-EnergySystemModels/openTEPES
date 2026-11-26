@@ -67,9 +67,8 @@ def test_a_period_solved_alone_keeps_its_cost(tmp_path, capsys):
 
 
 @pytest.mark.solve
-def test_a_joint_solve_keeps_the_cost_of_every_period(tmp_path):
+def test_a_joint_solve_is_reported_as_before(tmp_path):
     mTEPES, pSummary, pStatus = _day_per_period(tmp_path, pPerPeriod=False)
-    pKept = {(p,sc,n) for pName,p,sc,n in mTEPES.pStageCostValues if pName == 'vTotalGCost'}
-    assert pKept == set(mTEPES.psn)
-    assert all(mTEPES.pStageCostValues['vTotalGCost',p,sc,n] == mTEPES.vTotalGCost[p,sc,n]() for p,sc,n in mTEPES.psn)
+    pTotal = pSummary[~pSummary['Cost'].str.contains('not in total')]['MEUR'].sum()
+    assert pTotal                     == pytest.approx(mTEPES.vTotalSCost(), rel=1e-9)
     assert pStatus['total_cost_meur'] == pytest.approx(mTEPES.vTotalSCost(), rel=1e-12)

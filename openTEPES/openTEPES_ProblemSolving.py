@@ -137,34 +137,6 @@ def _record_termination(mTEPES, pTermination):
     mTEPES.pTerminationConditions.append(str(pTermination))
 
 
-# Operation cost variables per (period, scenario, load level) that enter the total system cost. Each is defined by the constraint of the same name,
-# with e in place of v, formulated once per (period, scenario, stage). Some are declared only for hydrogen, heat or an AC network.
-STAGE_COST_VARS = ('vTotalGCost', 'vTotalCCost', 'vTotalECost', 'vTotalNCost', 'vTotalRElecCost', 'vTotalRH2Cost', 'vTotalH2SrcCost', 'vTotalRHeatCost',
-                   'vTotalNPenalty', 'vTotalVPenalty')
-
-
-def save_stage_costs(OptModel, mTEPES):
-    """Store the operation cost values of the last solve in mTEPES.pStageCostValues, indexed by (variable name, p, sc, n).
-
-    A value is stored only where its defining constraint was active in the solve. Hence, a joint solve stores every period and scenario, whereas a
-    solve of one period and scenario stores that period and scenario only.
-    """
-    if not hasattr(mTEPES, 'pStageCostValues'):
-        mTEPES.pStageCostValues = {}
-    for pName in STAGE_COST_VARS:
-        pVar = getattr(OptModel, pName, None)
-        if pVar is None:
-            continue
-        for pp,scc in mTEPES.ps:
-            for stt in mTEPES.stt:
-                pCon = getattr(OptModel, f'e{pName[1:]}_{pp}_{scc}_{stt}', None)
-                if pCon is None or not pCon.active:
-                    continue
-                for n in pCon:
-                    if pCon[n].active:
-                        mTEPES.pStageCostValues[pName,pp,scc,n] = pVar[pp,scc,n]()
-
-
 def restore_stage_costs(OptModel, mTEPES):
     """Restore the stored operation cost values to the variables, and update the total system cost accordingly.
 
@@ -267,9 +239,23 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     # ---- Collect duals into mTEPES.pDuals (used by MarginalResults / EconomicResults) ----
     collect_duals(OptModel, mTEPES)
 
-    # store the operation cost values of this solve without fixing the variables, which remain free for subsequent solves. The values are
-    # accumulated in mTEPES.pStageCostValues, indexed by (cost variable name, p, sc, n), as the duals are in mTEPES.pDuals
-    save_stage_costs(OptModel, mTEPES)
+    # save values of each stage WITHOUT fixing the variables: they stay free for later solves, and the stage-solve values are kept on
+    # mTEPES.pStageCostValues keyed by (cost variable name, p, sc, n), accumulated across stages like mTEPES.pDuals. Every cost variable in the
+    # total system cost is kept, including the hydrogen source cost and the AC penalties, since restore_stage_costs writes them all back
+    pStageCostVars = [OptModel.vTotalGCost, OptModel.vTotalCCost, OptModel.vTotalECost, OptModel.vTotalNCost, OptModel.vTotalRElecCost]
+    if mTEPES.pIndHydrogen():
+        pStageCostVars.append(OptModel.vTotalRH2Cost)
+        pStageCostVars.append(OptModel.vTotalH2SrcCost)
+    if mTEPES.pIndHeat():
+        pStageCostVars.append(OptModel.vTotalRHeatCost)
+    for pName in ('vTotalNPenalty', 'vTotalVPenalty'):
+        if hasattr(OptModel, pName):
+            pStageCostVars.append(getattr(OptModel, pName))
+    if not hasattr(mTEPES, 'pStageCostValues'):
+        mTEPES.pStageCostValues = {}
+    for n in mTEPES.n:
+        for Var in pStageCostVars:
+            mTEPES.pStageCostValues[Var.name,p,sc,n] = Var[p,sc,n]()
 
     SolvingTime = time.time() - StartTime
     mTEPES.pSolveSeconds = getattr(mTEPES, 'pSolveSeconds', 0.0) + SolvingTime
