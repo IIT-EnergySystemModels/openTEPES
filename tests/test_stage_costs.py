@@ -17,7 +17,7 @@ from openTEPES.openTEPES import openTEPES_run
 CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openTEPES", "cases"))
 
 
-def _day_per_period(dest_root, pPerPeriod):
+def _day_per_period(dest_root, pPerPeriod, pTwoScenarios=False):
     """Case 9n7y with each of its seven periods reduced to the first 24 load levels, in one stage weighted to a year."""
     case_dir = os.path.join(str(dest_root), '9n7y')
     shutil.copytree(os.path.join(CASES_DIR, '9n7y'), case_dir,
@@ -42,6 +42,23 @@ def _day_per_period(dest_root, pPerPeriod):
         df = pd.read_csv(res_csv)
         df['RESEnergy'] = 0
         df.to_csv(res_csv, index=False)
+    if pTwoScenarios:
+        # a second scenario with 10 % more demand; each scenario has probability 0.5
+        for f in sorted(os.listdir(case_dir)):
+            if not f.startswith('oT_Data_'):
+                continue
+            df = pd.read_csv(os.path.join(case_dir, f), encoding='utf-8-sig')
+            if 'Scenario' not in df.columns:
+                continue
+            sc2 = df.copy()
+            sc2['Scenario'] = 'sc02'
+            if f.startswith('oT_Data_Demand'):
+                sc2[sc2.columns[3:]] *= 1.1
+            if f.startswith('oT_Data_Scenario'):
+                df['Probability']  = 0.5
+                sc2['Probability'] = 0.5
+            pd.concat([df, sc2]).to_csv(os.path.join(case_dir, f), index=False)
+        pd.DataFrame({'Scenario': ['sc01', 'sc02']}).to_csv(os.path.join(case_dir, 'oT_Dict_Scenario_9n7y.csv'), index=False)
     mTEPES = openTEPES_run(str(dest_root), '9n7y', 'highs', 0, 0)
     pSummary = pd.read_csv(os.path.join(case_dir, 'oT_Result_CostSummary_9n7y.csv'))
     with open(os.path.join(case_dir, 'openTEPES_run_status_9n7y.json')) as f:
@@ -72,3 +89,16 @@ def test_a_joint_solve_is_reported_as_before(tmp_path):
     pTotal = pSummary[~pSummary['Cost'].str.contains('not in total')]['MEUR'].sum()
     assert pTotal                     == pytest.approx(mTEPES.vTotalSCost(), rel=1e-9)
     assert pStatus['total_cost_meur'] == pytest.approx(mTEPES.vTotalSCost(), rel=1e-12)
+
+
+@pytest.mark.solve
+def test_scenarios_solved_separately_are_weighted_by_their_probability(tmp_path, capsys):
+    mTEPES, pSummary, pStatus = _day_per_period(tmp_path, pPerPeriod=True, pTwoScenarios=True)
+    pSolveCosts = [float(x) for x in re.findall(r'Total system\s+cost \[MEUR\]\s+([0-9.eE+-]+)', capsys.readouterr().out)]
+    assert len(pSolveCosts) == 2 * len(mTEPES.p)
+
+    # each solve is weighted by the probability of its scenario, as the objective is, so the summary reports the expected cost, not the sum
+    pTotal = pSummary[~pSummary['Cost'].str.contains('not in total')]['MEUR'].sum()
+    assert all(mTEPES.pScenProb[p,sc]() == 0.5 for p,sc in mTEPES.ps)
+    assert pTotal                     == pytest.approx(sum(pSolveCosts), rel=1e-9)
+    assert pStatus['total_cost_meur'] == pytest.approx(sum(pSolveCosts), rel=1e-9)
