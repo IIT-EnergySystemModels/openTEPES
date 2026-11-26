@@ -374,12 +374,12 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
         HeatRelCost = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n]()                                                                                        for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     else:
         HeatRelCost = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
-    # The cost of hydrogen from reforming and imports enters the total system cost through vTotalH2SrcCost. Hydrogen from electrolysis is costed
-    # through the electricity it uses, so this is the only hydrogen operation cost. Its row is added only when the case has a hydrogen source, so
-    # the file of every other case keeps its shape.
+    # The cost of hydrogen from reforming and imports enters the total system cost through vTotalH2SrcCost. This hydrogen is external: it is bought
+    # at a fixed price from outside the modelled system. Hydrogen from electrolysis is costed through the electricity it uses, so it is not in this
+    # row. The row is added only when the case has a hydrogen source, so the file of every other case keeps its shape.
     pH2Sources = bool(mTEPES.pIndHydrogen() and mTEPES.sr)
     if pH2Sources:
-        H2SrcCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalH2SrcCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Hydrogen').stack()
+        H2SrcCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalH2SrcCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost External Hydrogen').stack()
     # The two AC rows are added only on an AC case. Emitting them as zeros everywhere changed the shape of a file every existing case writes.
     pRows          = [GenInvCost, GenRetCost, NetInvCost] + ([ReactInvCost] if mTEPES.pIndACPowerFlow() else []) + [RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost] + ([H2SrcCost] if pH2Sources else []) + ([CurrPen] if mTEPES.pIndACPowerFlow() == 1 else []) + ([VoltPen] if VoltagePenaltyOn(mTEPES) else []) + [ElecRelCost, H2RelCost, HeatRelCost]
     CostSummary    = pd.concat(pRows).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})

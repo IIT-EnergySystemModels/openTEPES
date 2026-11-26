@@ -12,7 +12,7 @@ import pytest
 from openTEPES.openTEPES import openTEPES_run
 
 CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openTEPES", "cases"))
-ROW       = 'Operation Cost Hydrogen'
+ROW       = 'Operation Cost External Hydrogen'
 
 
 def _day_of_9nH2(dest_root, pWithSource):
