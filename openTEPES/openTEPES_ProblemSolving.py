@@ -137,17 +137,17 @@ def _record_termination(mTEPES, pTermination):
     mTEPES.pTerminationConditions.append(str(pTermination))
 
 
-# The cost variables of each (period, scenario, load level) that enter the total system cost. Each one is defined by a constraint with the same name,
-# e for v, built once for every (period, scenario, stage). The model declares some of them only for hydrogen, heat or an AC network.
+# Operation cost variables per (period, scenario, load level) that enter the total system cost. Each is defined by the constraint of the same name,
+# with e in place of v, formulated once per (period, scenario, stage). Some are declared only for hydrogen, heat or an AC network.
 STAGE_COST_VARS = ('vTotalGCost', 'vTotalCCost', 'vTotalECost', 'vTotalNCost', 'vTotalRElecCost', 'vTotalRH2Cost', 'vTotalH2SrcCost', 'vTotalRHeatCost',
                    'vTotalNPenalty', 'vTotalVPenalty')
 
 
 def save_stage_costs(OptModel, mTEPES):
-    """Keep the cost values of the last solve in mTEPES.pStageCostValues, keyed by (variable name, p, sc, n).
+    """Store the operation cost values of the last solve in mTEPES.pStageCostValues, indexed by (variable name, p, sc, n).
 
-    A value is kept only where the constraint that defines it was active in the solve. A joint solve keeps every period and scenario. A solve of one
-    period and scenario keeps only that one.
+    A value is stored only where its defining constraint was active in the solve. Hence, a joint solve stores every period and scenario, whereas a
+    solve of one period and scenario stores that period and scenario only.
     """
     if not hasattr(mTEPES, 'pStageCostValues'):
         mTEPES.pStageCostValues = {}
@@ -166,11 +166,11 @@ def save_stage_costs(OptModel, mTEPES):
 
 
 def restore_stage_costs(OptModel, mTEPES):
-    """Put the kept cost values back into the variables, and the total system cost with them.
+    """Restore the stored operation cost values to the variables, and update the total system cost accordingly.
 
-    When each period and scenario is solved alone, its constraints are deactivated after its solve, but its cost variables stay in the total system
-    cost. Each later solve then sets them to zero. Called once every solve is done, this gives every result writer the cost of every period.
-    After a joint solve the kept values equal the variables and nothing changes.
+    When each period and scenario is solved separately, its constraints are deactivated after its solve; however, its cost variables remain in the
+    total system cost, and each subsequent solve sets them to zero. Restoring the stored values once all solves are complete provides every result
+    writer with the cost of every period. After a joint solve, the stored values equal the variables and nothing changes.
     """
     pChanged = False
     for (pName,p,sc,n), pValue in getattr(mTEPES, 'pStageCostValues', {}).items():
@@ -267,8 +267,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     # ---- Collect duals into mTEPES.pDuals (used by MarginalResults / EconomicResults) ----
     collect_duals(OptModel, mTEPES)
 
-    # save values of each stage WITHOUT fixing the variables: they stay free for later solves, and the stage-solve values are kept on
-    # mTEPES.pStageCostValues keyed by (cost variable name, p, sc, n), accumulated across stages like mTEPES.pDuals
+    # store the operation cost values of this solve without fixing the variables, which remain free for subsequent solves. The values are
+    # accumulated in mTEPES.pStageCostValues, indexed by (cost variable name, p, sc, n), as the duals are in mTEPES.pDuals
     save_stage_costs(OptModel, mTEPES)
 
     SolvingTime = time.time() - StartTime

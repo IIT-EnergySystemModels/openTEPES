@@ -1,7 +1,8 @@
-"""The cost summary and the run status report the cost of every period, whether the periods are solved together or one at a time.
+"""Cost of every period in the cost summary and the run status, for a joint solve and for one solve per period.
 
-With the investment decisions ignored and no RES or emission target, openTEPES solves each period alone. Its constraints are then deactivated,
-but its cost variables stay in the total system cost, so every later solve sets them to zero. The cost of each solve is kept and put back at the end.
+With the investment decisions ignored and no RES or emission target, openTEPES solves each period separately. Its constraints are then
+deactivated; however, its operation cost variables remain in the total system cost, and each subsequent solve sets them to zero. The cost of
+each solve is therefore stored and restored once all solves are complete.
 """
 import json
 import os
@@ -17,7 +18,7 @@ CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openT
 
 
 def _day_per_period(dest_root, pPerPeriod):
-    """9n7y, its seven periods cut to the first 24 load levels each, in one stage weighted to a year."""
+    """Case 9n7y with each of its seven periods reduced to the first 24 load levels, in one stage weighted to a year."""
     case_dir = os.path.join(str(dest_root), '9n7y')
     shutil.copytree(os.path.join(CASES_DIR, '9n7y'), case_dir,
                     ignore=shutil.ignore_patterns("openTEPES_*", "oT_Result_*", "oT_Plot_*", "*.html"))
@@ -31,7 +32,7 @@ def _day_per_period(dest_root, pPerPeriod):
     df.iloc[0, 0] = 365.0
     df.to_csv(stage_csv)
     if pPerPeriod:
-        # ignoring the investment decisions and the RES target makes it an operation model solved one period at a time
+        # with the investment decisions and the RES target ignored, the case is an operation model solved one period at a time
         option_csv = os.path.join(case_dir, 'oT_Data_Option_9n7y.csv')
         df = pd.read_csv(option_csv)
         for c in ('IndBinGenInvest', 'IndBinGenRetirement', 'IndBinRsrInvest', 'IndBinNetInvest', 'IndBinNetH2Invest', 'IndBinNetHeatInvest'):
@@ -54,11 +55,11 @@ def test_a_period_solved_alone_keeps_its_cost(tmp_path, capsys):
     pSolveCosts = [float(x) for x in re.findall(r'Total system\s+cost \[MEUR\]\s+([0-9.eE+-]+)', capsys.readouterr().out)]
     assert len(pSolveCosts) == len(mTEPES.p)
 
-    # every period has its generation cost, not only the last one solved
+    # every period carries its generation cost, not only the last period solved
     pGeneration = pSummary[pSummary['Cost'] == 'Operation Cost Generation'].set_index('Period')['MEUR']
     assert (pGeneration > 0.0).all(), pGeneration.to_dict()
 
-    # the summary, the run status and the model add up to the sum of the separate solves
+    # the cost summary, the run status and the model all equal the sum of the separate solves
     pTotal = pSummary[~pSummary['Cost'].str.contains('not in total')]['MEUR'].sum()
     assert pTotal                     == pytest.approx(sum(pSolveCosts), rel=1e-9)
     assert pStatus['total_cost_meur'] == pytest.approx(sum(pSolveCosts), rel=1e-9)

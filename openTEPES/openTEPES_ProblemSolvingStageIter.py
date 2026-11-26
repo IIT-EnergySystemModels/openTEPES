@@ -378,7 +378,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
         mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
         mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep [rs] == 0]
 
-    # a period solved alone loses its cost values in the later solves; put the values of its own solve back
+    # a period solved separately has its operation cost set to zero by the subsequent solves; restore the values of its own solve
     restore_stage_costs(mTEPES, mTEPES)
 
     # activate the constraints of all the periods and scenarios
