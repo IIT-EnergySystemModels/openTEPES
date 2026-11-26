@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 26, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -137,6 +137,51 @@ def _record_termination(mTEPES, pTermination):
     mTEPES.pTerminationConditions.append(str(pTermination))
 
 
+# The cost variables of each (period, scenario, load level) that enter the total system cost. Each one is defined by a constraint with the same name,
+# e for v, built once for every (period, scenario, stage). The model declares some of them only for hydrogen, heat or an AC network.
+STAGE_COST_VARS = ('vTotalGCost', 'vTotalCCost', 'vTotalECost', 'vTotalNCost', 'vTotalRElecCost', 'vTotalRH2Cost', 'vTotalH2SrcCost', 'vTotalRHeatCost',
+                   'vTotalNPenalty', 'vTotalVPenalty')
+
+
+def save_stage_costs(OptModel, mTEPES):
+    """Keep the cost values of the last solve in mTEPES.pStageCostValues, keyed by (variable name, p, sc, n).
+
+    A value is kept only where the constraint that defines it was active in the solve. A joint solve keeps every period and scenario. A solve of one
+    period and scenario keeps only that one.
+    """
+    if not hasattr(mTEPES, 'pStageCostValues'):
+        mTEPES.pStageCostValues = {}
+    for pName in STAGE_COST_VARS:
+        pVar = getattr(OptModel, pName, None)
+        if pVar is None:
+            continue
+        for pp,scc in mTEPES.ps:
+            for stt in mTEPES.stt:
+                pCon = getattr(OptModel, f'e{pName[1:]}_{pp}_{scc}_{stt}', None)
+                if pCon is None or not pCon.active:
+                    continue
+                for n in pCon:
+                    if pCon[n].active:
+                        mTEPES.pStageCostValues[pName,pp,scc,n] = pVar[pp,scc,n]()
+
+
+def restore_stage_costs(OptModel, mTEPES):
+    """Put the kept cost values back into the variables, and the total system cost with them.
+
+    When each period and scenario is solved alone, its constraints are deactivated after its solve, but its cost variables stay in the total system
+    cost. Each later solve then sets them to zero. Called once every solve is done, this gives every result writer the cost of every period.
+    After a joint solve the kept values equal the variables and nothing changes.
+    """
+    pChanged = False
+    for (pName,p,sc,n), pValue in getattr(mTEPES, 'pStageCostValues', {}).items():
+        pVarData = getattr(OptModel, pName)[p,sc,n]
+        if pVarData.value != pValue:
+            pVarData.set_value(pValue, skip_validation=True)
+            pChanged = True
+    if pChanged:
+        OptModel.vTotalSCost.set_value(pyo.value(OptModel.eTotalTCost.expr.args[1]), skip_validation=True)
+
+
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
     print("Problem solving                        ####", ncall)
     _path = getattr(mTEPES, 'pOutputPath', None) or os.path.join(DirName, CaseName)
@@ -224,16 +269,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # save values of each stage WITHOUT fixing the variables: they stay free for later solves, and the stage-solve values are kept on
     # mTEPES.pStageCostValues keyed by (cost variable name, p, sc, n), accumulated across stages like mTEPES.pDuals
-    pStageCostVars = [OptModel.vTotalGCost, OptModel.vTotalCCost, OptModel.vTotalECost, OptModel.vTotalNCost, OptModel.vTotalRElecCost]
-    if mTEPES.pIndHydrogen():
-        pStageCostVars.append(OptModel.vTotalRH2Cost)
-    if mTEPES.pIndHeat():
-        pStageCostVars.append(OptModel.vTotalRHeatCost)
-    if not hasattr(mTEPES, 'pStageCostValues'):
-        mTEPES.pStageCostValues = {}
-    for n in mTEPES.n:
-        for Var in pStageCostVars:
-            mTEPES.pStageCostValues[Var.name,p,sc,n] = Var[p,sc,n]()
+    save_stage_costs(OptModel, mTEPES)
 
     SolvingTime = time.time() - StartTime
     mTEPES.pSolveSeconds = getattr(mTEPES, 'pSolveSeconds', 0.0) + SolvingTime

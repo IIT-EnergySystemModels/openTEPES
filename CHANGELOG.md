@@ -2,6 +2,9 @@
 
 ## [4.19.1rc] - 2026-11-23 not released in PyPi
 
+- [FIXED] when each period is solved alone, the cost summary and `total_cost_meur` in the run status include every period. They
+  reported only the last one solved, because each later solve set the cost of the earlier periods to zero. The cost of each solve
+  is kept and put back once all solves are done. A joint solve, with investment decisions, gives the same results as before.
 - [FIXED] the rectangular AC model fixes an angle in every synchronous area, not only at the reference node. An area joined to
   the rest only through HVDC, or a bus no AC branch reaches, was free to rotate, and the NLP was singular. On a Nordic case with
   45 such areas, Ipopt goes from 505 and 769 iterations at the acceptable level to 142 and 191, optimal, at the same cost.

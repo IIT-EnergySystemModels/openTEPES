@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 26, 2026
 
 openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-solve driver.
 
@@ -38,7 +38,7 @@ try:
     from .openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
     from .openTEPES_ModelFormulationElectricity                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
     from .openTEPES_ModelFormulationElectricity               import NetworkBIMOperationModelFormulation
-    from .openTEPES_ProblemSolving                    import ProblemSolving
+    from .openTEPES_ProblemSolving                    import ProblemSolving, restore_stage_costs
     from .openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
     from .openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
 except ImportError:
@@ -52,7 +52,7 @@ except ImportError:
     from openTEPES.openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationElectricity                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
     from openTEPES.openTEPES_ModelFormulationElectricity              import NetworkBIMOperationModelFormulation
-    from openTEPES.openTEPES_ProblemSolving                    import ProblemSolving
+    from openTEPES.openTEPES_ProblemSolving                    import ProblemSolving, restore_stage_costs
     from openTEPES.openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
     from openTEPES.openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
 
@@ -377,6 +377,9 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
         mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
         mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
         mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep [rs] == 0]
+
+    # a period solved alone loses its cost values in the later solves; put the values of its own solve back
+    restore_stage_costs(mTEPES, mTEPES)
 
     # activate the constraints of all the periods and scenarios
     for c in mTEPES.component_objects(pyo.Constraint):
