@@ -17,13 +17,13 @@ from pyomo.opt import TerminationCondition
 from pyomo.core.expr import identify_mutable_parameters
 
 try:
-    from .openTEPES_ProblemSolvingDualExtraction import unfix_for_duals
+    from .openTEPES_ProblemSolvingDualExtraction import unfix_for_duals, unfix_stage_costs
     from .openTEPES_ProblemSolvingWarmSweep import enabled as _warm_resolve_enabled, resolve_persistent
 except ImportError:  # direct run: no parent package, so import from the package, as the other modules do
     import os
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_ProblemSolvingDualExtraction import unfix_for_duals
+    from openTEPES.openTEPES_ProblemSolvingDualExtraction import unfix_for_duals, unfix_stage_costs
     from openTEPES.openTEPES_ProblemSolvingWarmSweep import enabled as _warm_resolve_enabled, resolve_persistent
 
 
@@ -71,10 +71,10 @@ def resolve(OptModel, SolverName: str, overlays, *, restore: bool = True, tee: b
     """
     overlays = list(overlays)
 
-    # Solving fixes the investment plan and the commitment to read the duals, so a model that has been solved
-    # would answer a demand rise with unserved energy instead of new capacity, and report too high a cost
-    # without saying anything. Release those decisions first; a model that was never solved is unaffected.
+    # Stage solving fixes investments, commitments, and per-load cost variables for reporting. Release them
+    # before re-optimising, or a demand rise can only be answered with unserved energy and stale costs.
     unfix_for_duals(OptModel)
+    unfix_stage_costs(OptModel)
 
     # Reject an overlay the re-solve cannot see, so it does not swap silently and return an unchanged cost as
     # if it had worked. A Param is unseen when the name is wrong, a constraint captured its value as a
