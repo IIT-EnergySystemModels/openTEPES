@@ -1,8 +1,7 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2026
 """
 
-# import dill as pickle
 import datetime
 import json
 import os
@@ -23,6 +22,7 @@ try:
     from          .openTEPES_ProblemSolvingStageIter     import StageIterativeSolving
     from          .openTEPES_ModelFormulationElectricity import ACRestorationPass
     from          .openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
+    from          .openTEPES_OutputResultsSolution       import input_hash, write_solution
     from          .openTEPES_OutputResultsInvestment     import InvestmentResults
     from          .openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
     from          .openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
@@ -46,6 +46,7 @@ except ImportError:
     from openTEPES.openTEPES_ProblemSolvingStageIter     import StageIterativeSolving
     from openTEPES.openTEPES_ModelFormulationElectricity import ACRestorationPass
     from openTEPES.openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
+    from openTEPES.openTEPES_OutputResultsSolution       import input_hash, write_solution
     from openTEPES.openTEPES_OutputResultsInvestment     import InvestmentResults
     from openTEPES.openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
     from openTEPES.openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
@@ -85,7 +86,7 @@ DEFAULT_GZIP_PATTERNS = (
 #   - guard_fn is None or a callable(mTEPES) -> bool. When non-None, it must return truthy for the writer to fire (used for model-state guards such
 #     as `mTEPES.es` for ESSOperationResults).
 # Order in the tuple is the dispatch order. Tiering preserved from PR #118: headline tables first, bulky hourly tables next, plots last. The raw
-# parameter/variable/constraint dump (OutputResultsParVarCon) is gated by pIndDumpRawResults (not a CLI-selectable category) and stays special-cased in the dispatch loop.
+# parameter/variable/constraint dump (OutputResultsParVarCon) is gated by dump_raw (--dump-raw, not a result category) and stays special-cased in the dispatch loop.
 OUTPUT_REGISTRY = (
     # --- headline tables (small, structural) ---
     ("investment",  InvestmentResults,              ("tech", "area", "plot"), None),
@@ -242,7 +243,7 @@ def ReportConfiguration(mTEPES):
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
                   *, output_spec=None, out_path=None, gzip_patterns=None, output_format="csv",
-                  input_source=None, option_overrides=None):
+                  input_source=None, option_overrides=None, save_solution=False, dump_raw=False):
     """Solve and write results.
 
     Parameters
@@ -270,6 +271,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         An already-open input source to read the case from, bypassing the ``(DirName, CaseName)`` path sniff. Used by the Mode B sweep
         (``openTEPES_Runner.run(mode="in-memory")``) to hand each worker a shared in-memory baseline plus an overlay. ``CaseName`` and ``DirName`` are
         taken from the source; pass ``out_path`` so per-worker results land in distinct directories. Default ``None`` preserves historical behaviour.
+    save_solution : bool, optional
+        If True, ``oT_Solution_<CaseName>.parquet`` is written to the output directory after the last solve and the AC restoration, before any result
+        file. It holds every variable value, dual and stored stage cost, with the metadata needed to check a later reload. Default False.
+    dump_raw : bool, optional
+        If True, the raw parameters, variables, sets and constraints are dumped to a DuckDB file for debugging (``OutputResultsParVarCon``). Default False.
     """
 
     InitialTime = time.time()
@@ -350,6 +356,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     _ReadStart = time.time()
     dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=option_overrides)
     _ReadSeconds = time.time() - _ReadStart
+    # The hash is taken before DataConfiguration, which may change the frames in place. It is needed only for the solution file.
+    _InputHash = input_hash(dfs, option_overrides) if save_solution else None
 
     # How the problem is SOLVED, as opposed to what is modeled. These four were literals in this file until now, so a
     # case could not select any of them: the four stage-solving strategies below were all implemented and none reachable.
@@ -412,8 +420,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if mTEPES.pIndACPowerFlow() and mTEPES.pIndACRestore():
         ACRestorationPass(mTEPES, mTEPES, 'ipopt', pIndLogConsole)
 
-    # pickle the case study data with open(dump_folder+f'/oT_Case_{CaseName}.pkl','wb') as f:
-    #     pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)
+    # The solution file is written before any result file, so a failure in a writer does not lose the solve.
+    _SolutionFile = write_solution(mTEPES, mTEPES, CaseName, SolverName, _InputHash) if save_solution else None
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
     pIndTechnologyOutput = 2
@@ -422,7 +430,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndAreaOutput = 1
 
     # indicators to control the number of output results
-    pIndDumpRawResults = 0
     if pIndOutputResults:
         # --result Yes  → full output suite
         _flags = {k: 1 for k in OUTPUT_CATEGORIES}
@@ -448,8 +455,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # its model-state guard (if any) returns truthy. Registry order is the dispatch order — headlines first, bulky hourly tables next, plots last (per PR #118).
     _OutputStart = time.time()
 
-    # Raw parameter/variable/constraint dump is gated by pIndDumpRawResults (hardcoded, not a CLI category), so it stays a pre-loop special case.
-    if pIndDumpRawResults:
+    # Raw parameter/variable/constraint dump is gated by dump_raw (--dump-raw, not a result category), so it stays a pre-loop special case.
+    if dump_raw:
         OutputResultsParVarCon            (DirName, CaseName, mTEPES, mTEPES)
 
     _extras = {
@@ -570,6 +577,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "gzip_patterns":      list(gzip_patterns) if gzip_patterns else None,
         "gzip_files":         _GzipFiles,
         "gzip_mb_saved":      round(_GzipMbSaved, 2),
+        "solution_file":      _SolutionFile,
     }
     with open(os.path.join(_OutPath, f'openTEPES_run_status_{CaseName}.json'), 'w') as _f:
         json.dump(status, _f, indent=2)

@@ -93,8 +93,32 @@ The processed result tables can be written as CSV files (the default), a **DuckD
 `"csv"` run is byte-identical to earlier versions, so switching format changes only where the results are stored, not their values. One database per case keeps
 a parameter sweep single-writer-safe; see {doc}`Sweeps`.
 
-Separately, the raw parameters, variables, and constraints can be dumped to a DuckDB database for debugging by setting `pIndDumpRawResults = 1` in the
-`openTEPES.py` module. This is off by default.
+Separately, the raw parameters, variables, and constraints can be dumped to a DuckDB database for debugging, with `dump_raw=True` in `openTEPES_run` or
+`--dump-raw` on the command line. This is off by default.
+
+## Solution file
+
+With `save_solution=True` in `openTEPES_run`, or `--save-solution` on the command line, the case also writes `oT_Solution_<CaseName>.parquet` to the output
+directory, after the last solve and before any result file. It holds every variable value with its fixed indicator, every dual, and every stored stage cost,
+one row per value, compressed with zstd. On RTS-GMLC_6y, it holds 9.95 million values in 22 MB, against 262 MB for the CSV results.
+
+| Column    | Content                                                                                       |
+|-----------|-----------------------------------------------------------------------------------------------|
+| kind      | `var`, `dual` or `stagecost`                                                                  |
+| component | variable name, constraint name (for a dual) or cost variable name (for a stage cost)          |
+| p, sc, n  | period, scenario and load level, for an index that starts with them                           |
+| rest      | remainder of the index, e.g., `CCGT_1`, or `('Node_1', 'Node_2', 'eac1')` for a circuit; the whole index for any other component |
+| value     | variable value, dual or stored stage cost                                                     |
+| fixed     | fixed indicator of the variable at the end of the run                                         |
+
+The file metadata hold the openTEPES version and commit, the case, the solver, the termination condition of each solve, the solve time, the date and a
+hash of the input data. The file can be queried in place with DuckDB, e.g., the output of every unit in 2030:
+
+```python
+import duckdb
+duckdb.sql("""SELECT n, rest AS unit, value FROM 'oT_Solution_9n.parquet'
+              WHERE kind = 'var' AND component = 'vTotalOutput' AND p = 2030""").df()
+```
 
 ## Working with the DuckDB results
 
