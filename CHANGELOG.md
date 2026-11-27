@@ -8,6 +8,10 @@
 - [FIXED] when each period is solved separately, the cost summary and `total_cost_meur` in the run status include every period.
   Previously, they reported the last period only, since each subsequent solve set the cost of the earlier periods to zero. The cost
   of each solve is now stored and restored once all solves are complete. The results of a joint solve are unchanged.
+- [FIXED] the cost summary reports the cost of hydrogen from reforming and imports in a row of its own, `Operation Cost External
+  Hydrogen`. This hydrogen is bought at a fixed price from outside the modelled system. Its cost enters the total system cost, but had
+  no row, so the rows did not add up to the total. Hydrogen from electrolysis is not in this row, since its cost is the electricity it
+  uses. The row is written only when the case has a hydrogen source; the files of all other cases are unchanged.
 - [FIXED] the rectangular AC model fixes an angle in every synchronous area, not only at the reference node. An area joined to
   the rest only through HVDC, or a bus no AC branch reaches, was free to rotate, and the NLP was singular. On a Nordic case with
   45 such areas, Ipopt goes from 505 and 769 iterations at the acceptable level to 142 and 191, optimal, at the same cost.
