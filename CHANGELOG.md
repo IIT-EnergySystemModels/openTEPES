@@ -2,6 +2,13 @@
 
 ## [4.19.1rc] - 2026-11-23 not released in PyPi
 
+- [ADDED] `--save-solution` in `openTEPES_Main` (`save_solution=True` in `openTEPES_run`) writes `oT_Solution_<case>.parquet`: every
+  variable value with its fixed indicator, every dual and every stored stage cost, one row per value, with the openTEPES version and
+  commit, the solver, the termination conditions and a hash of the input data in its metadata. The file can be queried in place with
+  DuckDB, and it holds what a later reload needs to write the results without the solver. On RTS-GMLC_6y it is 22 MB.
+- [ADDED] `--dump-raw` in `openTEPES_Main` (`dump_raw=True` in `openTEPES_run`) writes the raw DuckDB dump of the parameters,
+  variables, sets and constraints. It could be switched on only by editing `pIndDumpRawResults` in `openTEPES.py`, which is removed,
+  together with the commented-out code that pickled the model.
 - [FIXED] when the scenarios of an operation model are solved separately, the cost summary reports the expected cost, weighted by the
   input probabilities, as the objective, the run status and the marginal prices do. It summed the scenarios with probability 1.0,
   e.g., twice the expected cost for two scenarios of probability 0.5. Cases with one scenario per period are unchanged.

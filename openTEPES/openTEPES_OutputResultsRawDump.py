@@ -1,11 +1,11 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2026
 
 Raw parameter, variable, set, and constraint dump.
 
 This module writes the full Pyomo model to a DuckDB file: every variable with its bounds, every parameter value, every set's members, and every
-indexed constraint's dual and bounds. It is the raw debugging dump used by ``OutputResultsParVarCon`` and is gated by ``pIndDumpRawResults`` in the run
-driver, not by a CLI-selectable result category. The DuckDB-writing helpers below have this dump as their only consumer, so they live here rather than in
+indexed constraint's dual and bounds. It is the raw debugging dump used by ``OutputResultsParVarCon`` and is gated by ``dump_raw`` in the run driver
+(``--dump-raw`` on the command line), not by a result category. The DuckDB-writing helpers below have this dump as their only consumer, so they live here rather than in
 the shared Common module.
 """
 
@@ -198,12 +198,6 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
     # DirName = os.path.dirname(DirName)
     _path   = _outdir(DirName, CaseName, mTEPES)
     StartTime = time.time()
-
-    # Load the model from the pickle file
-    # dump_folder = f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/'
-    # with open(dump_folder+f'/oT_Case_{CaseName}.pkl','rb') as f:
-    #     OptModel = pickle.load(f)
-    # output parameters, variables, and constraints
 
     DateName    = str(datetime.datetime.now().strftime('%Y%m%d'))
     dump_folder = os.path.join(_path, f'CaseDumpFolder_{CaseName}_{DateName}')
