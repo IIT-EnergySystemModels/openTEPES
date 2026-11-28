@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 28, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -718,6 +718,8 @@ parser.add_argument('--output-format', type=str, default='csv', choices=['csv', 
                     help="Format of the result tables: 'csv' (default) writes oT_Result_*.csv, 'duckdb' writes one oT_Results_<case>.duckdb, 'both' writes both.")
 parser.add_argument('--save-solution',           default=False, action="store_true",
                     help="Write oT_Solution_<case>.parquet to the output directory: every variable value, dual and stored stage cost of the solved case, with its metadata.")
+parser.add_argument('--from-solution', type=str, default=None,
+                    help="Write the results from a solution file written by --save-solution, without the solver. The case is read and built as usual; the file is refused if it belongs to other inputs or does not fit the model.")
 parser.add_argument('--dump-raw',                default=False, action="store_true",
                     help="Dump the raw parameters, variables, sets and constraints to a DuckDB file in CaseDumpFolder_<case>_<date>, for debugging.")
 parser.add_argument('--gzip-large-csvs',         default=False, help="After writing results, gzip every oT_Result_*.csv whose name starts with one of the prefixes given by --gzip-patterns. Default: off (CSVs written plain). NOTE: .csv.gz files cannot be opened directly in Excel; pandas reads them natively.", action="store_true")
@@ -861,7 +863,7 @@ def main():
                           output_spec=output_spec, out_path=args.out,
                           gzip_patterns=gzip_patterns, output_format=args.output_format,
                           option_overrides=pOverrides or None,
-                          save_solution=args.save_solution, dump_raw=args.dump_raw)
+                          save_solution=args.save_solution, dump_raw=args.dump_raw, from_solution=args.from_solution)
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))

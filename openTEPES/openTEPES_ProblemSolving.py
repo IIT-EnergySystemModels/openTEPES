@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 26, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 28, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -34,6 +34,7 @@ try:
     from          .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from          .openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
     from          .openTEPES_ModelFormulationElectricity import ACConeWarmStart
+    from          .openTEPES_OutputResultsSolution import load_solution
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,6 +43,7 @@ except ImportError:
     from openTEPES.openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from openTEPES.openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
     from openTEPES.openTEPES_ModelFormulationElectricity import ACConeWarmStart
+    from openTEPES.openTEPES_OutputResultsSolution import load_solution
 
 
 _DUALS_UNAVAILABLE = re.compile(r"Unable to retrieve attribute '(Pi|QCPi)'")
@@ -155,6 +157,15 @@ def restore_stage_costs(OptModel, mTEPES):
 
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
+    # ---- Reload (--from-solution): the stored values stand in for the solve ----
+    pSolution = getattr(mTEPES, 'pSolution', None)
+    if pSolution is not None:
+        if not pSolution.get('loaded'):
+            load_solution(OptModel, mTEPES, pSolution)
+            pSolution['loaded'] = True
+        print(f"Solution loaded from file              ####  period {p}, scenario {sc}, stage {st}")
+        return
+
     print("Problem solving                        ####", ncall)
     _path = getattr(mTEPES, 'pOutputPath', None) or os.path.join(DirName, CaseName)
     StartTime = time.time()

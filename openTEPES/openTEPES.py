@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 28, 2026
 """
 
 import datetime
@@ -22,7 +22,7 @@ try:
     from          .openTEPES_ProblemSolvingStageIter     import StageIterativeSolving
     from          .openTEPES_ModelFormulationElectricity import ACRestorationPass
     from          .openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
-    from          .openTEPES_OutputResultsSolution       import input_hash, write_solution
+    from          .openTEPES_OutputResultsSolution       import input_hash, write_solution, read_solution, read_solution_metadata, check_solution_metadata, SolutionMismatch
     from          .openTEPES_OutputResultsInvestment     import InvestmentResults
     from          .openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
     from          .openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
@@ -46,7 +46,7 @@ except ImportError:
     from openTEPES.openTEPES_ProblemSolvingStageIter     import StageIterativeSolving
     from openTEPES.openTEPES_ModelFormulationElectricity import ACRestorationPass
     from openTEPES.openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
-    from openTEPES.openTEPES_OutputResultsSolution       import input_hash, write_solution
+    from openTEPES.openTEPES_OutputResultsSolution       import input_hash, write_solution, read_solution, read_solution_metadata, check_solution_metadata, SolutionMismatch
     from openTEPES.openTEPES_OutputResultsInvestment     import InvestmentResults
     from openTEPES.openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
     from openTEPES.openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
@@ -243,7 +243,7 @@ def ReportConfiguration(mTEPES):
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
                   *, output_spec=None, out_path=None, gzip_patterns=None, output_format="csv",
-                  input_source=None, option_overrides=None, save_solution=False, dump_raw=False):
+                  input_source=None, option_overrides=None, save_solution=False, dump_raw=False, from_solution=None):
     """Solve and write results.
 
     Parameters
@@ -276,9 +276,16 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         file. It holds every variable value, dual and stored stage cost, with the metadata needed to check a later reload. Default False.
     dump_raw : bool, optional
         If True, the raw parameters, variables, sets and constraints are dumped to a DuckDB file for debugging (``OutputResultsParVarCon``). Default False.
+    from_solution : str | None, optional
+        Path of a solution file written by ``save_solution``. The case is read and built as usual, and the stored values are loaded in place of each
+        solve, so the results are written without the solver. The file is refused if its inputs or model settings differ from those of the case, or if
+        any variable of the model has no stored value. Cases solved by sector or stage decomposition, or with the AC restoration, are not supported yet.
+        Default None.
     """
 
     InitialTime = time.time()
+    # The metadata of a solution to reload are read first, so a file that cannot be read stops the run before the case is built.
+    _SolutionMeta = read_solution_metadata(from_solution) if from_solution else None
     _RunStartedUtc = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds") + "Z"
 
     # If the caller pointed at a .duckdb file (CaseName carries the suffix), open it as a DuckDBSource; InputData reads tables from this source instead of
@@ -357,7 +364,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=option_overrides)
     _ReadSeconds = time.time() - _ReadStart
     # The hash is taken before DataConfiguration, which may change the frames in place. It is needed only for the solution file.
-    _InputHash = input_hash(dfs, option_overrides) if save_solution else None
+    _InputHash = input_hash(dfs, option_overrides) if save_solution or from_solution else None
+    if from_solution:
+        check_solution_metadata(_SolutionMeta, _InputHash, CaseName)
 
     # How the problem is SOLVED, as opposed to what is modeled. These four were literals in this file until now, so a
     # case could not select any of them: the four stage-solving strategies below were all implemented and none reachable.
@@ -410,6 +419,16 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # initialize parameter for dual variables
     mTEPES.pDuals = {}
 
+    # A reload replaces each call to ProblemSolving by a load of the stored values. The solve paths that do not go through ProblemSolving, and the AC
+    # restoration, which changes the model after the solve, are not supported yet.
+    if from_solution:
+        pUnsupported = [pName for pName, pOn in (('sector decomposition', mTEPES.pIndSectorDecomposition() == 1),
+                                                 ('stage decomposition (IndCompleteProblem = 0)', mTEPES.pIndCompleteProblem() == 0),
+                                                 ('AC restoration', bool(mTEPES.pIndACPowerFlow() and mTEPES.pIndACRestore()))) if pOn]
+        if pUnsupported:
+            raise SolutionMismatch(f"### A reload from a solution file does not support {', '.join(pUnsupported)} yet.")
+        mTEPES.pSolution = read_solution(from_solution)
+
     # iterative formulation and solve for every stage of the year. The per-stage operation model and the two solve paths (deterministic per scenario,
     # or one joint stochastic solve) live in openTEPES_ProblemSolvingStageIter; this is a pure extraction, so results are unchanged.
     StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _OutPath, pIndCycleFlow)
@@ -417,7 +436,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # The relaxed AC optimum is a LOWER bound on the true one, and how much lower depends entirely on whether the cone came out tight. This pass holds
     # the plan the relaxed solve produced and re-solves the network at the exact equality, so the reported operating point satisfies the AC equations.
     # It runs on ipopt regardless of the solver used above, because no mixed-integer solver takes the non-convex equality.
-    if mTEPES.pIndACPowerFlow() and mTEPES.pIndACRestore():
+    if from_solution and not mTEPES.pSolution.get('loaded'):
+        raise SolutionMismatch('### The stage loop solved nothing, so no stored value was loaded.')
+    if mTEPES.pIndACPowerFlow() and mTEPES.pIndACRestore() and not from_solution:
         ACRestorationPass(mTEPES, mTEPES, 'ipopt', pIndLogConsole)
 
     # The solution file is written before any result file, so a failure in a writer does not lose the solve.
@@ -578,6 +599,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "gzip_files":         _GzipFiles,
         "gzip_mb_saved":      round(_GzipMbSaved, 2),
         "solution_file":      _SolutionFile,
+        "from_solution":      from_solution,
     }
     with open(os.path.join(_OutPath, f'openTEPES_run_status_{CaseName}.json'), 'w') as _f:
         json.dump(status, _f, indent=2)

@@ -120,6 +120,23 @@ duckdb.sql("""SELECT n, rest AS unit, value FROM 'oT_Solution_9n.parquet'
               WHERE kind = 'var' AND component = 'vTotalOutput' AND p = 2030""").df()
 ```
 
+### Results from a solution file
+
+With `from_solution="<path>"` in `openTEPES_run`, or `--from-solution <path>` on the command line, the case is read and built as usual, the stored values
+replace each solve, and the result files are written without the solver. A case solved on a server can thus produce its results on a laptop from the case
+directory, the same version of openTEPES and its solution file. On 9n and 9n7y, every result file of the reload is identical to that of the solve.
+
+Before any result is written, the reload refuses a solution file
+
+- with another layout version;
+- whose input data differ from those of the case, i.e., whose hash of the inputs and option overrides differs;
+- obtained with another value of `OTEPES_MAX_THETA` or `OTEPES_ZERO_ENS`, which change the model;
+- that has no stored value for a variable of the model, or stores a variable the model does not have.
+
+A different openTEPES version gives a warning only, since the variable check above finds any change in the model that matters. The settings that change
+only how the solver works (`OTEPES_THREADS`, `OTEPES_CROSSOVER` and the others) are ignored. Cases solved by sector or stage decomposition, or with the AC
+restoration, cannot be reloaded yet.
+
 ## Working with the DuckDB results
 
 With `output_format="duckdb"` (or `"both"`), each case writes `oT_Results_<CaseName>.duckdb`, holding one table per result file. The table name is the result

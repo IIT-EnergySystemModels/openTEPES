@@ -1,12 +1,15 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 28, 2026
 
 Solution file.
 
 This module writes the solution of a solved case to one Parquet file, ``oT_Solution_<CaseName>.parquet``: every variable value with its fixed indicator,
 every stored dual, and every stored stage cost, one row per value. The file holds what the result writers read, so a case solved on one computer can
 produce its results on another without the solver. It is written with DuckDB, compressed with zstd, and carries its metadata (openTEPES version and
-commit, case, solver, termination conditions, solve time, date and a hash of the inputs) in the Parquet footer.
+commit, case, solver, termination conditions, solve time, date, a hash of the inputs and the OTEPES_* settings) in the Parquet footer.
+
+It also reads the file back for a reload (``--from-solution``): the metadata are checked against the case, and the stored values are loaded into the
+model in place of each solve.
 
 Columns: ``kind`` (var, dual or stagecost), ``component``, ``p``, ``sc``, ``n``, ``rest``, ``value`` and ``fixed``. An index that starts with a period, a
 scenario and a third position (the load level for an operation variable) is split into ``p``, ``sc`` and ``n``, and its remainder is kept as text in
@@ -37,6 +40,11 @@ except ImportError:
 SOLUTION_FORMAT_VERSION = 1
 # About one million rows per row group, as measured on RTS-GMLC_6y: smaller groups gave the same query time and a larger file.
 ROW_GROUP_SIZE          = 1 << 20
+# Settings read from the environment. The first two change the model, so a solution obtained with other values of them is refused on reload; the others
+# change only how the solver works, and a difference in them is ignored.
+MODEL_SETTINGS          = ('OTEPES_MAX_THETA', 'OTEPES_ZERO_ENS')
+SOLVER_SETTINGS         = ('OTEPES_THREADS', 'OTEPES_CROSSOVER', 'OTEPES_HIGHS_SOLVER', 'OTEPES_WARM_RESOLVE', 'OTEPES_WARM_RESOLVE_CAP',
+                           'OTEPES_WARM_RESOLVE_SIMPLEX')
 
 
 def input_hash(dfs, option_overrides=None):
@@ -76,14 +84,34 @@ def _index_text(t):
     return repr(t)
 
 
+def _splits(pKeys):
+    """True if every index of a component starts with a period, a scenario and a third position, so that the file splits it into p, sc and n.
+
+    The test is made on every key, so that a component indexed by a union set cannot mislead it. The writer and the reader both decide by this test, per
+    component, so they always agree on the key of a value.
+    """
+    return len(pKeys) > 0 and all(isinstance(k, tuple) and len(k) >= 3 and isinstance(k[0], int) and isinstance(k[1], str) for k in pKeys)
+
+
+def _index_key(k, pSplit):
+    """The (p, sc, n, rest) key of one variable index, as stored in the file."""
+    if pSplit:
+        return k[0], k[1], k[2], (_index_text(k[3:]) if len(k) > 3 else None)
+    return None, None, None, _index_text(k if isinstance(k, tuple) else (k,))
+
+
+def _environment():
+    """The OTEPES_* settings of this run."""
+    return {k: os.environ[k] for k in MODEL_SETTINGS + SOLVER_SETTINGS if k in os.environ}
+
+
 def _var_columns(pVar, cols):
     """Append the rows of one variable component to the column lists in cols."""
     pKeys  = list(pVar.keys())
     pDatas = list(pVar.values())
     pName  = pVar.name
     nRows  = len(pKeys)
-    # the index of a component is one set, so the test on all keys is uniform in practice; it is made on every key so that a union set cannot mislead it
-    pSplit = nRows > 0 and all(isinstance(k, tuple) and len(k) >= 3 and isinstance(k[0], int) and isinstance(k[1], str) for k in pKeys)
+    pSplit = _splits(pKeys)
     cols['kind'     ].extend(['var'] * nRows)
     cols['component'].extend([pName] * nRows)
     if pSplit:
@@ -156,6 +184,7 @@ def write_solution(OptModel, mTEPES, CaseName, SolverName, pInputHash):
         'solve_seconds':          f'{getattr(mTEPES, "pSolveSeconds", 0.0):.2f}',
         'written_utc':            datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec='seconds') + 'Z',
         'input_hash':             pInputHash,
+        'environment':            json.dumps(_environment(), sort_keys=True),
     }
     pKV = ', '.join(f'{_sql_text(k)}: {_sql_text(v)}' for k, v in pMeta.items())
     with duckdb.connect() as con:
@@ -170,3 +199,91 @@ def read_solution_metadata(pPath):
     with duckdb.connect() as con:
         pRows = con.execute('SELECT key, value FROM parquet_kv_metadata(?)', [pPath]).fetchall()
     return {(k.decode() if isinstance(k, bytes) else k): (v.decode() if isinstance(v, bytes) else v) for k, v in pRows}
+
+
+class SolutionMismatch(ValueError):
+    """A solution file that does not belong to the case being reloaded."""
+
+
+def check_solution_metadata(pMeta, pInputHash, CaseName):
+    """Refuse a solution file whose layout, inputs or model settings differ from those of the case; warn on a different openTEPES version or case name.
+
+    The structure of the model, not its version number, decides whether a stored solution fits: a variable with no stored value, or a stored value with no
+    variable, is found by load_solution. A different version of openTEPES therefore gives a warning only.
+    """
+    if pMeta.get('format_version') != str(SOLUTION_FORMAT_VERSION):
+        raise SolutionMismatch(f"### The solution file has layout version {pMeta.get('format_version')!r}; this openTEPES reads version "
+                               f"{SOLUTION_FORMAT_VERSION}.")
+    if pMeta.get('input_hash') != pInputHash:
+        raise SolutionMismatch('### The solution file belongs to other input data: the hash of the inputs differs. Solve the case again, or reload it '
+                               'with the inputs and option overrides it was solved with.')
+    pStored = json.loads(pMeta.get('environment') or '{}')
+    pNow    = _environment()
+    pModel  = [k for k in MODEL_SETTINGS if pStored.get(k) != pNow.get(k)]
+    if pModel:
+        raise SolutionMismatch('### The solution file was obtained with other model settings: ' +
+                               ', '.join(f'{k} {pStored.get(k)!r} in the file, {pNow.get(k)!r} now' for k in pModel) + '.')
+    if pMeta.get('opentepes_version') != __version__:
+        print(f"### WARNING: the solution file was written by openTEPES {pMeta.get('opentepes_version')}; this is {__version__}. The model is "
+              f"checked variable by variable before any result is written.")
+    if pMeta.get('case') != CaseName:
+        print(f"### WARNING: the solution file was written for case {pMeta.get('case')!r}; the case reloaded is {CaseName!r}. Its inputs are the same.")
+
+
+def read_solution(pPath):
+    """The stored values of a solution file, ready for load_solution.
+
+    Returns a dict with the variable values and fixed indicators by component and key, the duals by key, the stage costs by key, the termination
+    conditions, and the metadata.
+    """
+    pMeta = read_solution_metadata(pPath)
+    with duckdb.connect() as con:
+        df = con.execute("SELECT kind, component, p, sc, n, rest, value, fixed FROM read_parquet(?)", [pPath]).df()
+    df['p'] = df['p'].astype(object).where(df['p'].notna(), None)
+    for c in ('sc', 'n', 'rest'):
+        df[c] = df[c].where(df[c].notna(), None)
+    df['value'] = df['value'].astype(object).where(df['value'].notna(), None)
+
+    pVars = {}
+    v = df[df['kind'] == 'var']
+    for pName, pGroup in v.groupby('component', sort=False):
+        pVars[pName] = dict(zip(zip([None if x is None else int(x) for x in pGroup['p']], pGroup['sc'], pGroup['n'], pGroup['rest']),
+                                zip(pGroup['value'], pGroup['fixed'])))
+    d = df[df['kind'] == 'dual']
+    pDuals = {c + (r or ''): x for c, r, x in zip(d['component'], d['rest'], d['value'])}
+    s = df[df['kind'] == 'stagecost']
+    pStage = {(c, int(p), sc, n): x for c, p, sc, n, x in zip(s['component'], s['p'], s['sc'], s['n'], s['value'])}
+    return {'vars': pVars, 'duals': pDuals, 'stagecosts': pStage, 'termination_conditions': json.loads(pMeta.get('termination_conditions') or '[]'),
+            'metadata': pMeta}
+
+
+def load_solution(OptModel, mTEPES, pSolution):
+    """Load the stored values into the model in place of the solves.
+
+    Every variable gets its stored value and fixed indicator, and the duals, the stage costs and the termination conditions are restored. The values are
+    the final values of the run, so they are loaded once, at the first call; the fixing between stages then holds them at the same values. A variable
+    with no stored value, or a stored variable that the model does not have, refuses the reload, since its results would be wrong.
+    """
+    pMissing = []
+    pSeen    = set()
+    for pVar in OptModel.component_objects(pyo.Var, descend_into=True):
+        pStored = pSolution['vars'].get(pVar.name)
+        pSeen.add(pVar.name)
+        pSplit  = _splits(list(pVar.keys()))
+        for k, pData in pVar.items():
+            pValue = None if pStored is None else pStored.get(_index_key(k, pSplit))
+            if pValue is None:
+                pMissing.append(pData.name)
+                continue
+            pData.set_value(pValue[0], skip_validation=True)
+            if pValue[1]:
+                pData.fix()
+    pExtra = sorted(set(pSolution['vars']) - pSeen)
+    if pMissing or pExtra:
+        raise SolutionMismatch(f'### The solution file does not fit the model: {len(pMissing)} variables have no stored value '
+                               f'(e.g., {pMissing[:3]}), and {len(pExtra)} stored variables are not in the model (e.g., {pExtra[:3]}).')
+    mTEPES.pDuals.update(pSolution['duals'])
+    mTEPES.pStageCostValues = dict(pSolution['stagecosts'])
+    if not hasattr(mTEPES, 'pTerminationConditions'):
+        mTEPES.pTerminationConditions = []
+    mTEPES.pTerminationConditions.extend(pSolution['termination_conditions'])
