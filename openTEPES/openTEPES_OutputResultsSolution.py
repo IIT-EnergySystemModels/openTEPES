@@ -240,8 +240,9 @@ def read_solution(pPath):
     with duckdb.connect() as con:
         df = con.execute("SELECT kind, component, p, sc, n, rest, value, fixed FROM read_parquet(?)", [pPath]).df()
     df['p'] = df['p'].astype(object).where(df['p'].notna(), None)
+    # converted to object first: under pandas 3, a text column keeps its missing values as NaN even when they are replaced by None
     for c in ('sc', 'n', 'rest'):
-        df[c] = df[c].where(df[c].notna(), None)
+        df[c] = df[c].astype(object).where(df[c].notna(), None)
     df['value'] = df['value'].astype(object).where(df['value'].notna(), None)
 
     pVars = {}
