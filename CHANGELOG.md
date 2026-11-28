@@ -2,6 +2,10 @@
 
 ## [4.19.1rc] - 2026-11-23 not released in PyPi
 
+- [CHANGED] the architecture diagram is redrawn as one PowerPoint slide, `doc/img/openTEPES_architecture.pptx`, which replaces the
+  hand-drawn SVG as its source; the PNG in the `README.md` is exported from it. The diagram now shows the solution file
+  (`openTEPES_OutputResultsSolution.py`, `--save-solution`, `--from-solution`) and the raw dump option `--dump-raw`, and repeats less
+  of what its boxes already say.
 - [ADDED] `--from-solution <file>` in `openTEPES_Main` (`from_solution=` in `openTEPES_run`) writes the results of a case from its solution
   file, without the solver: the case is built as usual and the stored values replace each solve. The file is refused if its inputs or
   model settings differ from those of the case, or if it does not fit the model variable by variable. On 9n and 9n7y the result files are
