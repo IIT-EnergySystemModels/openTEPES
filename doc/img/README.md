@@ -1,41 +1,35 @@
-# Hand-drawn diagrams
+# Diagrams
 
 ## Architecture diagram
 
 Two files make up the architecture diagram shown in the project `README.md`:
 
-- `openTEPES_architecture.svg` — the source. It is hand-drawn SVG (the boxes and
-  text are plain SVG elements) and is edited directly; there is no script that
-  generates it. Open it in any text or vector editor, change what you need, save.
-- `openTEPES_architecture.png` — a raster copy rendered from the SVG. The project
-  `README.md` embeds the PNG, because some pages (for example the PyPI project
-  page) do not display SVG images.
+- `openTEPES_architecture.pptx` — the source. It is one PowerPoint slide, and every box,
+  arrow and label is a shape that can be edited. Open it in PowerPoint or LibreOffice
+  Impress, make the change, and save.
+- `openTEPES_architecture.png` — the slide exported as an image, 1710 pixels wide. The
+  project `README.md` embeds the PNG, because some pages (for example the PyPI project
+  page) do not display other formats.
 
 Modules drawn in **green** are implemented (merged upstream); modules drawn in
-**white** are planned and their names are indicative.
+**white**, with a dashed edge, are planned and their names are indicative.
 
-After editing the SVG, regenerate the PNG so the two stay in step. Use a vector
-tool such as [Inkscape](https://inkscape.org), which runs on Windows, macOS and
-Linux:
-
-Windows (Command Prompt or PowerShell):
+After editing the slide, export the PNG again so the two stay in step. In PowerPoint,
+use File > Export, choose PNG, and set the width to 1710 pixels. From the command line,
+with LibreOffice and poppler:
 
 ```
-inkscape openTEPES_architecture.svg --export-type=png --export-filename=openTEPES_architecture.png -w 1710
+soffice --headless --convert-to pdf openTEPES_architecture.pptx
+pdftoppm -scale-to-x 1710 -scale-to-y -1 -png -singlefile openTEPES_architecture.pdf openTEPES_architecture
 ```
 
-Linux / macOS (Inkscape, or `rsvg-convert` from librsvg):
-
-```
-inkscape openTEPES_architecture.svg --export-type=png --export-filename=openTEPES_architecture.png -w 1710
-rsvg-convert -w 1710 openTEPES_architecture.svg -o openTEPES_architecture.png
-```
+Delete the PDF afterwards; only the slide and the PNG are kept.
 
 ## AC formulation diagrams
 
-Three single-line diagrams are embedded in `doc/md/MathematicalFormulation.md`. They
-follow the same arrangement: hand-drawn SVG as the source, a PNG rendered from it, and
-the documentation embeds the PNG.
+Three single-line diagrams are embedded in `doc/md/MathematicalFormulation.md`. Each
+is hand-drawn SVG, edited directly, with a PNG rendered from it, and the documentation
+embeds the PNG.
 
 - `ac_branch_model.svg` — one AC branch: the tap, the series impedance, and half the
   charging susceptance at each end, with the flows marked at their own ends.
@@ -48,7 +42,7 @@ Symbols follow the notation table in `MathematicalFormulation.md`. Parameters ar
 in blue and variables in red, so a reader can tell at a glance what the model decides
 and what the case file fixes.
 
-Regenerate each PNG the same way as the architecture diagram, at a width of 1400:
+Regenerate each PNG with `rsvg-convert` (librsvg) or Inkscape, at a width of 1400:
 
 ```
 rsvg-convert -w 1400 ac_branch_model.svg -o ac_branch_model.png
