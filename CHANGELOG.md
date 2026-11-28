@@ -2,6 +2,11 @@
 
 ## [4.19.1rc] - 2026-11-23 not released in PyPi
 
+- [ADDED] `--from-solution <file>` in `openTEPES_Main` (`from_solution=` in `openTEPES_run`) writes the results of a case from its solution
+  file, without the solver: the case is built as usual and the stored values replace each solve. The file is refused if its inputs or
+  model settings differ from those of the case, or if it does not fit the model variable by variable. On 9n and 9n7y the result files are
+  identical to those of the solve. Cases solved by sector or stage decomposition, or with the AC restoration, cannot be reloaded yet.
+- [CHANGED] the solution file also records the `OTEPES_*` settings of the run, which the reload checks.
 - [ADDED] `--save-solution` in `openTEPES_Main` (`save_solution=True` in `openTEPES_run`) writes `oT_Solution_<case>.parquet`: every
   variable value with its fixed indicator, every dual and every stored stage cost, one row per value, with the openTEPES version and
   commit, the solver, the termination conditions and a hash of the input data in its metadata. The file can be queried in place with
